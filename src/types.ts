@@ -98,6 +98,9 @@ export interface Job {
   notes: string;
   tech: string;
   updatedAt: string;
+  /** amount taken so far against this job's total — payment is one combined transaction
+   * per job, so it lives here rather than on individual equipment items. */
+  paid: number;
   updates: JobUpdate[];
   equipment: Equipment[];
 }

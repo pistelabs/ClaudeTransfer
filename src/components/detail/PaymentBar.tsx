@@ -1,7 +1,7 @@
 import { CreditCard, MoreVertical, Printer, Trash2 } from "lucide-react";
 import { useState } from "react";
 import type { Job } from "../../types";
-import { jobTotal } from "../../data/build";
+import { jobBalance, jobTotal } from "../../data/build";
 import { useAppStore } from "../../store/useAppStore";
 import { money } from "../../lib/format";
 
@@ -11,6 +11,7 @@ export function PaymentBar({ job }: { job: Job }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const total = jobTotal(job);
+  const balance = jobBalance(job);
 
   return (
     <div className="flex flex-shrink-0 items-stretch border-t border-border bg-white">
@@ -18,7 +19,7 @@ export function PaymentBar({ job }: { job: Job }) {
         <div className="flex flex-col gap-px">
           <span className="text-[9.5px] font-bold uppercase tracking-[0.09em] text-zinc-400">Balance Due</span>
           <span className="text-[26px] font-extrabold leading-[1.05] tracking-tight text-ink" style={{ fontVariantNumeric: "tabular-nums" }}>
-            {money(total)}
+            {money(balance)}
           </span>
         </div>
         <div className="w-px self-stretch bg-border" />
@@ -29,7 +30,7 @@ export function PaymentBar({ job }: { job: Job }) {
           </div>
           <div className="flex items-center justify-between gap-4">
             <span className="text-[11.5px] text-zinc-500">Paid</span>
-            <span className="text-[11.5px] font-semibold text-green">$0.00</span>
+            <span className="text-[11.5px] font-semibold text-green">{money(job.paid || 0)}</span>
           </div>
         </div>
       </div>

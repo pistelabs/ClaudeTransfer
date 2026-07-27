@@ -1,6 +1,6 @@
 import { AlertTriangle, CheckCircle2, CreditCard, Mail } from "lucide-react";
 import type { Job } from "../../types";
-import { jobTotal } from "../../data/build";
+import { jobBalance, jobFullyComplete, jobTotal } from "../../data/build";
 import { useAppStore } from "../../store/useAppStore";
 import { money } from "../../lib/format";
 
@@ -210,9 +210,10 @@ export function PayModals({ job }: { job: Job }) {
   const closePay = useAppStore((s) => s.closePay);
   const paymentDone = useAppStore((s) => s.paymentDone);
   const markCollected = useAppStore((s) => s.markCollected);
+  const activeTab = useAppStore((s) => s.activeTab);
 
   if (!payPrompt) return null;
-  const balance = money(jobTotal(job));
+  const balance = money(jobTotal(job) - (job.paid || 0));
 
   if (payPrompt === "pay") {
     return (
@@ -245,6 +246,13 @@ export function PayModals({ job }: { job: Job }) {
     );
   }
 
+  // Completing the job is only offered when payment was taken from the Ready status —
+  // from anywhere else this is just a receipt. Even then every service on every piece of
+  // equipment has to be ticked off first.
+  const fromReady = job.equipment[activeTab]?.workStatus === "Ready";
+  const allComplete = jobFullyComplete(job);
+  const canComplete = fromReady && allComplete;
+
   return (
     <div className="animate-sheet-fade absolute inset-0 z-10 flex items-center justify-center p-7" style={{ background: "rgba(9,9,11,0.35)" }} onClick={closePay}>
       <div className="animate-sheet-pop flex w-full max-w-[400px] flex-col gap-3.5 rounded-[13px] border border-border bg-white p-5" style={{ boxShadow: "0 20px 50px rgba(0,0,0,0.25)" }} onClick={(e) => e.stopPropagation()}>
@@ -254,17 +262,36 @@ export function PayModals({ job }: { job: Job }) {
           </div>
           <div className="flex flex-col gap-px">
             <span className="text-[15px] font-bold tracking-tight">Payment successful</span>
-            <span className="text-xs text-zinc-500">{balance} received</span>
+            <span className="text-xs text-zinc-500">
+              {money(job.paid || 0)} received · {money(jobBalance(job))} due
+            </span>
           </div>
         </div>
-        <p className="m-0 text-[13px] leading-relaxed text-zinc-700">Payment has been taken. Mark this equipment as collected to complete the job.</p>
-        <button
-          onClick={markCollected}
-          className="flex h-11 items-center justify-center gap-2 rounded-[10px] text-[13.5px] font-semibold text-white"
-          style={{ background: "#16a34a" }}
-        >
-          Mark equipment as collected
-        </button>
+
+        {canComplete && (
+          <>
+            <p className="m-0 text-[13px] leading-relaxed text-zinc-700">
+              All services on this job are complete. Move it to complete to archive the equipment.
+            </p>
+            <button
+              onClick={markCollected}
+              className="flex h-11 items-center justify-center gap-2 rounded-[10px] text-[13.5px] font-semibold text-white"
+              style={{ background: "#16a34a" }}
+            >
+              Move job to complete
+            </button>
+          </>
+        )}
+
+        {fromReady && !allComplete && (
+          <div className="flex items-start gap-2.5 rounded-[10px] border p-3" style={{ background: "#fffbeb", borderColor: "#fde68a" }}>
+            <AlertTriangle size={17} color="#d97706" className="mt-px flex-shrink-0" />
+            <p className="m-0 text-[12.5px] leading-relaxed" style={{ color: "#92400e" }}>
+              Please mark all services complete before marking job as complete.
+            </p>
+          </div>
+        )}
+
         <button onClick={closePay} className="h-[34px] text-[13px] font-medium text-zinc-500">
           Close
         </button>

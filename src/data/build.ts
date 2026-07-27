@@ -51,6 +51,7 @@ export function normalizeJob(j: RawJob): Job {
   const equipSrc: RawEquip[] =
     j.equipment ||
     [{ type: j.type || "SKI", brand: j.brand || "New", model: j.model || "Equipment", size: j.size || "—", services: j.services || [] }];
+  const equipment = equipSrc.map((e) => buildEquip(e, j.status, j.stage));
   return {
     id: j.id,
     customer: j.customer,
@@ -64,7 +65,9 @@ export function normalizeJob(j: RawJob): Job {
     tech: "Dan Sweetnam",
     updatedAt: "29/06/26 2:32 PM",
     updates: [],
-    equipment: equipSrc.map((e) => buildEquip(e, j.status, j.stage)),
+    // Seeded archive rows were collected and paid for historically.
+    paid: j.stage === "archive" ? equipment.reduce((a, eq) => a + equipmentPrice(eq), 0) : 0,
+    equipment,
   };
 }
 
@@ -95,6 +98,11 @@ export function equipmentPrice(eq: Equipment): number {
 
 export function jobTotal(job: Job): number {
   return job.equipment.reduce((acc, eq) => acc + equipmentPrice(eq), 0);
+}
+
+/** What is still owed on a job — the whole-job figure the Collected gate checks. */
+export function jobBalance(job: Job): number {
+  return jobTotal(job) - (job.paid || 0);
 }
 
 /** Whether one specific equipment item's own services are all ticked done — used for the

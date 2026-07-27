@@ -12,7 +12,7 @@ import type {
   Stage,
 } from "../types";
 import { SEED_CUSTOMERS, SEED_JOBS, STAFF_LIST } from "../data/seedRaw";
-import { buildEquip, equipmentFullyComplete, jobTotal, normalizeJob } from "../data/build";
+import { buildEquip, equipmentFullyComplete, jobBalance, jobTotal, normalizeJob } from "../data/build";
 import { blankDin, categoryToType, defaultCategoryForType, SERVICE_DEFS } from "../lib/serviceCatalog";
 import { canPickStatus, isEquipmentLocked, STAGE_WORK_STATUS } from "../lib/statusFlow";
 import { stampNow } from "../lib/format";
@@ -425,7 +425,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     }
     if (stage === "archive") {
       const fullyDone = equipmentFullyComplete(eq);
-      const balance = jobTotal(j);
+      const balance = jobBalance(j);
       if (!(fullyDone && balance <= 0)) {
         set({
           dragEq: null,
@@ -494,7 +494,26 @@ export const useAppStore = create<AppState>((set, get) => ({
   // ---- payments / ready-collect flow ----
   openPay: () => set({ payPrompt: "pay" }),
   closePay: () => set({ payPrompt: null }),
-  paymentDone: () => set({ payPrompt: "collect" }),
+  paymentDone: () => {
+    // Returning from the payment software means the outstanding balance was taken.
+    const s = get();
+    const sel = s.jobs.find((j) => j.id === s.selectedId);
+    if (!sel) return set({ payPrompt: "collect" });
+    const stamp = stampNow();
+    const taken = jobBalance(sel);
+    set((st) => ({
+      jobs: st.jobs.map((j) =>
+        j.id === sel.id
+          ? {
+              ...j,
+              paid: jobTotal(j),
+              updates: taken > 0 ? [{ text: `Payment received · ${taken.toFixed(2)}`, at: (st.activeStaff || j.tech) + " · " + stamp }, ...j.updates] : j.updates,
+            }
+          : j,
+      ),
+      payPrompt: "collect",
+    }));
+  },
   markCollected: () => {
     // Pay Now → Mark equipment as collected archives EVERY item on the job together — this is
     // the real-world moment the customer walks out with all of it, even though each item was
@@ -564,7 +583,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     }
     if (status.label === "Collected") {
       const fullyDone = equipmentFullyComplete(eq);
-      const balance = jobTotal(sel);
+      const balance = jobBalance(sel);
       const canCollect = fullyDone && balance <= 0;
       if (!canCollect) {
         set({ readyPrompt: !fullyDone ? "collect_incomplete" : "collect_balance" });
@@ -838,6 +857,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         email: f.email || (f.customer.trim().split(/\s+/)[0]?.toLowerCase() || "customer") + "@pistelabs.com",
         phone: f.phone || "+353 86 863 3044",
         status: "",
+        paid: 0,
         due: f.due || "—",
         pickup: f.pickup || "—",
         dropoff: "",
