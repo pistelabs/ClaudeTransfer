@@ -79,6 +79,9 @@ export interface JobUpdate {
   hold?: boolean;
   resolved?: boolean;
   resolvedAt?: string;
+  /** the bare hold reason, kept alongside the display text so the board can show it
+   * without having to parse the prefixed note back apart */
+  reason?: string;
   /** which equipment item (index into job.equipment) a hold note applies to — notes are
    * shared/job-level, but holds are per-item, so this lets the resolve flow target the
    * right note even when several items on the same job have independent holds. */

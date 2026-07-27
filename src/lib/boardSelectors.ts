@@ -36,6 +36,8 @@ export interface EquipRow {
   hasDrop: boolean;
   dropDate: string;
   dropTime: string;
+  /** reason this item is on hold, shown on its Pending-column card ("" when not on hold) */
+  holdReason: string;
   status: Job["status"];
   services: string[];
   job: Job;
@@ -43,7 +45,12 @@ export interface EquipRow {
 
 export function jobToRows(job: Job): EquipRow[] {
   const n = job.equipment.length;
-  return job.equipment.map((eq, i) => ({
+  return job.equipment.map((eq, i) => {
+    const hold =
+      eq.workStatus === "Pending"
+        ? job.updates.find((u) => u.hold && !u.resolved && (u.eqIdx === i || (n === 1 && u.eqIdx == null)))
+        : undefined;
+    return {
     jobId: job.id,
     rowId: n > 1 ? `${job.id}-${i + 1}` : job.id,
     eqIdx: i,
@@ -56,12 +63,14 @@ export function jobToRows(job: Job): EquipRow[] {
     pickup: job.pickup,
     dropoff: job.dropoff || "",
     hasDrop: eq.stage === "kiosk" && !!job.dropoff,
+    holdReason: hold ? hold.reason || hold.text : "",
     dropDate: (job.dropoff || "").split(" ")[0] || "",
     dropTime: (job.dropoff || "").split(" ").slice(1).join(" ") || "",
     status: job.status === "late" ? "late" : "",
     services: eq.services,
     job,
-  }));
+    };
+  });
 }
 
 export function sortByDue(rows: EquipRow[]): EquipRow[] {

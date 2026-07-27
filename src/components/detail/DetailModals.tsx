@@ -32,7 +32,7 @@ export function HoldPromptModal({ job }: { job: Job }) {
           ? {
               ...j,
               equipment: j.equipment.map((e, i) => (i === eqIdx ? { ...e, workStatus: "Pending", stage: holdMoveStage ?? e.stage } : e)),
-              updates: [{ text: noteText, hold: true, eqIdx, at: j.tech + " · " + stamp }, ...j.updates],
+              updates: [{ text: noteText, hold: true, reason: r, eqIdx, at: j.tech + " · " + stamp }, ...j.updates],
             }
           : j,
       ),

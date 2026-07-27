@@ -1,4 +1,4 @@
-import { CalendarDays, User } from "lucide-react";
+import { CalendarDays, PauseCircle, User } from "lucide-react";
 import type { EquipRow } from "../../lib/boardSelectors";
 import { ServicePill, StatusPill, cardTint } from "../Pills";
 import { useAppStore } from "../../store/useAppStore";
@@ -68,6 +68,16 @@ export function JobEntry({ row, variant }: Props) {
       className="flex cursor-grab flex-col gap-[7px] rounded-[10px] border p-[10px_11px] transition-shadow hover:shadow-[0_2px_8px_rgba(0,0,0,0.09)] hover:border-border-hover"
       style={{ background: bg, borderColor: bd, boxShadow: "0 1px 1px rgba(0,0,0,0.03)", padding: "10px 11px" }}
     >
+      {row.holdReason && (
+        <div className="-mx-[11px] -mt-[10px] mb-[2px] flex items-center gap-1.5 overflow-hidden rounded-t-[9px] border-b border-[#fde68a] bg-[#fffbeb] px-[11px] py-[6px]">
+          <PauseCircle size={12} color="#d97706" strokeWidth={2} className="flex-shrink-0" />
+          <span className="flex-shrink-0 text-[10.5px] font-bold tracking-wide text-[#b45309]">On hold</span>
+          {/* one line only — a long reason truncates rather than growing the banner */}
+          <span className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-[10.5px] text-[#b45309]" title={row.holdReason}>
+            {row.holdReason}
+          </span>
+        </div>
+      )}
       {row.hasDrop && (
         <div className="-mx-[11px] -mt-[10px] mb-[2px] flex items-center gap-1.5 rounded-t-[9px] border-b border-[#bbf7d0] bg-[#ecfdf5] px-[11px] py-[6px]">
           <CalendarDays size={12} color="#059669" strokeWidth={2} />
