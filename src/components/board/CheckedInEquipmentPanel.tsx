@@ -1,7 +1,9 @@
 import { GripVertical } from "lucide-react";
+import type { DragEvent } from "react";
 import { useAppStore } from "../../store/useAppStore";
 import { filterJobs, jobToRows, sortByDue } from "../../lib/boardSelectors";
 import { JobEntry } from "./JobEntry";
+import { hexA } from "../../lib/format";
 
 export function CheckedInEquipmentPanel() {
   const jobs = useAppStore((s) => s.jobs);
@@ -13,18 +15,44 @@ export function CheckedInEquipmentPanel() {
   const setColDragKey = useAppStore((s) => s.setColDragKey);
   const reorderCols = useAppStore((s) => s.reorderCols);
   const startColResize = useAppStore((s) => s.startColResize);
+  const dragId = useAppStore((s) => s.dragId);
+  const overCol = useAppStore((s) => s.overCol);
+  const setOverCol = useAppStore((s) => s.setOverCol);
+  const dropJob = useAppStore((s) => s.dropJob);
 
   const width = colWidths["table"] ?? 620;
   const wide = width >= 420;
   const order = boardOrder.indexOf("table");
+  const isOver = overCol === "table";
 
   const jobsFiltered = sortByDue(filterJobs(jobs, query, filterCats).filter((j) => j.stage !== "kiosk"));
   const rows = jobsFiltered.flatMap(jobToRows);
 
+  const onBodyDragOver = (e: DragEvent) => {
+    e.preventDefault();
+    if (colDragKey) return;
+    if (overCol !== "table") setOverCol("table");
+  };
+  const onBodyDragLeave = (e: DragEvent) => {
+    if (e.currentTarget === e.target) setOverCol(null);
+  };
+  const onBodyDrop = (e: DragEvent) => {
+    e.preventDefault();
+    if (dragId) dropJob(dragId, "in_progress");
+  };
+
   return (
     <section
-      style={{ order, width, flexShrink: 0, borderTopWidth: 3, borderTopColor: "#2563eb" }}
-      className="relative flex flex-col overflow-hidden rounded-xl border border-border bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04)]"
+      style={{
+        order,
+        width,
+        flexShrink: 0,
+        borderTopWidth: 3,
+        borderTopColor: "#2563eb",
+        borderColor: isOver ? "#2563eb" : "#e4e4e7",
+        boxShadow: isOver ? `0 0 0 3px ${hexA("#2563eb", 0.12)}` : "0 1px 2px rgba(0,0,0,0.04)",
+      }}
+      className="relative flex flex-col overflow-hidden rounded-xl border bg-white transition-shadow"
       onDragOver={(e) => {
         if (colDragKey && colDragKey !== "table") {
           e.preventDefault();
@@ -54,14 +82,28 @@ export function CheckedInEquipmentPanel() {
             <span className="w-[110px] flex-shrink-0">Customer</span>
             <span className="w-[60px] flex-shrink-0">Due</span>
           </div>
-          <div className="flex-1 overflow-y-auto">
+          <div
+            onDragOver={onBodyDragOver}
+            onDragEnter={(e) => e.preventDefault()}
+            onDragLeave={onBodyDragLeave}
+            onDrop={onBodyDrop}
+            style={{ background: isOver ? hexA("#2563eb", 0.04) : "transparent" }}
+            className="flex-1 overflow-y-auto transition-colors"
+          >
             {rows.map((row) => (
               <JobEntry key={row.rowId} row={row} variant="row" />
             ))}
           </div>
         </>
       ) : (
-        <div className="flex flex-1 flex-col gap-2 overflow-y-auto p-[10px]">
+        <div
+          onDragOver={onBodyDragOver}
+          onDragEnter={(e) => e.preventDefault()}
+          onDragLeave={onBodyDragLeave}
+          onDrop={onBodyDrop}
+          style={{ background: isOver ? hexA("#2563eb", 0.04) : "transparent" }}
+          className="flex flex-1 flex-col gap-2 overflow-y-auto p-[10px] transition-colors"
+        >
           {rows.map((row) => (
             <JobEntry key={row.rowId} row={row} variant="card" />
           ))}
