@@ -1,0 +1,112 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* Neutrals */
+  --color-ink: #09090b;
+  --color-zinc-900: #18181b;
+  --color-zinc-700: #3f3f46;
+  --color-zinc-500: #71717a;
+  --color-zinc-400: #a1a1aa;
+  --color-zinc-350: #c4c4c8;
+  --color-border: #e4e4e7;
+  --color-border-hover: #d4d4d8;
+  --color-surface: #ffffff;
+  --color-surface-50: #fafafa;
+  --color-surface-100: #f8f8f9;
+  --color-app-bg: #f4f4f5;
+
+  /* Accents */
+  --color-blue: #2563eb;
+  --color-sky: #0284c7;
+  --color-sky-hover: #0369a1;
+  --color-emerald: #10b981;
+  --color-green: #16a34a;
+  --color-violet: #8b5cf6;
+  --color-violet-strong: #7c3aed;
+  --color-cyan: #0ea5e9;
+  --color-amber: #f59e0b;
+  --color-amber-strong: #d97706;
+  --color-orange: #ea580c;
+  --color-rose: #e11d48;
+  --color-red: #dc2626;
+  --color-zinc-archive: #52525b;
+}
+
+:root {
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  color: var(--color-ink);
+}
+
+::-webkit-scrollbar {
+  height: 10px;
+  width: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: #d4d4d8;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #a1a1aa;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@keyframes sheetFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes sheetSlide {
+  from {
+    transform: translateX(24px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+@keyframes sheetPop {
+  from {
+    transform: scale(0.97);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-sheet-fade {
+  animation: sheetFade 0.15s ease;
+}
+.animate-sheet-slide {
+  animation: sheetSlide 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.animate-sheet-pop {
+  animation: sheetPop 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+}
