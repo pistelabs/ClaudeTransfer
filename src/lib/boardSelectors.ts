@@ -60,7 +60,7 @@ export function jobToRows(job: Job): EquipRow[] {
     due: job.due,
     pickup: job.pickup,
     dropoff: job.dropoff || "",
-    hasDrop: !!job.dropoff,
+    hasDrop: job.stage === "kiosk" && !!job.dropoff,
     dropDate: (job.dropoff || "").split(" ")[0] || "",
     dropTime: (job.dropoff || "").split(" ").slice(1).join(" ") || "",
     status: job.status === "late" ? "late" : "",
