@@ -18,7 +18,7 @@ export function CheckedInEquipmentPanel() {
   const wide = width >= 420;
   const order = boardOrder.indexOf("table");
 
-  const jobsFiltered = sortByDue(filterJobs(jobs, query, filterCats));
+  const jobsFiltered = sortByDue(filterJobs(jobs, query, filterCats).filter((j) => j.stage !== "kiosk"));
   const rows = jobsFiltered.flatMap(jobToRows);
 
   return (

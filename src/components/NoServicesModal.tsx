@@ -29,7 +29,7 @@ export function NoServicesModal() {
           </div>
         </div>
         <p className="m-0 text-[13px] leading-relaxed text-zinc-700">
-          This job has no services added yet. Add services before moving it into Checked-in or In Progress.
+          This job has no services added yet. Add services before moving it out of Drop offs Booked.
         </p>
         <div className="flex justify-end gap-2">
           <button onClick={closeNoSvc} className="h-10 rounded-[9px] border border-border bg-white px-4 text-[13px] font-medium text-zinc-900 hover:bg-app-bg">

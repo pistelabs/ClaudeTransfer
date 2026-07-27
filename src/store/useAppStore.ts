@@ -324,7 +324,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       return;
     }
     const noServices = j.equipment.every((eq) => eq.services.length === 0);
-    if (noServices && (stage === "pending" || stage === "in_progress")) {
+    if (j.stage === "kiosk" && stage !== "kiosk" && noServices) {
       set({ dragId: null, overCol: null, noSvcPrompt: id });
       return;
     }
