@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Filter, Landmark, Plus, Search } from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
 import { EQUIPMENT_CATEGORIES } from "../types";
 import { CheckedBox } from "./Pills";
+import { useBarcodeScanner } from "../lib/useBarcodeScanner";
 
 export function Header() {
   const query = useAppStore((s) => s.query);
@@ -15,6 +16,25 @@ export function Header() {
   const clearFilter = useAppStore((s) => s.clearFilter);
   const openNew = useAppStore((s) => s.openNew);
   const [segment, setSegment] = useState<"services" | "all">("all");
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  // A scanned barcode drops straight into the job search — no need to click the field first.
+  const [scanNonce, setScanNonce] = useState(0);
+  useBarcodeScanner((code) => {
+    setQuery(code);
+    setScanNonce((n) => n + 1);
+  });
+
+  // Focus and select *after* React has written the new value, otherwise the commit collapses
+  // the selection. Leaving it selected means a second scan replaces the first rather than
+  // appending to it, since by then the field has focus and the scanner just types into it.
+  useEffect(() => {
+    if (!scanNonce) return;
+    const el = searchRef.current;
+    if (!el) return;
+    el.focus();
+    el.select();
+  }, [scanNonce]);
 
   const filterActive = filterCats.length > 0;
 
@@ -29,9 +49,10 @@ export function Header() {
       <div className="relative ml-2 w-[280px]">
         <Search size={15} strokeWidth={2} color="#71717a" className="pointer-events-none absolute left-[10px] top-1/2 -translate-y-1/2" />
         <input
+          ref={searchRef}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search job #, customer, equipment..."
+          placeholder="Search job #, customer, equipment or scan a barcode..."
           className="h-9 w-full rounded-lg border border-border bg-white pl-8 pr-3 text-[13px] text-ink outline-none focus:border-zinc-400 focus:shadow-[0_0_0_3px_rgba(161,161,170,0.15)]"
         />
       </div>
