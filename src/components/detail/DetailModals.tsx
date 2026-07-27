@@ -7,8 +7,9 @@ import { money } from "../../lib/format";
 export function HoldPromptModal({ job }: { job: Job }) {
   const holdPrompt = useAppStore((s) => s.holdPrompt);
   const holdReason = useAppStore((s) => s.holdReason);
+  const holdMoveStage = useAppStore((s) => s.holdMoveStage);
   const setHoldReason = (v: string) => useAppStore.setState({ holdReason: v });
-  const cancel = () => useAppStore.setState({ holdPrompt: false });
+  const cancel = () => useAppStore.setState({ holdPrompt: false, holdReason: "", holdMoveStage: null });
 
   if (!holdPrompt) return null;
   const canConfirm = holdReason.trim().length > 0;
@@ -18,9 +19,14 @@ export function HoldPromptModal({ job }: { job: Job }) {
     if (!r) return;
     const stamp = new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" }) + " " + new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
     useAppStore.setState((st) => ({
-      jobs: st.jobs.map((j) => (j.id === job.id ? { ...j, workStatus: "Pending", updates: [{ text: "Set to Pending: " + r, hold: true, at: j.tech + " · " + stamp }, ...j.updates] } : j)),
+      jobs: st.jobs.map((j) =>
+        j.id === job.id
+          ? { ...j, workStatus: "Pending", stage: holdMoveStage ?? j.stage, updates: [{ text: "Set to Pending: " + r, hold: true, at: j.tech + " · " + stamp }, ...j.updates] }
+          : j,
+      ),
       holdPrompt: false,
       holdReason: "",
+      holdMoveStage: null,
     }));
   };
 

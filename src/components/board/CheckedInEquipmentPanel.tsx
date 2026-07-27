@@ -18,7 +18,7 @@ export function CheckedInEquipmentPanel() {
   const dragId = useAppStore((s) => s.dragId);
   const overCol = useAppStore((s) => s.overCol);
   const setOverCol = useAppStore((s) => s.setOverCol);
-  const dropJob = useAppStore((s) => s.dropJob);
+  const setWorkStatus = useAppStore((s) => s.setWorkStatus);
 
   const width = colWidths["table"] ?? 620;
   const wide = width >= 420;
@@ -38,7 +38,8 @@ export function CheckedInEquipmentPanel() {
   };
   const onBodyDrop = (e: DragEvent) => {
     e.preventDefault();
-    if (dragId) dropJob(dragId, "in_progress");
+    if (dragId) setWorkStatus(dragId, { label: "Checked-in", stage: "pending" });
+    setOverCol(null);
   };
 
   return (

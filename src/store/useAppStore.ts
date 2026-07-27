@@ -91,6 +91,7 @@ interface AppState {
   progressMenuOpen: boolean;
   holdPrompt: boolean;
   holdReason: string;
+  holdMoveStage: Stage | null;
   readyPrompt: ReadyPromptKind;
   payPrompt: PayPromptKind;
   noSvcPrompt: string | null;
@@ -215,6 +216,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   progressMenuOpen: false,
   holdPrompt: false,
   holdReason: "",
+  holdMoveStage: null,
   readyPrompt: null,
   payPrompt: null,
   noSvcPrompt: null,
@@ -286,10 +288,11 @@ export const useAppStore = create<AppState>((set, get) => ({
       menuOpen: false,
       holdPrompt: false,
       holdReason: "",
+      holdMoveStage: null,
       activeTab: tab || 0,
       readyPrompt: null,
     }),
-  closeDetail: () => set({ selectedId: null, menuOpen: false, holdPrompt: false, readyPrompt: null }),
+  closeDetail: () => set({ selectedId: null, menuOpen: false, holdPrompt: false, holdReason: "", holdMoveStage: null, readyPrompt: null }),
   setActiveTab: (i) => set({ activeTab: i }),
   setDraft: (v) => set({ draft: v }),
   addUpdate: () => {
@@ -335,8 +338,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       return;
     }
     if (stage === "pending") {
-      set((st) => ({
-        jobs: st.jobs.map((x) => (x.id === id ? { ...x, stage: "pending", workStatus: "Pending" } : x)),
+      // Don't move the job yet — it stays in its current column until a hold reason is confirmed.
+      set({
         dragId: null,
         overCol: null,
         selectedId: id,
@@ -344,8 +347,9 @@ export const useAppStore = create<AppState>((set, get) => ({
         menuOpen: false,
         holdPrompt: true,
         holdReason: "",
+        holdMoveStage: "pending",
         readyPrompt: null,
-      }));
+      });
       return;
     }
     if (stage === "awaiting" && !jobFullyComplete(j)) {
@@ -433,7 +437,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       return;
     }
     if (status.label === "Pending") {
-      set({ holdPrompt: true, holdReason: "", menuOpen: false });
+      set({ holdPrompt: true, holdReason: "", holdMoveStage: null, menuOpen: false });
       return;
     }
     if (status.label === "Ready") {
