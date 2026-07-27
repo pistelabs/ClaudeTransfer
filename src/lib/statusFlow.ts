@@ -15,3 +15,13 @@ export const STATUS_FLOW: StatusStep[] = [
   { label: "Ready", color: "#10b981", stage: "awaiting" },
   { label: "Collected", color: "#16a34a", stage: "archive" },
 ];
+
+/** The workStatus label a plain (non-hold) move into each stage should carry, so the
+ * Job Details status bar always highlights the option matching the job's board column. */
+export const STAGE_WORK_STATUS: Record<Stage, string> = {
+  kiosk: "Booked",
+  pending: "Checked-in",
+  in_progress: "In progress",
+  awaiting: "Ready",
+  archive: "Collected",
+};

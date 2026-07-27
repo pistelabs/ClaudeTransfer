@@ -14,6 +14,7 @@ import type {
 import { SEED_CUSTOMERS, SEED_JOBS, STAFF_LIST } from "../data/seedRaw";
 import { buildEquip, jobFullyComplete, normalizeJob } from "../data/build";
 import { blankDin, categoryToType, defaultCategoryForType, SERVICE_DEFS, svcPrice } from "../lib/serviceCatalog";
+import { STAGE_WORK_STATUS } from "../lib/statusFlow";
 import { stampNow } from "../lib/format";
 
 export const STAGE_DEFS: { key: Stage; label: string; dot: string }[] = [
@@ -315,7 +316,12 @@ export const useAppStore = create<AppState>((set, get) => ({
     })),
 
   // ---- drag & drop / move guards ----
-  moveJob: (id, stage) => set((s) => ({ jobs: s.jobs.map((j) => (j.id === id ? { ...j, stage } : j)), dragId: null, overCol: null })),
+  moveJob: (id, stage) =>
+    set((s) => ({
+      jobs: s.jobs.map((j) => (j.id === id ? { ...j, stage, workStatus: STAGE_WORK_STATUS[stage] ?? j.workStatus } : j)),
+      dragId: null,
+      overCol: null,
+    })),
   dropJob: (id, stage) => {
     const s = get();
     const j = s.jobs.find((x) => x.id === id);
@@ -408,7 +414,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     set((st) => ({
       jobs: st.jobs.map((j) =>
         j.id === sel.id
-          ? { ...j, stage: "archive", workStatus: "Complete", updates: [{ text: "Payment taken · marked collected", at: (st.activeStaff || j.tech) + " · " + stamp }, ...j.updates] }
+          ? { ...j, stage: "archive", workStatus: "Collected", updates: [{ text: "Payment taken · marked collected", at: (st.activeStaff || j.tech) + " · " + stamp }, ...j.updates] }
           : j,
       ),
       payPrompt: null,

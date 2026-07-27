@@ -1,5 +1,6 @@
 import type { Equipment, EquipmentCategory, EquipmentType, Job, LineItem, ServiceData } from "../types";
 import { isQuoted, svcPrice, TUNING_LIKE } from "../lib/serviceCatalog";
+import { STAGE_WORK_STATUS } from "../lib/statusFlow";
 import type { RawEquip, RawJob } from "./seedRaw";
 
 /** Deterministic pseudo-random category assignment, mirroring the design source's hash-based fallback. */
@@ -42,14 +43,7 @@ export function buildEquip(e: RawEquip, jobStatus: string | undefined): Equipmen
 
 export function normalizeJob(j: RawJob): Job {
   const first = (j.customer || "").trim().split(/\s+/)[0]?.toLowerCase().replace(/[^a-z]/g, "") || "customer";
-  const statusFromStage: Record<string, string> = {
-    kiosk: "Booked",
-    pending: "Checked-in",
-    in_progress: "In progress",
-    awaiting: "Ready",
-    archive: "Complete",
-  };
-  const workStatus = statusFromStage[j.stage] || "Booked";
+  const workStatus = STAGE_WORK_STATUS[j.stage] || "Booked";
   const equipSrc: RawEquip[] =
     j.equipment ||
     [{ type: j.type || "SKI", brand: j.brand || "New", model: j.model || "Equipment", size: j.size || "—", services: j.services || [] }];
