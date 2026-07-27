@@ -68,6 +68,8 @@ export interface JobUpdate {
   text: string;
   at: string;
   hold?: boolean;
+  resolved?: boolean;
+  resolvedAt?: string;
 }
 
 export interface Job {

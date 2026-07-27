@@ -95,6 +95,7 @@ interface AppState {
   readyPrompt: ReadyPromptKind;
   payPrompt: PayPromptKind;
   noSvcPrompt: string | null;
+  resolvePendingPrompt: { jobId: string; targetStage: Stage; targetLabel: string } | null;
   imgViewer: ImgViewerPayload | null;
 
   // staff prompt
@@ -158,6 +159,9 @@ interface AppState {
   closeNoSvc: () => void;
   noSvcAddServices: () => void;
 
+  closeResolvePending: () => void;
+  confirmResolvePending: () => void;
+
   closeImgViewer: () => void;
   setImgViewer: (payload: ImgViewerPayload) => void;
 
@@ -220,6 +224,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   readyPrompt: null,
   payPrompt: null,
   noSvcPrompt: null,
+  resolvePendingPrompt: null,
   imgViewer: null,
 
   staffPrompt: false,
@@ -291,8 +296,10 @@ export const useAppStore = create<AppState>((set, get) => ({
       holdMoveStage: null,
       activeTab: tab || 0,
       readyPrompt: null,
+      resolvePendingPrompt: null,
     }),
-  closeDetail: () => set({ selectedId: null, menuOpen: false, holdPrompt: false, holdReason: "", holdMoveStage: null, readyPrompt: null }),
+  closeDetail: () =>
+    set({ selectedId: null, menuOpen: false, holdPrompt: false, holdReason: "", holdMoveStage: null, readyPrompt: null, resolvePendingPrompt: null }),
   setActiveTab: (i) => set({ activeTab: i }),
   setDraft: (v) => set({ draft: v }),
   addUpdate: () => {
@@ -335,6 +342,17 @@ export const useAppStore = create<AppState>((set, get) => ({
     const noServices = j.equipment.every((eq) => eq.services.length === 0);
     if (j.stage === "kiosk" && stage !== "kiosk" && noServices) {
       set({ dragId: null, overCol: null, noSvcPrompt: id });
+      return;
+    }
+    if (j.stage === "pending" && j.workStatus === "Pending" && stage !== "pending") {
+      set({
+        dragId: null,
+        overCol: null,
+        selectedId: id,
+        activeTab: 0,
+        menuOpen: false,
+        resolvePendingPrompt: { jobId: id, targetStage: stage, targetLabel: STAGE_WORK_STATUS[stage] ?? "Booked" },
+      });
       return;
     }
     if (stage === "pending") {
@@ -436,6 +454,10 @@ export const useAppStore = create<AppState>((set, get) => ({
       set({ noSvcPrompt: jobId, menuOpen: false });
       return;
     }
+    if (sel.stage === "pending" && sel.workStatus === "Pending" && targetStage && targetStage !== "pending") {
+      set({ resolvePendingPrompt: { jobId, targetStage, targetLabel: status.label }, menuOpen: false });
+      return;
+    }
     if (status.label === "Pending") {
       set({ holdPrompt: true, holdReason: "", holdMoveStage: null, menuOpen: false });
       return;
@@ -488,6 +510,28 @@ export const useAppStore = create<AppState>((set, get) => ({
     if (!id) return;
     set({ noSvcPrompt: null, selectedId: id, activeTab: 0 });
     get().openEditJob(id);
+  },
+
+  closeResolvePending: () => set({ resolvePendingPrompt: null }),
+  confirmResolvePending: () => {
+    const p = get().resolvePendingPrompt;
+    if (!p) return;
+    const stamp = stampNow();
+    set((st) => ({
+      jobs: st.jobs.map((j) => {
+        if (j.id !== p.jobId) return j;
+        let marked = false;
+        const updates = j.updates.map((u) => {
+          if (!marked && u.hold && !u.resolved) {
+            marked = true;
+            return { ...u, resolved: true, resolvedAt: stamp };
+          }
+          return u;
+        });
+        return { ...j, stage: p.targetStage, workStatus: p.targetLabel, updates };
+      }),
+      resolvePendingPrompt: null,
+    }));
   },
 
   closeImgViewer: () => set({ imgViewer: null }),

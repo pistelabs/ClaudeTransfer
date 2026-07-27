@@ -71,6 +71,48 @@ export function HoldPromptModal({ job }: { job: Job }) {
   );
 }
 
+export function ResolvePendingModal({ job }: { job: Job }) {
+  const resolvePendingPrompt = useAppStore((s) => s.resolvePendingPrompt);
+  const closeResolvePending = useAppStore((s) => s.closeResolvePending);
+  const confirmResolvePending = useAppStore((s) => s.confirmResolvePending);
+
+  if (!resolvePendingPrompt || resolvePendingPrompt.jobId !== job.id) return null;
+  const reason = job.updates.find((u) => u.hold && !u.resolved);
+
+  return (
+    <div className="animate-sheet-fade absolute inset-0 z-10 flex items-center justify-center p-7" style={{ background: "rgba(9,9,11,0.35)" }} onClick={closeResolvePending}>
+      <div className="animate-sheet-pop flex w-full max-w-[400px] flex-col gap-3.5 rounded-[13px] border border-border bg-white p-5" style={{ boxShadow: "0 20px 50px rgba(0,0,0,0.25)" }} onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-[38px] w-[38px] flex-shrink-0 items-center justify-center rounded-[10px]" style={{ background: "#fffbeb", border: "1px solid #fde68a", color: "#d97706" }}>
+            <AlertTriangle size={19} />
+          </div>
+          <div className="flex flex-col gap-px">
+            <span className="text-[15px] font-bold tracking-tight">Resolve pending hold?</span>
+            <span className="text-xs text-zinc-500">This job is on hold for the reason below.</span>
+          </div>
+        </div>
+        {reason && (
+          <div className="rounded-[9px] border p-[9px_11px]" style={{ background: "#fffbeb", borderColor: "#fde68a" }}>
+            <div className="text-[12.5px] leading-relaxed text-zinc-800">{reason.text}</div>
+            <div className="mt-[3px] text-[10.5px] text-zinc-400">{reason.at}</div>
+          </div>
+        )}
+        <p className="m-0 text-[13px] leading-relaxed text-zinc-700">
+          Resolve to move this job to <strong>{resolvePendingPrompt.targetLabel}</strong>, or cancel to keep it in Pending.
+        </p>
+        <div className="flex gap-2.5 pt-0.5">
+          <button onClick={closeResolvePending} className="h-10 flex-1 rounded-[9px] border border-border bg-white text-[13px] font-medium text-zinc-900 hover:bg-app-bg">
+            Cancel
+          </button>
+          <button onClick={confirmResolvePending} className="h-10 flex-1 rounded-[9px] text-[13px] font-semibold text-white" style={{ background: "#16a34a" }}>
+            Resolve
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function ReadyPromptModal() {
   const readyPrompt = useAppStore((s) => s.readyPrompt);
   const closeReady = useAppStore((s) => s.closeReady);

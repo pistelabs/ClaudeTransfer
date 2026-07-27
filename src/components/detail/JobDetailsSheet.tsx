@@ -5,7 +5,7 @@ import { EquipmentTabs } from "./EquipmentTabs";
 import { LineItemsCard } from "./LineItemsCard";
 import { UpdatesPanel } from "./UpdatesPanel";
 import { PaymentBar } from "./PaymentBar";
-import { HoldPromptModal, PayModals, ReadyPromptModal } from "./DetailModals";
+import { HoldPromptModal, PayModals, ReadyPromptModal, ResolvePendingModal } from "./DetailModals";
 
 export function JobDetailsSheet() {
   const selectedId = useAppStore((s) => s.selectedId);
@@ -76,6 +76,7 @@ export function JobDetailsSheet() {
         <PaymentBar job={job} />
 
         <HoldPromptModal job={job} />
+        <ResolvePendingModal job={job} />
         <ReadyPromptModal />
         <PayModals job={job} />
       </div>
