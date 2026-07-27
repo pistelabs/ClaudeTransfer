@@ -1,9 +1,9 @@
-import { AlertTriangle, Check, MoreVertical, Plus } from "lucide-react";
+import { AlertTriangle, Check, Lock, MoreVertical, Plus } from "lucide-react";
 import { useState } from "react";
 import type { Job } from "../../types";
 import { deriveLineItems } from "../../data/build";
 import { useAppStore } from "../../store/useAppStore";
-import { canPickStatus, STATUS_FLOW } from "../../lib/statusFlow";
+import { canPickStatus, isEquipmentLocked, lockCountdownMs, STATUS_FLOW } from "../../lib/statusFlow";
 import { money } from "../../lib/format";
 
 interface Props {
@@ -20,9 +20,14 @@ export function LineItemsCard({ job, activeTab }: Props) {
   const progressMenuOpen = useAppStore((s) => s.progressMenuOpen);
   const toggleProgressMenu = useAppStore((s) => s.toggleProgressMenu);
   const closeProgressMenu = useAppStore((s) => s.closeProgressMenu);
+  const now = useAppStore((s) => s.now);
+  const isJobLocked = useAppStore((s) => s.isJobLocked);
   const [loc, setLocalLoc] = useState(job.equipment[activeTab]?.loc || "");
 
   const eq = job.equipment[activeTab];
+  // Collected work is archived for good once its grace period runs out.
+  const archived = isEquipmentLocked(eq, now);
+  const countdown = lockCountdownMs(eq, now);
   const lineItems = deriveLineItems(eq);
   const total = lineItems.length;
   const done = lineItems.filter((li) => li.done).length;
@@ -33,19 +38,44 @@ export function LineItemsCard({ job, activeTab }: Props) {
       className="relative z-[1] flex flex-col gap-3.5 border border-border bg-white p-4"
       style={{ borderRadius: activeTab === 0 ? "0 11px 11px 11px" : "11px" }}
     >
+      {(archived || countdown != null) && (
+        <div
+          className="flex items-center gap-2 rounded-[9px] border px-3 py-2 text-[12px]"
+          style={
+            archived
+              ? { background: "#f4f4f5", borderColor: "#e4e4e7", color: "#52525b" }
+              : { background: "#f0fdf4", borderColor: "#bbf7d0", color: "#15803d" }
+          }
+        >
+          {archived ? <Lock size={13} /> : <Check size={13} strokeWidth={3} />}
+          <span className="font-semibold">{archived ? "Collected · archived" : "Collected"}</span>
+          <span style={{ opacity: 0.85 }}>
+            {archived
+              ? "This equipment is locked — its status and services can no longer be changed."
+              : `Locks in ${Math.ceil((countdown as number) / 1000)}s — undo now if this was a mistake.`}
+          </span>
+        </div>
+      )}
+
       {/* Status bar — reflects this tab's own equipment, independent of its siblings */}
       <div className="flex gap-0.5 rounded-[9px] border border-border bg-app-bg p-[3px]">
         {STATUS_FLOW.map((st) => {
           const active = eq.workStatus === st.label;
           // On hold, only the "resume work" options are selectable — services have to be
           // ticked off again before this item can go Ready/Collected.
-          const locked = !active && !canPickStatus(eq.workStatus, st.label);
+          const locked = archived || (!active && !canPickStatus(eq.workStatus, st.label));
           return (
             <button
               key={st.label}
               onClick={() => setWorkStatus(job.id, activeTab, { label: st.label, stage: st.stage })}
               disabled={locked}
-              title={locked ? "Resolve the pending hold first — set this item back to Checked-in or In progress" : undefined}
+              title={
+                archived
+                  ? "This equipment has been collected and archived — its status can no longer be changed"
+                  : locked
+                    ? "Resolve the pending hold first — set this item back to Checked-in or In progress"
+                    : undefined
+              }
               className="flex h-[30px] flex-1 items-center justify-center whitespace-nowrap rounded-[7px] px-1 text-[11.5px] transition-colors"
               style={{
                 fontWeight: active ? 600 : 500,
@@ -77,7 +107,8 @@ export function LineItemsCard({ job, activeTab }: Props) {
               patchLoc(job.id, activeTab, e.target.value);
             }}
             placeholder="—"
-            className="w-[52px] border-none bg-transparent text-[12.5px] font-semibold text-zinc-900 outline-none"
+            disabled={archived}
+            className="w-[52px] border-none bg-transparent text-[12.5px] font-semibold text-zinc-900 outline-none disabled:cursor-not-allowed disabled:text-zinc-400"
           />
         </div>
         <div className="relative">
@@ -93,7 +124,9 @@ export function LineItemsCard({ job, activeTab }: Props) {
             <div className="absolute right-0 top-[38px] z-[7] min-w-[140px] rounded-[10px] border border-border bg-white p-[5px] shadow-[0_12px_32px_rgba(0,0,0,0.16)]">
               <button
                 onClick={() => openEditJob(job.id)}
-                className="flex h-9 w-full items-center gap-[9px] rounded-[7px] px-2.5 text-left text-[13px] font-medium text-zinc-900 hover:bg-app-bg"
+                disabled={isJobLocked(job.id)}
+                title={isJobLocked(job.id) ? "This job is archived and can no longer be edited" : undefined}
+                className="flex h-9 w-full items-center gap-[9px] rounded-[7px] px-2.5 text-left text-[13px] font-medium text-zinc-900 hover:bg-app-bg disabled:cursor-not-allowed disabled:text-zinc-400 disabled:hover:bg-transparent"
               >
                 Edit
               </button>
@@ -153,12 +186,15 @@ export function LineItemsCard({ job, activeTab }: Props) {
             </div>
             <button
               onClick={() => toggleLineItemDone(job.id, activeTab, idx)}
-              title={li.done ? "Mark incomplete" : "Mark complete"}
+              disabled={archived}
+              title={archived ? "Archived — services can no longer be changed" : li.done ? "Mark incomplete" : "Mark complete"}
               className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full transition-colors"
               style={{
                 color: li.done ? "#ffffff" : "#c4c4c8",
                 background: li.done ? "#16a34a" : "#ffffff",
                 border: li.done ? "1px solid #16a34a" : "2px solid #d4d4d8",
+                cursor: archived ? "not-allowed" : "pointer",
+                opacity: archived ? 0.75 : 1,
               }}
             >
               <Check size={19} strokeWidth={3} />

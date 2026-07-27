@@ -1,4 +1,4 @@
-import type { Stage } from "../types";
+import type { Equipment, Stage } from "../types";
 
 export interface StatusStep {
   label: string;
@@ -27,6 +27,23 @@ export function isOnHold(workStatus: string): boolean {
 /** Whether the status bar option `label` may be picked for an item in `workStatus`. */
 export function canPickStatus(workStatus: string, label: string): boolean {
   return !isOnHold(workStatus) || HOLD_EXIT_LABELS.includes(label);
+}
+
+/** Grace period after collection during which a mistake can still be undone. Once it
+ * elapses the item is archived for good — no status changes, no edits. */
+export const COLLECTED_LOCK_MS = 60_000;
+
+/** Whether a collected item's grace period has run out. `now` is passed in (rather than read
+ * from the clock here) so React re-renders on the store's tick drive the transition. */
+export function isEquipmentLocked(eq: Pick<Equipment, "collectedAt">, now: number): boolean {
+  return eq.collectedAt != null && now - eq.collectedAt >= COLLECTED_LOCK_MS;
+}
+
+/** Milliseconds left before a collected item locks, or null if it isn't counting down. */
+export function lockCountdownMs(eq: Pick<Equipment, "collectedAt">, now: number): number | null {
+  if (eq.collectedAt == null) return null;
+  const left = eq.collectedAt + COLLECTED_LOCK_MS - now;
+  return left > 0 ? left : null;
 }
 
 /** The workStatus label a plain (non-hold) move into each stage should carry, so the

@@ -14,7 +14,7 @@ import type {
 import { SEED_CUSTOMERS, SEED_JOBS, STAFF_LIST } from "../data/seedRaw";
 import { buildEquip, equipmentFullyComplete, jobTotal, normalizeJob } from "../data/build";
 import { blankDin, categoryToType, defaultCategoryForType, SERVICE_DEFS } from "../lib/serviceCatalog";
-import { canPickStatus, STAGE_WORK_STATUS } from "../lib/statusFlow";
+import { canPickStatus, isEquipmentLocked, STAGE_WORK_STATUS } from "../lib/statusFlow";
 import { stampNow } from "../lib/format";
 
 export const STAGE_DEFS: { key: Stage; label: string; dot: string }[] = [
@@ -82,6 +82,8 @@ interface AppState {
   colDragKey: string | null;
   /** the specific equipment item (not just the job) currently being dragged */
   dragEq: { jobId: string; eqIdx: number } | null;
+  /** ticking clock, so collected items lock themselves once the grace period elapses */
+  now: number;
   overCol: string | null;
 
   // job details sheet
@@ -131,6 +133,9 @@ interface AppState {
   toggleCollapse: (key: string) => void;
   setOverCol: (key: string | null) => void;
   setDragEq: (v: { jobId: string; eqIdx: number } | null) => void;
+  tickClock: () => void;
+  isLocked: (jobId: string, eqIdx: number) => boolean;
+  isJobLocked: (jobId: string) => boolean;
 
   openJob: (id: string, tab?: number) => void;
   closeDetail: () => void;
@@ -214,6 +219,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   collapsedCols: [],
   colDragKey: null,
   dragEq: null,
+  now: Date.now(),
   overCol: null,
 
   selectedId: null,
@@ -288,6 +294,15 @@ export const useAppStore = create<AppState>((set, get) => ({
     })),
   setOverCol: (key) => set({ overCol: key }),
   setDragEq: (v) => set({ dragEq: v }),
+  tickClock: () => set({ now: Date.now() }),
+  isLocked: (jobId, eqIdx) => {
+    const eq = get().jobs.find((j) => j.id === jobId)?.equipment[eqIdx];
+    return !!eq && isEquipmentLocked(eq, Date.now());
+  },
+  isJobLocked: (jobId) => {
+    const j = get().jobs.find((x) => x.id === jobId);
+    return !!j && j.equipment.length > 0 && j.equipment.every((eq) => isEquipmentLocked(eq, Date.now()));
+  },
 
   // ---- job details sheet ----
   openJob: (id, tab) =>
@@ -322,13 +337,18 @@ export const useAppStore = create<AppState>((set, get) => ({
   closeMenu: () => set({ menuOpen: false }),
   toggleProgressMenu: () => set((s) => ({ progressMenuOpen: !s.progressMenuOpen })),
   closeProgressMenu: () => set({ progressMenuOpen: false }),
-  deleteJob: (id) => set((s) => ({ jobs: s.jobs.filter((j) => j.id !== id), selectedId: null, menuOpen: false })),
-  setLoc: (jobId, idx, loc) =>
+  deleteJob: (id) => {
+    if (get().isJobLocked(id)) return;
+    set((s) => ({ jobs: s.jobs.filter((j) => j.id !== id), selectedId: null, menuOpen: false }));
+  },
+  setLoc: (jobId, idx, loc) => {
+    if (get().isLocked(jobId, idx)) return;
     set((s) => ({
       jobs: s.jobs.map((j) =>
         j.id === jobId ? { ...j, equipment: j.equipment.map((eq, i) => (i === idx ? { ...eq, loc } : eq)) } : j,
       ),
-    })),
+    }));
+  },
 
   // ---- drag & drop / move guards ----
   // All guards below act on ONE equipment item (jobId + eqIdx), never the whole job — each
@@ -340,7 +360,9 @@ export const useAppStore = create<AppState>((set, get) => ({
           ? {
               ...j,
               equipment: j.equipment.map((eq, i) =>
-                i === eqIdx ? { ...eq, stage, workStatus: STAGE_WORK_STATUS[stage] ?? eq.workStatus } : eq,
+                i === eqIdx
+                  ? { ...eq, stage, workStatus: STAGE_WORK_STATUS[stage] ?? eq.workStatus, collectedAt: stage === "archive" ? Date.now() : null }
+                  : eq,
               ),
             }
           : j,
@@ -353,6 +375,10 @@ export const useAppStore = create<AppState>((set, get) => ({
     const j = s.jobs.find((x) => x.id === id);
     const eq = j?.equipment[eqIdx];
     if (!j || !eq) {
+      set({ dragEq: null, overCol: null });
+      return;
+    }
+    if (isEquipmentLocked(eq, Date.now())) {
       set({ dragEq: null, overCol: null });
       return;
     }
@@ -417,7 +443,8 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   // ---- services on an open job's equipment ----
-  toggleLineItemDone: (jobId, eqIdx, svcIdx) =>
+  toggleLineItemDone: (jobId, eqIdx, svcIdx) => {
+    if (get().isLocked(jobId, eqIdx)) return;
     set((s) => ({
       jobs: s.jobs.map((j) => {
         if (j.id !== jobId) return j;
@@ -431,7 +458,8 @@ export const useAppStore = create<AppState>((set, get) => ({
           }),
         };
       }),
-    })),
+    }));
+  },
   addServiceToEquip: (jobId, idx, name) =>
     set((s) => ({
       jobs: s.jobs.map((j) => {
@@ -480,7 +508,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         j.id === sel.id
           ? {
               ...j,
-              equipment: j.equipment.map((eq) => ({ ...eq, stage: "archive" as Stage, workStatus: "Collected" })),
+              equipment: j.equipment.map((eq) => ({ ...eq, stage: "archive" as Stage, workStatus: "Collected", collectedAt: eq.collectedAt ?? Date.now() })),
               updates: [{ text: "Payment taken · marked collected", at: (st.activeStaff || j.tech) + " · " + stamp }, ...j.updates],
             }
           : j,
@@ -496,6 +524,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     if (!sel) return;
     const eq = sel.equipment[eqIdx];
     if (!eq) return;
+    if (isEquipmentLocked(eq, Date.now())) return;
     const noServices = eq.services.length === 0;
     const targetStage: Stage | null = status.label === "Ready" ? "awaiting" : status.label === "Collected" ? "archive" : status.stage;
     if (eq.stage === "kiosk" && targetStage && targetStage !== "kiosk" && noServices) {
@@ -525,7 +554,9 @@ export const useAppStore = create<AppState>((set, get) => ({
       const multi = sel.equipment.length > 1;
       set((st) => ({
         jobs: st.jobs.map((j) =>
-          j.id === sel.id ? { ...j, equipment: j.equipment.map((e, i) => (i === eqIdx ? { ...e, workStatus: "Ready", stage: "awaiting" } : e)) } : j,
+          j.id === sel.id
+            ? { ...j, equipment: j.equipment.map((e, i) => (i === eqIdx ? { ...e, workStatus: "Ready", stage: "awaiting", collectedAt: null } : e)) }
+            : j,
         ),
         readyPrompt: multi ? "multi" : "single",
       }));
@@ -541,14 +572,18 @@ export const useAppStore = create<AppState>((set, get) => ({
       }
       set((st) => ({
         jobs: st.jobs.map((j) =>
-          j.id === sel.id ? { ...j, equipment: j.equipment.map((e, i) => (i === eqIdx ? { ...e, workStatus: "Collected", stage: "archive" } : e)) } : j,
+          j.id === sel.id
+            ? { ...j, equipment: j.equipment.map((e, i) => (i === eqIdx ? { ...e, workStatus: "Collected", stage: "archive", collectedAt: Date.now() } : e)) }
+            : j,
         ),
       }));
       return;
     }
     set((st) => ({
       jobs: st.jobs.map((j) =>
-        j.id === sel.id ? { ...j, equipment: j.equipment.map((e, i) => (i === eqIdx ? { ...e, workStatus: status.label, stage: status.stage ?? e.stage } : e)) } : j,
+        j.id === sel.id
+          ? { ...j, equipment: j.equipment.map((e, i) => (i === eqIdx ? { ...e, workStatus: status.label, stage: status.stage ?? e.stage, collectedAt: null } : e)) }
+          : j,
       ),
     }));
   },
@@ -592,7 +627,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         });
         return {
           ...j,
-          equipment: j.equipment.map((eq, i) => (i === p.eqIdx ? { ...eq, stage: p.targetStage, workStatus: p.targetLabel } : eq)),
+          equipment: j.equipment.map((eq, i) => (i === p.eqIdx ? { ...eq, stage: p.targetStage, workStatus: p.targetLabel, collectedAt: null } : eq)),
           updates,
         };
       }),
@@ -618,6 +653,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   openNew: () => set({ newOpen: true, editId: null, nf: blankForm(), custQuery: "", staffPrompt: true }),
   closeNew: () => set({ newOpen: false, editId: null }),
   openEditJob: (id) => {
+    if (get().isJobLocked(id)) return;
     const s = get();
     const j = s.jobs.find((x) => x.id === id);
     if (!j) return;

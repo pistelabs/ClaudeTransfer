@@ -57,6 +57,9 @@ export interface Equipment {
   stage: Stage;
   /** Job Details status-bar label for this specific piece of equipment */
   workStatus: string;
+  /** epoch ms when this item was marked Collected. After COLLECTED_LOCK_MS it is archived
+   * for good and can no longer be edited or moved; null whenever it isn't collected. */
+  collectedAt?: number | null;
 }
 
 /** Derived, read-only view of one service line (see README "State Management"). */

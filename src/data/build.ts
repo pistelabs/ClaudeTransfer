@@ -40,6 +40,9 @@ export function buildEquip(e: RawEquip, jobStatus: string | undefined, stage: St
     loc: "",
     stage,
     workStatus: STAGE_WORK_STATUS[stage] ?? "Booked",
+    // Seeded archive rows are historic collections — already past their grace period, so
+    // they load locked rather than briefly editable on every page load.
+    collectedAt: stage === "archive" ? 0 : null,
   };
 }
 

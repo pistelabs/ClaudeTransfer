@@ -2,6 +2,7 @@ import { CalendarDays, User } from "lucide-react";
 import type { EquipRow } from "../../lib/boardSelectors";
 import { ServicePill, StatusPill, cardTint } from "../Pills";
 import { useAppStore } from "../../store/useAppStore";
+import { isEquipmentLocked } from "../../lib/statusFlow";
 
 interface Props {
   row: EquipRow;
@@ -13,6 +14,10 @@ export function JobEntry({ row, variant }: Props) {
   const setDragEq = useAppStore((s) => s.setDragEq);
   const clearDrag = () => useAppStore.getState().setDragEq(null);
 
+  const now = useAppStore((s) => s.now);
+  // Archived (collected + past its grace period) equipment can't be dragged anywhere.
+  const archived = isEquipmentLocked(row.job.equipment[row.eqIdx] ?? {}, now);
+
   const onOpen = () => openJob(row.jobId, row.eqIdx);
   // Drag payload is this specific equipment item — dropping it only ever moves this one item,
   // never its siblings on the same job.
@@ -23,7 +28,7 @@ export function JobEntry({ row, variant }: Props) {
     const late = row.status === "late";
     return (
       <div
-        draggable
+        draggable={!archived}
         onClick={onOpen}
         onDragStart={onDragStart}
         onDragEnd={onDragEnd}
@@ -56,7 +61,7 @@ export function JobEntry({ row, variant }: Props) {
   const [bg, bd] = cardTint(row.status);
   return (
     <div
-      draggable
+      draggable={!archived}
       onClick={onOpen}
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
