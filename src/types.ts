@@ -175,4 +175,4 @@ export interface NewCustomerForm {
 export type PayPromptKind = "pay" | "collect" | null;
 
 /** readyPrompt in the job detail sheet */
-export type ReadyPromptKind = "incomplete" | "single" | "multi" | "collect_incomplete" | "collect_balance" | null;
+export type ReadyPromptKind = "incomplete" | "single" | "multi" | "collect_incomplete" | "collect_balance" | "hold_blocked" | null;

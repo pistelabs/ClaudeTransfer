@@ -3,7 +3,7 @@ import { useState } from "react";
 import type { Job } from "../../types";
 import { deriveLineItems } from "../../data/build";
 import { useAppStore } from "../../store/useAppStore";
-import { STATUS_FLOW } from "../../lib/statusFlow";
+import { canPickStatus, STATUS_FLOW } from "../../lib/statusFlow";
 import { money } from "../../lib/format";
 
 interface Props {
@@ -37,16 +37,22 @@ export function LineItemsCard({ job, activeTab }: Props) {
       <div className="flex gap-0.5 rounded-[9px] border border-border bg-app-bg p-[3px]">
         {STATUS_FLOW.map((st) => {
           const active = eq.workStatus === st.label;
+          // On hold, only the "resume work" options are selectable — services have to be
+          // ticked off again before this item can go Ready/Collected.
+          const locked = !active && !canPickStatus(eq.workStatus, st.label);
           return (
             <button
               key={st.label}
               onClick={() => setWorkStatus(job.id, activeTab, { label: st.label, stage: st.stage })}
+              disabled={locked}
+              title={locked ? "Resolve the pending hold first — set this item back to Checked-in or In progress" : undefined}
               className="flex h-[30px] flex-1 items-center justify-center whitespace-nowrap rounded-[7px] px-1 text-[11.5px] transition-colors"
               style={{
                 fontWeight: active ? 600 : 500,
-                color: active ? st.color : "#71717a",
+                color: active ? st.color : locked ? "#c4c4c8" : "#71717a",
                 background: active ? "#ffffff" : "transparent",
                 boxShadow: active ? "0 1px 2px rgba(0,0,0,0.09)" : "none",
+                cursor: locked ? "not-allowed" : "pointer",
               }}
             >
               {st.label}

@@ -14,7 +14,7 @@ import type {
 import { SEED_CUSTOMERS, SEED_JOBS, STAFF_LIST } from "../data/seedRaw";
 import { buildEquip, equipmentFullyComplete, jobTotal, normalizeJob } from "../data/build";
 import { blankDin, categoryToType, defaultCategoryForType, SERVICE_DEFS } from "../lib/serviceCatalog";
-import { STAGE_WORK_STATUS } from "../lib/statusFlow";
+import { canPickStatus, STAGE_WORK_STATUS } from "../lib/statusFlow";
 import { stampNow } from "../lib/format";
 
 export const STAGE_DEFS: { key: Stage; label: string; dot: string }[] = [
@@ -361,6 +361,11 @@ export const useAppStore = create<AppState>((set, get) => ({
       set({ dragEq: null, overCol: null, noSvcPrompt: { jobId: id, eqIdx } });
       return;
     }
+    if (eq.workStatus === "Pending" && stage !== "pending" && !canPickStatus(eq.workStatus, STAGE_WORK_STATUS[stage] ?? "")) {
+      // Held work has to be resumed (Checked-in / In progress) before it can go anywhere else.
+      set({ dragEq: null, overCol: null, selectedId: id, activeTab: eqIdx, menuOpen: false, readyPrompt: "hold_blocked" });
+      return;
+    }
     if (eq.stage === "pending" && eq.workStatus === "Pending" && stage !== "pending") {
       set({
         dragEq: null,
@@ -497,6 +502,9 @@ export const useAppStore = create<AppState>((set, get) => ({
       set({ noSvcPrompt: { jobId, eqIdx }, menuOpen: false });
       return;
     }
+    // A held item has to resume active work before it can go Ready/Collected — its services
+    // still need ticking off — so refuse anything outside the allowed exits.
+    if (!canPickStatus(eq.workStatus, status.label)) return;
     if (eq.stage === "pending" && eq.workStatus === "Pending" && targetStage && targetStage !== "pending") {
       set({ resolvePendingPrompt: { jobId, eqIdx, targetStage, targetLabel: status.label }, menuOpen: false });
       return;

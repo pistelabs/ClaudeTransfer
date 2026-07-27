@@ -135,25 +135,30 @@ export function ReadyPromptModal() {
 
   if (!readyPrompt) return null;
 
-  const incomplete = readyPrompt === "incomplete" || readyPrompt === "collect_incomplete" || readyPrompt === "collect_balance";
+  const incomplete =
+    readyPrompt === "incomplete" || readyPrompt === "collect_incomplete" || readyPrompt === "collect_balance" || readyPrompt === "hold_blocked";
   const single = readyPrompt === "single";
 
   const title = incomplete
     ? readyPrompt === "collect_balance"
       ? "Balance outstanding"
-      : "Work not finished"
+      : readyPrompt === "hold_blocked"
+        ? "Equipment on hold"
+        : "Work not finished"
     : "Equipment ready";
 
   const message =
     readyPrompt === "incomplete"
       ? "Tick off every service on this item before marking it ready for collection."
-      : readyPrompt === "collect_incomplete"
-        ? "Every service on this equipment item must be completed before it can be collected."
-        : readyPrompt === "collect_balance"
-          ? "The balance due must be $0.00 before this job can be marked collected. Take payment first."
-          : readyPrompt === "multi"
-            ? "This item is ready. Contact the customer to collect once all equipment on this job is ready."
-            : "This job is ready for collection. Notify the customer that they can pick it up.";
+      : readyPrompt === "hold_blocked"
+        ? "This equipment is on hold. Set it back to Checked-in or In progress and finish its services before it can be marked ready or collected."
+        : readyPrompt === "collect_incomplete"
+          ? "Every service on this equipment item must be completed before it can be collected."
+          : readyPrompt === "collect_balance"
+            ? "The balance due must be $0.00 before this job can be marked collected. Take payment first."
+            : readyPrompt === "multi"
+              ? "This item is ready. Contact the customer to collect once all equipment on this job is ready."
+              : "This job is ready for collection. Notify the customer that they can pick it up.";
 
   return (
     <div className="animate-sheet-fade absolute inset-0 z-10 flex items-center justify-center p-7" style={{ background: "rgba(9,9,11,0.35)" }} onClick={closeReady}>

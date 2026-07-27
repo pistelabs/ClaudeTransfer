@@ -16,6 +16,19 @@ export const STATUS_FLOW: StatusStep[] = [
   { label: "Collected", color: "#16a34a", stage: "archive" },
 ];
 
+/** Work has to be resumed before an item on hold can be marked Ready or Collected — its
+ * services still need ticking off — so a held item may only move back into active work. */
+export const HOLD_EXIT_LABELS = ["Checked-in", "In progress"];
+
+export function isOnHold(workStatus: string): boolean {
+  return workStatus === "Pending";
+}
+
+/** Whether the status bar option `label` may be picked for an item in `workStatus`. */
+export function canPickStatus(workStatus: string, label: string): boolean {
+  return !isOnHold(workStatus) || HOLD_EXIT_LABELS.includes(label);
+}
+
 /** The workStatus label a plain (non-hold) move into each stage should carry, so the
  * Job Details status bar always highlights the option matching the job's board column. */
 export const STAGE_WORK_STATUS: Record<Stage, string> = {
