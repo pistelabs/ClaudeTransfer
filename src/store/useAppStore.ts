@@ -734,11 +734,11 @@ export const useAppStore = create<AppState>((set, get) => ({
     const items = f.items.slice();
     if (f.brand.trim()) items.push({ type: f.type, category: f.category, brand: f.brand.trim(), model: f.model.trim(), size: f.size.trim() || "—", colour: f.colour.trim(), services: f.services.slice(), serviceData: { ...f.serviceData } });
     if (!f.customer.trim() || items.length === 0) return;
-    // Newly checked-in equipment starts life at "pending"/"Checked-in" — this sheet is staff
+    // Newly checked-in equipment starts life in the Checked in Equipment panel — this sheet is staff
     // physically checking equipment in at the counter right now, not booking a future
     // appointment (that's what the "kiosk"/Drop offs Booked seed data represents).
     const equipment = items.map((it) =>
-      buildEquip({ type: it.type, category: it.category, brand: it.brand, model: it.model, size: it.size, colour: it.colour, services: it.services, serviceData: it.serviceData }, "", "pending"),
+      buildEquip({ type: it.type, category: it.category, brand: it.brand, model: it.model, size: it.size, colour: it.colour, services: it.services, serviceData: it.serviceData }, "", "checked_in"),
     );
     // apply price overrides from parked items
     items.forEach((it, i) => {
@@ -754,7 +754,7 @@ export const useAppStore = create<AppState>((set, get) => ({
           const who = st.activeStaff || "Staff";
           // preserve completion ticks — and each item's own stage/workStatus — for equipment
           // that already existed on the same slot; only genuinely new items get the default
-          // "pending"/"Checked-in" stage assigned above.
+          // "checked_in"/"Checked-in" stage assigned above.
           const mergedEquipment = equipment.map((eq, i) => {
             const prevEq = j.equipment[i];
             if (!prevEq) return eq;

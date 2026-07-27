@@ -43,15 +43,15 @@ export const SEED_JOBS: RawJob[] = [
   },
   { id: "#0220", type: "SKI", brand: "Blizzard", model: "Black Pearl 88", size: "165", customer: "Olivia Murphy", status: "late", stage: "in_progress", due: "02/07", pickup: "1:00 AM", services: ["Hot Wax"] },
 
-  { id: "#0082", type: "SKI", brand: "Dynastar", model: "Mfree", size: "170", customer: "dean mcDean", status: "", stage: "pending", due: "04/09", pickup: "1:00 AM", services: ["Premium Service"] },
+  { id: "#0082", type: "SKI", brand: "Dynastar", model: "Mfree", size: "170", customer: "dean mcDean", status: "", stage: "checked_in", due: "04/09", pickup: "1:00 AM", services: ["Premium Service"] },
   {
-    id: "#0089", customer: "Forrest Gump", status: "", stage: "pending", due: "07/09", pickup: "5:00 PM",
+    id: "#0089", customer: "Forrest Gump", status: "", stage: "checked_in", due: "07/09", pickup: "5:00 PM",
     equipment: [
       { type: "BOARD", brand: "Bataleon", model: "Feelgood", size: "146", services: ["Full Tune"] },
       { type: "BOARD", brand: "Burton", model: "Custom X", size: "158", services: ["Hot Wax", "Binding Check"] },
     ],
   },
-  { id: "#0091", type: "SKI", brand: "Salomon", model: "QST", size: "180", customer: "Vest Customer", status: "", stage: "pending", due: "11/09", pickup: "11:00 AM", services: ["Race Tune"] },
+  { id: "#0091", type: "SKI", brand: "Salomon", model: "QST", size: "180", customer: "Vest Customer", status: "", stage: "checked_in", due: "11/09", pickup: "11:00 AM", services: ["Race Tune"] },
 
   { id: "#0130", type: "SKI", brand: "Volkl", model: "Mantra", size: "177", customer: "Vest Customer", status: "", stage: "awaiting", due: "01/09", pickup: "10:00 AM", services: ["Binding Check"] },
   { id: "#0123", type: "SKI", brand: "K2", model: "Mindbender", size: "170", customer: "John Cena", status: "", stage: "awaiting", due: "01/09", pickup: "1:00 AM", services: ["Full Tune"] },

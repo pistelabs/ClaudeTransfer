@@ -19,9 +19,11 @@ export const EQUIPMENT_CATEGORIES: EquipmentCategory[] = [
 
 export type ServiceGroup = "Waxing" | "Tuning" | "Bindings" | "Repairs";
 
-export type Stage = "kiosk" | "in_progress" | "pending" | "awaiting" | "archive";
+/** `checked_in` is the "Checked in Equipment" panel — equipment that's physically in the shop
+ * but not started yet. `pending` is strictly on-hold work (always carries a hold reason). */
+export type Stage = "kiosk" | "checked_in" | "in_progress" | "pending" | "awaiting" | "archive";
 
-export const STAGE_ORDER: Stage[] = ["kiosk", "in_progress", "pending", "awaiting", "archive"];
+export const STAGE_ORDER: Stage[] = ["kiosk", "checked_in", "in_progress", "pending", "awaiting", "archive"];
 
 /** Whole-card tint / pill status (distinct from workStatus, which drives the segmented control). */
 export type CardStatus = "" | "late" | "complete" | "partial";

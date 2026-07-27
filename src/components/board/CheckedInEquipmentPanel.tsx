@@ -25,12 +25,12 @@ export function CheckedInEquipmentPanel() {
   const order = boardOrder.indexOf("table");
   const isOver = overCol === "table";
 
-  // Excludes "kiosk" (advance-booked drop-offs not yet checked in) AND "archive" (already
-  // collected/picked up — those items have left the shop and shouldn't read as "checked in").
+  // This panel is the home of the `checked_in` stage — equipment physically in the shop but
+  // not started yet. Items move out of here as they progress (In Progress / Pending / etc).
   const rows = sortByDue(
     filterJobs(jobs, query, filterCats)
       .flatMap(jobToRows)
-      .filter((r) => r.stage !== "kiosk" && r.stage !== "archive"),
+      .filter((r) => r.stage === "checked_in"),
   );
 
   const onBodyDragOver = (e: DragEvent) => {
@@ -43,7 +43,7 @@ export function CheckedInEquipmentPanel() {
   };
   const onBodyDrop = (e: DragEvent) => {
     e.preventDefault();
-    if (dragEq) setWorkStatus(dragEq.jobId, dragEq.eqIdx, { label: "Checked-in", stage: "pending" });
+    if (dragEq) setWorkStatus(dragEq.jobId, dragEq.eqIdx, { label: "Checked-in", stage: "checked_in" });
     setOverCol(null);
   };
 
@@ -96,6 +96,11 @@ export function CheckedInEquipmentPanel() {
             style={{ background: isOver ? hexA("#2563eb", 0.04) : "transparent" }}
             className="flex-1 overflow-y-auto transition-colors"
           >
+            {rows.length === 0 && (
+              <div className="m-[10px] flex h-20 items-center justify-center rounded-[10px] border border-dashed border-border text-[11.5px] text-zinc-350">
+                Drop equipment here
+              </div>
+            )}
             {rows.map((row) => (
               <JobEntry key={row.rowId} row={row} variant="row" />
             ))}
@@ -110,6 +115,11 @@ export function CheckedInEquipmentPanel() {
           style={{ background: isOver ? hexA("#2563eb", 0.04) : "transparent" }}
           className="flex flex-1 flex-col gap-2 overflow-y-auto p-[10px] transition-colors"
         >
+          {rows.length === 0 && (
+            <div className="flex h-20 items-center justify-center rounded-[10px] border border-dashed border-border text-[11.5px] text-zinc-350">
+              Drop equipment here
+            </div>
+          )}
           {rows.map((row) => (
             <JobEntry key={row.rowId} row={row} variant="card" />
           ))}
