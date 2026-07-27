@@ -420,6 +420,12 @@ export const useAppStore = create<AppState>((set, get) => ({
     const s = get();
     const sel = s.jobs.find((j) => j.id === jobId);
     if (!sel) return;
+    const noServices = sel.equipment.every((eq) => eq.services.length === 0);
+    const targetStage: Stage | null = status.label === "Ready" ? "awaiting" : status.label === "Collected" ? "archive" : status.stage;
+    if (sel.stage === "kiosk" && targetStage && targetStage !== "kiosk" && noServices) {
+      set({ noSvcPrompt: jobId, menuOpen: false });
+      return;
+    }
     if (status.label === "Pending") {
       set({ holdPrompt: true, holdReason: "", menuOpen: false });
       return;
