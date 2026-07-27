@@ -15,7 +15,7 @@ export function CheckedInEquipmentPanel() {
   const setColDragKey = useAppStore((s) => s.setColDragKey);
   const reorderCols = useAppStore((s) => s.reorderCols);
   const startColResize = useAppStore((s) => s.startColResize);
-  const dragId = useAppStore((s) => s.dragId);
+  const dragEq = useAppStore((s) => s.dragEq);
   const overCol = useAppStore((s) => s.overCol);
   const setOverCol = useAppStore((s) => s.setOverCol);
   const setWorkStatus = useAppStore((s) => s.setWorkStatus);
@@ -25,8 +25,13 @@ export function CheckedInEquipmentPanel() {
   const order = boardOrder.indexOf("table");
   const isOver = overCol === "table";
 
-  const jobsFiltered = sortByDue(filterJobs(jobs, query, filterCats).filter((j) => j.stage !== "kiosk"));
-  const rows = jobsFiltered.flatMap(jobToRows);
+  // Excludes "kiosk" (advance-booked drop-offs not yet checked in) AND "archive" (already
+  // collected/picked up — those items have left the shop and shouldn't read as "checked in").
+  const rows = sortByDue(
+    filterJobs(jobs, query, filterCats)
+      .flatMap(jobToRows)
+      .filter((r) => r.stage !== "kiosk" && r.stage !== "archive"),
+  );
 
   const onBodyDragOver = (e: DragEvent) => {
     e.preventDefault();
@@ -38,7 +43,7 @@ export function CheckedInEquipmentPanel() {
   };
   const onBodyDrop = (e: DragEvent) => {
     e.preventDefault();
-    if (dragId) setWorkStatus(dragId, { label: "Checked-in", stage: "pending" });
+    if (dragEq) setWorkStatus(dragEq.jobId, dragEq.eqIdx, { label: "Checked-in", stage: "pending" });
     setOverCol(null);
   };
 

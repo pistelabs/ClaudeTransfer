@@ -1,5 +1,6 @@
 import type { Job } from "../../types";
 import { TypeBadge } from "../Pills";
+import { STAGE_DEFS } from "../../store/useAppStore";
 
 interface Props {
   job: Job;
@@ -33,6 +34,11 @@ export function EquipmentTabs({ job, activeTab, onSelect }: Props) {
             }}
           >
             <TypeBadge type={eq.type} />
+            <span
+              title={eq.workStatus}
+              className="h-[6px] w-[6px] flex-shrink-0 rounded-full"
+              style={{ background: STAGE_DEFS.find((d) => d.key === eq.stage)?.dot || "#a1a1aa" }}
+            />
             <span
               className="ml-1.5 overflow-hidden text-ellipsis whitespace-nowrap text-[12.5px] font-semibold tracking-tight"
               style={{ color: on ? "#18181b" : "#71717a" }}

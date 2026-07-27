@@ -1,4 +1,4 @@
-import type { Equipment, EquipmentCategory, EquipmentType, Job, LineItem, ServiceData } from "../types";
+import type { Equipment, EquipmentCategory, EquipmentType, Job, LineItem, ServiceData, Stage } from "../types";
 import { isQuoted, svcPrice, TUNING_LIKE } from "../lib/serviceCatalog";
 import { STAGE_WORK_STATUS } from "../lib/statusFlow";
 import type { RawEquip, RawJob } from "./seedRaw";
@@ -13,7 +13,7 @@ function hashCategory(type: EquipmentType, brand: string, model: string): Equipm
   return cats[h % cats.length];
 }
 
-export function buildEquip(e: RawEquip, jobStatus: string | undefined): Equipment {
+export function buildEquip(e: RawEquip, jobStatus: string | undefined, stage: Stage): Equipment {
   const services = (e.services || []).slice();
   const type: EquipmentType = e.type || "SKI";
   const category = e.category || hashCategory(type, e.brand || "", e.model || "");
@@ -38,12 +38,13 @@ export function buildEquip(e: RawEquip, jobStatus: string | undefined): Equipmen
     priceOverride: null,
     doneFlags: services.map(() => jobStatus === "complete"),
     loc: "",
+    stage,
+    workStatus: STAGE_WORK_STATUS[stage] ?? "Booked",
   };
 }
 
 export function normalizeJob(j: RawJob): Job {
   const first = (j.customer || "").trim().split(/\s+/)[0]?.toLowerCase().replace(/[^a-z]/g, "") || "customer";
-  const workStatus = STAGE_WORK_STATUS[j.stage] || "Booked";
   const equipSrc: RawEquip[] =
     j.equipment ||
     [{ type: j.type || "SKI", brand: j.brand || "New", model: j.model || "Equipment", size: j.size || "—", services: j.services || [] }];
@@ -52,9 +53,7 @@ export function normalizeJob(j: RawJob): Job {
     customer: j.customer,
     email: first + "@pistelabs.com",
     phone: "+353 86 863 3044",
-    stage: j.stage,
     status: j.status,
-    workStatus,
     due: j.due,
     pickup: j.pickup,
     dropoff: j.dropoff || "",
@@ -62,7 +61,7 @@ export function normalizeJob(j: RawJob): Job {
     tech: "Dan Sweetnam",
     updatedAt: "29/06/26 2:32 PM",
     updates: [],
-    equipment: equipSrc.map((e) => buildEquip(e, j.status)),
+    equipment: equipSrc.map((e) => buildEquip(e, j.status, j.stage)),
   };
 }
 
@@ -93,6 +92,13 @@ export function equipmentPrice(eq: Equipment): number {
 
 export function jobTotal(job: Job): number {
   return job.equipment.reduce((acc, eq) => acc + equipmentPrice(eq), 0);
+}
+
+/** Whether one specific equipment item's own services are all ticked done — used for the
+ * per-item move guards (Awaiting Collection / Collected). See `jobFullyComplete` for the
+ * whole-job variant (kept for reuse, no longer used by the per-item guards). */
+export function equipmentFullyComplete(eq: Equipment): boolean {
+  return eq.services.length > 0 && eq.doneFlags.every(Boolean);
 }
 
 export function jobFullyComplete(job: Job): boolean {

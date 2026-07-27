@@ -33,14 +33,14 @@ export function LineItemsCard({ job, activeTab }: Props) {
       className="relative z-[1] flex flex-col gap-3.5 border border-border bg-white p-4"
       style={{ borderRadius: activeTab === 0 ? "0 11px 11px 11px" : "11px" }}
     >
-      {/* Status bar */}
+      {/* Status bar — reflects this tab's own equipment, independent of its siblings */}
       <div className="flex gap-0.5 rounded-[9px] border border-border bg-app-bg p-[3px]">
         {STATUS_FLOW.map((st) => {
-          const active = job.workStatus === st.label;
+          const active = eq.workStatus === st.label;
           return (
             <button
               key={st.label}
-              onClick={() => setWorkStatus(job.id, { label: st.label, stage: st.stage })}
+              onClick={() => setWorkStatus(job.id, activeTab, { label: st.label, stage: st.stage })}
               className="flex h-[30px] flex-1 items-center justify-center whitespace-nowrap rounded-[7px] px-1 text-[11.5px] transition-colors"
               style={{
                 fontWeight: active ? 600 : 500,

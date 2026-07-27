@@ -3,10 +3,13 @@ import { useAppStore } from "../store/useAppStore";
 
 export function NoServicesModal() {
   const noSvcPrompt = useAppStore((s) => s.noSvcPrompt);
+  const jobs = useAppStore((s) => s.jobs);
   const closeNoSvc = useAppStore((s) => s.closeNoSvc);
   const noSvcAddServices = useAppStore((s) => s.noSvcAddServices);
 
   if (!noSvcPrompt) return null;
+  const job = jobs.find((j) => j.id === noSvcPrompt.jobId);
+  const rowLabel = job && job.equipment.length > 1 ? `${job.id}-${noSvcPrompt.eqIdx + 1}` : noSvcPrompt.jobId;
 
   return (
     <div
@@ -25,11 +28,11 @@ export function NoServicesModal() {
           </div>
           <div className="flex flex-col gap-px">
             <span className="text-[15px] font-bold tracking-tight">No services added</span>
-            <span className="text-xs text-zinc-500">{noSvcPrompt} can't be moved yet</span>
+            <span className="text-xs text-zinc-500">{rowLabel} can't be moved yet</span>
           </div>
         </div>
         <p className="m-0 text-[13px] leading-relaxed text-zinc-700">
-          This job has no services added yet. Add services before moving it out of Drop offs Booked.
+          This equipment has no services added yet. Add services before moving it out of Drop offs Booked.
         </p>
         <div className="flex justify-end gap-2">
           <button onClick={closeNoSvc} className="h-10 rounded-[9px] border border-border bg-white px-4 text-[13px] font-medium text-zinc-900 hover:bg-app-bg">

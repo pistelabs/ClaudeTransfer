@@ -22,7 +22,7 @@ export function StageColumn({ stageKey, label, dot }: Props) {
   const collapsedCols = useAppStore((s) => s.collapsedCols);
   const colDragKey = useAppStore((s) => s.colDragKey);
   const overCol = useAppStore((s) => s.overCol);
-  const dragId = useAppStore((s) => s.dragId);
+  const dragEq = useAppStore((s) => s.dragEq);
 
   const setColDragKey = useAppStore((s) => s.setColDragKey);
   const reorderCols = useAppStore((s) => s.reorderCols);
@@ -37,9 +37,9 @@ export function StageColumn({ stageKey, label, dot }: Props) {
   const isOver = overCol === stageKey;
   const order = boardOrder.indexOf(stageKey);
 
-  let stageJobs = filterJobs(jobs, query, filterCats).filter((j) => j.stage === stageKey);
-  stageJobs = stageKey === "kiosk" ? sortByDropoff(stageJobs) : sortByDue(stageJobs);
-  const rows = stageJobs.flatMap(jobToRows);
+  // Each row (one per equipment item) is placed by its OWN stage, independently of its siblings.
+  let rows = filterJobs(jobs, query, filterCats).flatMap(jobToRows).filter((r) => r.stage === stageKey);
+  rows = stageKey === "kiosk" ? sortByDropoff(rows) : sortByDue(rows);
   const wide = !collapsed && width >= 420;
 
   const handleReorderDragOver = (e: DragEvent) => {
@@ -63,7 +63,7 @@ export function StageColumn({ stageKey, label, dot }: Props) {
           }}
           onDrop={(e) => {
             e.preventDefault();
-            if (dragId) dropJob(dragId, stageKey);
+            if (dragEq) dropJob(dragEq.jobId, dragEq.eqIdx, stageKey);
           }}
           title="Expand"
           className="flex flex-1 cursor-pointer flex-col items-center gap-2.5 py-3"
@@ -127,7 +127,7 @@ export function StageColumn({ stageKey, label, dot }: Props) {
         }}
         onDrop={(e) => {
           e.preventDefault();
-          if (dragId) dropJob(dragId, stageKey);
+          if (dragEq) dropJob(dragEq.jobId, dragEq.eqIdx, stageKey);
         }}
         style={{ background: isOver ? hexA(dot, 0.04) : "transparent" }}
         className="flex flex-1 flex-col gap-2 overflow-y-auto p-[10px] transition-colors"

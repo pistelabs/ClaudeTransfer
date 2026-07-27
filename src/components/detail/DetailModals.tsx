@@ -8,25 +8,38 @@ export function HoldPromptModal({ job }: { job: Job }) {
   const holdPrompt = useAppStore((s) => s.holdPrompt);
   const holdReason = useAppStore((s) => s.holdReason);
   const holdMoveStage = useAppStore((s) => s.holdMoveStage);
+  const holdEqIdx = useAppStore((s) => s.holdEqIdx);
   const setHoldReason = (v: string) => useAppStore.setState({ holdReason: v });
-  const cancel = () => useAppStore.setState({ holdPrompt: false, holdReason: "", holdMoveStage: null });
+  const cancel = () => useAppStore.setState({ holdPrompt: false, holdReason: "", holdMoveStage: null, holdEqIdx: null });
 
   if (!holdPrompt) return null;
+  const eqIdx = holdEqIdx ?? 0;
+  const eq = job.equipment[eqIdx];
+  if (!eq) return null;
+  const rowLabel = job.equipment.length > 1 ? `${job.id}-${eqIdx + 1}` : null;
   const canConfirm = holdReason.trim().length > 0;
 
   const doConfirm = () => {
     const r = holdReason.trim();
     if (!r) return;
     const stamp = new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" }) + " " + new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+    // Notes are shared/job-level, so prefix the equipment id whenever the job has more than one
+    // item — keeps a shared feed traceable back to which item the hold is actually about.
+    const noteText = (rowLabel ? `${rowLabel}: ` : "") + "Set to Pending: " + r;
     useAppStore.setState((st) => ({
       jobs: st.jobs.map((j) =>
         j.id === job.id
-          ? { ...j, workStatus: "Pending", stage: holdMoveStage ?? j.stage, updates: [{ text: "Set to Pending: " + r, hold: true, at: j.tech + " · " + stamp }, ...j.updates] }
+          ? {
+              ...j,
+              equipment: j.equipment.map((e, i) => (i === eqIdx ? { ...e, workStatus: "Pending", stage: holdMoveStage ?? e.stage } : e)),
+              updates: [{ text: noteText, hold: true, eqIdx, at: j.tech + " · " + stamp }, ...j.updates],
+            }
           : j,
       ),
       holdPrompt: false,
       holdReason: "",
       holdMoveStage: null,
+      holdEqIdx: null,
     }));
   };
 
@@ -38,8 +51,8 @@ export function HoldPromptModal({ job }: { job: Job }) {
             <AlertTriangle size={19} />
           </div>
           <div className="flex flex-col gap-px">
-            <span className="text-[15px] font-bold tracking-tight">Set job to Pending</span>
-            <span className="text-xs text-zinc-500">Add a reason before moving this job.</span>
+            <span className="text-[15px] font-bold tracking-tight">Set {rowLabel || "equipment"} to Pending</span>
+            <span className="text-xs text-zinc-500">Add a reason before moving this equipment.</span>
           </div>
         </div>
         <textarea
@@ -77,7 +90,9 @@ export function ResolvePendingModal({ job }: { job: Job }) {
   const confirmResolvePending = useAppStore((s) => s.confirmResolvePending);
 
   if (!resolvePendingPrompt || resolvePendingPrompt.jobId !== job.id) return null;
-  const reason = job.updates.find((u) => u.hold && !u.resolved);
+  const eqIdx = resolvePendingPrompt.eqIdx;
+  const rowLabel = job.equipment.length > 1 ? `${job.id}-${eqIdx + 1}` : "this equipment";
+  const reason = job.updates.find((u) => u.hold && !u.resolved && u.eqIdx === eqIdx);
 
   return (
     <div className="animate-sheet-fade absolute inset-0 z-10 flex items-center justify-center p-7" style={{ background: "rgba(9,9,11,0.35)" }} onClick={closeResolvePending}>
@@ -88,7 +103,7 @@ export function ResolvePendingModal({ job }: { job: Job }) {
           </div>
           <div className="flex flex-col gap-px">
             <span className="text-[15px] font-bold tracking-tight">Resolve pending hold?</span>
-            <span className="text-xs text-zinc-500">This job is on hold for the reason below.</span>
+            <span className="text-xs text-zinc-500">{rowLabel} is on hold for the reason below.</span>
           </div>
         </div>
         {reason && (
@@ -98,7 +113,7 @@ export function ResolvePendingModal({ job }: { job: Job }) {
           </div>
         )}
         <p className="m-0 text-[13px] leading-relaxed text-zinc-700">
-          Resolve to move this job to <strong>{resolvePendingPrompt.targetLabel}</strong>, or cancel to keep it in Pending.
+          Resolve to move {rowLabel} to <strong>{resolvePendingPrompt.targetLabel}</strong>, or cancel to keep it in Pending.
         </p>
         <div className="flex gap-2.5 pt-0.5">
           <button onClick={closeResolvePending} className="h-10 flex-1 rounded-[9px] border border-border bg-white text-[13px] font-medium text-zinc-900 hover:bg-app-bg">
@@ -133,7 +148,7 @@ export function ReadyPromptModal() {
     readyPrompt === "incomplete"
       ? "Tick off every service on this item before marking it ready for collection."
       : readyPrompt === "collect_incomplete"
-        ? "Every service on all equipment for this job must be completed before it can be collected."
+        ? "Every service on this equipment item must be completed before it can be collected."
         : readyPrompt === "collect_balance"
           ? "The balance due must be $0.00 before this job can be marked collected. Take payment first."
           : readyPrompt === "multi"

@@ -12,8 +12,8 @@ import type {
   Stage,
 } from "../types";
 import { SEED_CUSTOMERS, SEED_JOBS, STAFF_LIST } from "../data/seedRaw";
-import { buildEquip, jobFullyComplete, normalizeJob } from "../data/build";
-import { blankDin, categoryToType, defaultCategoryForType, SERVICE_DEFS, svcPrice } from "../lib/serviceCatalog";
+import { buildEquip, equipmentFullyComplete, jobTotal, normalizeJob } from "../data/build";
+import { blankDin, categoryToType, defaultCategoryForType, SERVICE_DEFS } from "../lib/serviceCatalog";
 import { STAGE_WORK_STATUS } from "../lib/statusFlow";
 import { stampNow } from "../lib/format";
 
@@ -80,7 +80,8 @@ interface AppState {
   colWidths: Record<string, number>;
   collapsedCols: string[];
   colDragKey: string | null;
-  dragId: string | null;
+  /** the specific equipment item (not just the job) currently being dragged */
+  dragEq: { jobId: string; eqIdx: number } | null;
   overCol: string | null;
 
   // job details sheet
@@ -92,10 +93,12 @@ interface AppState {
   holdPrompt: boolean;
   holdReason: string;
   holdMoveStage: Stage | null;
+  /** which equipment item on the selected job the hold-reason prompt applies to */
+  holdEqIdx: number | null;
   readyPrompt: ReadyPromptKind;
   payPrompt: PayPromptKind;
-  noSvcPrompt: string | null;
-  resolvePendingPrompt: { jobId: string; targetStage: Stage; targetLabel: string } | null;
+  noSvcPrompt: { jobId: string; eqIdx: number } | null;
+  resolvePendingPrompt: { jobId: string; eqIdx: number; targetStage: Stage; targetLabel: string } | null;
   imgViewer: ImgViewerPayload | null;
 
   // staff prompt
@@ -127,7 +130,7 @@ interface AppState {
   colWidth: (key: string) => number;
   toggleCollapse: (key: string) => void;
   setOverCol: (key: string | null) => void;
-  setDragId: (id: string | null) => void;
+  setDragEq: (v: { jobId: string; eqIdx: number } | null) => void;
 
   openJob: (id: string, tab?: number) => void;
   closeDetail: () => void;
@@ -141,8 +144,8 @@ interface AppState {
   deleteJob: (id: string) => void;
   setLoc: (jobId: string, idx: number, loc: string) => void;
 
-  moveJob: (id: string, stage: Stage) => void;
-  dropJob: (id: string, stage: Stage) => void;
+  moveJob: (id: string, eqIdx: number, stage: Stage) => void;
+  dropJob: (id: string, eqIdx: number, stage: Stage) => void;
 
   toggleLineItemDone: (jobId: string, eqIdx: number, svcIdx: number) => void;
   addServiceToEquip: (jobId: string, idx: number, name: string) => void;
@@ -152,7 +155,7 @@ interface AppState {
   closePay: () => void;
   paymentDone: () => void;
   markCollected: () => void;
-  setWorkStatus: (jobId: string, status: { label: string; stage: Stage | null }) => void;
+  setWorkStatus: (jobId: string, eqIdx: number, status: { label: string; stage: Stage | null }) => void;
   closeReady: () => void;
   notifyCustomer: () => void;
 
@@ -210,7 +213,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   colWidths: {},
   collapsedCols: [],
   colDragKey: null,
-  dragId: null,
+  dragEq: null,
   overCol: null,
 
   selectedId: null,
@@ -221,6 +224,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   holdPrompt: false,
   holdReason: "",
   holdMoveStage: null,
+  holdEqIdx: null,
   readyPrompt: null,
   payPrompt: null,
   noSvcPrompt: null,
@@ -283,7 +287,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       collapsedCols: s.collapsedCols.includes(key) ? s.collapsedCols.filter((k) => k !== key) : [...s.collapsedCols, key],
     })),
   setOverCol: (key) => set({ overCol: key }),
-  setDragId: (id) => set({ dragId: id }),
+  setDragEq: (v) => set({ dragEq: v }),
 
   // ---- job details sheet ----
   openJob: (id, tab) =>
@@ -294,12 +298,13 @@ export const useAppStore = create<AppState>((set, get) => ({
       holdPrompt: false,
       holdReason: "",
       holdMoveStage: null,
+      holdEqIdx: null,
       activeTab: tab || 0,
       readyPrompt: null,
       resolvePendingPrompt: null,
     }),
   closeDetail: () =>
-    set({ selectedId: null, menuOpen: false, holdPrompt: false, holdReason: "", holdMoveStage: null, readyPrompt: null, resolvePendingPrompt: null }),
+    set({ selectedId: null, menuOpen: false, holdPrompt: false, holdReason: "", holdMoveStage: null, holdEqIdx: null, readyPrompt: null, resolvePendingPrompt: null }),
   setActiveTab: (i) => set({ activeTab: i }),
   setDraft: (v) => set({ draft: v }),
   addUpdate: () => {
@@ -326,55 +331,84 @@ export const useAppStore = create<AppState>((set, get) => ({
     })),
 
   // ---- drag & drop / move guards ----
-  moveJob: (id, stage) =>
+  // All guards below act on ONE equipment item (jobId + eqIdx), never the whole job — each
+  // piece of equipment on a job moves through the board independently of its siblings.
+  moveJob: (id, eqIdx, stage) =>
     set((s) => ({
-      jobs: s.jobs.map((j) => (j.id === id ? { ...j, stage, workStatus: STAGE_WORK_STATUS[stage] ?? j.workStatus } : j)),
-      dragId: null,
+      jobs: s.jobs.map((j) =>
+        j.id === id
+          ? {
+              ...j,
+              equipment: j.equipment.map((eq, i) =>
+                i === eqIdx ? { ...eq, stage, workStatus: STAGE_WORK_STATUS[stage] ?? eq.workStatus } : eq,
+              ),
+            }
+          : j,
+      ),
+      dragEq: null,
       overCol: null,
     })),
-  dropJob: (id, stage) => {
+  dropJob: (id, eqIdx, stage) => {
     const s = get();
     const j = s.jobs.find((x) => x.id === id);
-    if (!j) {
-      set({ dragId: null, overCol: null });
+    const eq = j?.equipment[eqIdx];
+    if (!j || !eq) {
+      set({ dragEq: null, overCol: null });
       return;
     }
-    const noServices = j.equipment.every((eq) => eq.services.length === 0);
-    if (j.stage === "kiosk" && stage !== "kiosk" && noServices) {
-      set({ dragId: null, overCol: null, noSvcPrompt: id });
+    const noServices = eq.services.length === 0;
+    if (eq.stage === "kiosk" && stage !== "kiosk" && noServices) {
+      set({ dragEq: null, overCol: null, noSvcPrompt: { jobId: id, eqIdx } });
       return;
     }
-    if (j.stage === "pending" && j.workStatus === "Pending" && stage !== "pending") {
+    if (eq.stage === "pending" && eq.workStatus === "Pending" && stage !== "pending") {
       set({
-        dragId: null,
+        dragEq: null,
         overCol: null,
         selectedId: id,
-        activeTab: 0,
+        activeTab: eqIdx,
         menuOpen: false,
-        resolvePendingPrompt: { jobId: id, targetStage: stage, targetLabel: STAGE_WORK_STATUS[stage] ?? "Booked" },
+        resolvePendingPrompt: { jobId: id, eqIdx, targetStage: stage, targetLabel: STAGE_WORK_STATUS[stage] ?? "Booked" },
       });
       return;
     }
     if (stage === "pending") {
-      // Don't move the job yet — it stays in its current column until a hold reason is confirmed.
+      // Don't move the item yet — it stays in its current column until a hold reason is confirmed.
       set({
-        dragId: null,
+        dragEq: null,
         overCol: null,
         selectedId: id,
-        activeTab: 0,
+        activeTab: eqIdx,
         menuOpen: false,
         holdPrompt: true,
         holdReason: "",
+        holdEqIdx: eqIdx,
         holdMoveStage: "pending",
         readyPrompt: null,
       });
       return;
     }
-    if (stage === "awaiting" && !jobFullyComplete(j)) {
-      set({ dragId: null, overCol: null, selectedId: id, activeTab: 0, menuOpen: false, holdPrompt: false, readyPrompt: "collect_incomplete" });
+    if (stage === "awaiting" && !equipmentFullyComplete(eq)) {
+      set({ dragEq: null, overCol: null, selectedId: id, activeTab: eqIdx, menuOpen: false, holdPrompt: false, readyPrompt: "collect_incomplete" });
       return;
     }
-    get().moveJob(id, stage);
+    if (stage === "archive") {
+      const fullyDone = equipmentFullyComplete(eq);
+      const balance = jobTotal(j);
+      if (!(fullyDone && balance <= 0)) {
+        set({
+          dragEq: null,
+          overCol: null,
+          selectedId: id,
+          activeTab: eqIdx,
+          menuOpen: false,
+          holdPrompt: false,
+          readyPrompt: !fullyDone ? "collect_incomplete" : "collect_balance",
+        });
+        return;
+      }
+    }
+    get().moveJob(id, eqIdx, stage);
   },
 
   // ---- services on an open job's equipment ----
@@ -429,6 +463,9 @@ export const useAppStore = create<AppState>((set, get) => ({
   closePay: () => set({ payPrompt: null }),
   paymentDone: () => set({ payPrompt: "collect" }),
   markCollected: () => {
+    // Pay Now → Mark equipment as collected archives EVERY item on the job together — this is
+    // the real-world moment the customer walks out with all of it, even though each item was
+    // otherwise free to move through the board independently up to this point.
     const s = get();
     const sel = s.jobs.find((j) => j.id === s.selectedId);
     if (!sel) return;
@@ -436,60 +473,73 @@ export const useAppStore = create<AppState>((set, get) => ({
     set((st) => ({
       jobs: st.jobs.map((j) =>
         j.id === sel.id
-          ? { ...j, stage: "archive", workStatus: "Collected", updates: [{ text: "Payment taken · marked collected", at: (st.activeStaff || j.tech) + " · " + stamp }, ...j.updates] }
+          ? {
+              ...j,
+              equipment: j.equipment.map((eq) => ({ ...eq, stage: "archive" as Stage, workStatus: "Collected" })),
+              updates: [{ text: "Payment taken · marked collected", at: (st.activeStaff || j.tech) + " · " + stamp }, ...j.updates],
+            }
           : j,
       ),
       payPrompt: null,
-      dragId: null,
+      dragEq: null,
       overCol: null,
     }));
   },
-  setWorkStatus: (jobId, status) => {
+  setWorkStatus: (jobId, eqIdx, status) => {
     const s = get();
     const sel = s.jobs.find((j) => j.id === jobId);
     if (!sel) return;
-    const noServices = sel.equipment.every((eq) => eq.services.length === 0);
+    const eq = sel.equipment[eqIdx];
+    if (!eq) return;
+    const noServices = eq.services.length === 0;
     const targetStage: Stage | null = status.label === "Ready" ? "awaiting" : status.label === "Collected" ? "archive" : status.stage;
-    if (sel.stage === "kiosk" && targetStage && targetStage !== "kiosk" && noServices) {
-      set({ noSvcPrompt: jobId, menuOpen: false });
+    if (eq.stage === "kiosk" && targetStage && targetStage !== "kiosk" && noServices) {
+      set({ noSvcPrompt: { jobId, eqIdx }, menuOpen: false });
       return;
     }
-    if (sel.stage === "pending" && sel.workStatus === "Pending" && targetStage && targetStage !== "pending") {
-      set({ resolvePendingPrompt: { jobId, targetStage, targetLabel: status.label }, menuOpen: false });
+    if (eq.stage === "pending" && eq.workStatus === "Pending" && targetStage && targetStage !== "pending") {
+      set({ resolvePendingPrompt: { jobId, eqIdx, targetStage, targetLabel: status.label }, menuOpen: false });
       return;
     }
     if (status.label === "Pending") {
-      set({ holdPrompt: true, holdReason: "", holdMoveStage: null, menuOpen: false });
+      set({ holdPrompt: true, holdReason: "", holdEqIdx: eqIdx, holdMoveStage: null, menuOpen: false });
       return;
     }
     if (status.label === "Ready") {
-      const allDone = sel.equipment[Math.max(0, Math.min(s.activeTab, sel.equipment.length - 1))];
-      const total = allDone.services.length;
-      const done = allDone.doneFlags.filter(Boolean).length;
+      const total = eq.services.length;
+      const done = eq.doneFlags.filter(Boolean).length;
       if (!(total > 0 && done === total)) {
         set({ readyPrompt: "incomplete" });
         return;
       }
       const multi = sel.equipment.length > 1;
       set((st) => ({
-        jobs: st.jobs.map((j) => (j.id === sel.id ? { ...j, workStatus: "Ready", stage: "awaiting" } : j)),
+        jobs: st.jobs.map((j) =>
+          j.id === sel.id ? { ...j, equipment: j.equipment.map((e, i) => (i === eqIdx ? { ...e, workStatus: "Ready", stage: "awaiting" } : e)) } : j,
+        ),
         readyPrompt: multi ? "multi" : "single",
       }));
       return;
     }
     if (status.label === "Collected") {
-      const fullyDone = jobFullyComplete(sel);
-      const balance = sel.equipment.reduce((acc, eq) => acc + eq.services.reduce((a, n) => a + svcPrice(n, eq.serviceData), 0), 0);
+      const fullyDone = equipmentFullyComplete(eq);
+      const balance = jobTotal(sel);
       const canCollect = fullyDone && balance <= 0;
       if (!canCollect) {
         set({ readyPrompt: !fullyDone ? "collect_incomplete" : "collect_balance" });
         return;
       }
-      set((st) => ({ jobs: st.jobs.map((j) => (j.id === sel.id ? { ...j, workStatus: "Collected", stage: "archive" } : j)) }));
+      set((st) => ({
+        jobs: st.jobs.map((j) =>
+          j.id === sel.id ? { ...j, equipment: j.equipment.map((e, i) => (i === eqIdx ? { ...e, workStatus: "Collected", stage: "archive" } : e)) } : j,
+        ),
+      }));
       return;
     }
     set((st) => ({
-      jobs: st.jobs.map((j) => (j.id === sel.id ? { ...j, workStatus: status.label, stage: status.stage ?? j.stage } : j)),
+      jobs: st.jobs.map((j) =>
+        j.id === sel.id ? { ...j, equipment: j.equipment.map((e, i) => (i === eqIdx ? { ...e, workStatus: status.label, stage: status.stage ?? e.stage } : e)) } : j,
+      ),
     }));
   },
   closeReady: () => set({ readyPrompt: null }),
@@ -506,10 +556,10 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   closeNoSvc: () => set({ noSvcPrompt: null }),
   noSvcAddServices: () => {
-    const id = get().noSvcPrompt;
-    if (!id) return;
-    set({ noSvcPrompt: null, selectedId: id, activeTab: 0 });
-    get().openEditJob(id);
+    const p = get().noSvcPrompt;
+    if (!p) return;
+    set({ noSvcPrompt: null, selectedId: p.jobId, activeTab: p.eqIdx });
+    get().openEditJob(p.jobId);
   },
 
   closeResolvePending: () => set({ resolvePendingPrompt: null }),
@@ -521,14 +571,20 @@ export const useAppStore = create<AppState>((set, get) => ({
       jobs: st.jobs.map((j) => {
         if (j.id !== p.jobId) return j;
         let marked = false;
+        // Resolve only the hold note for this specific equipment item — a sibling item on the
+        // same job may have its own independent, still-active hold note.
         const updates = j.updates.map((u) => {
-          if (!marked && u.hold && !u.resolved) {
+          if (!marked && u.hold && !u.resolved && u.eqIdx === p.eqIdx) {
             marked = true;
             return { ...u, resolved: true, resolvedAt: stamp };
           }
           return u;
         });
-        return { ...j, stage: p.targetStage, workStatus: p.targetLabel, updates };
+        return {
+          ...j,
+          equipment: j.equipment.map((eq, i) => (i === p.eqIdx ? { ...eq, stage: p.targetStage, workStatus: p.targetLabel } : eq)),
+          updates,
+        };
       }),
       resolvePendingPrompt: null,
     }));
@@ -676,7 +732,12 @@ export const useAppStore = create<AppState>((set, get) => ({
     const items = f.items.slice();
     if (f.brand.trim()) items.push({ type: f.type, category: f.category, brand: f.brand.trim(), model: f.model.trim(), size: f.size.trim() || "—", colour: f.colour.trim(), services: f.services.slice(), serviceData: { ...f.serviceData } });
     if (!f.customer.trim() || items.length === 0) return;
-    const equipment = items.map((it) => buildEquip({ type: it.type, category: it.category, brand: it.brand, model: it.model, size: it.size, colour: it.colour, services: it.services, serviceData: it.serviceData }, ""));
+    // Newly checked-in equipment starts life at "pending"/"Checked-in" — this sheet is staff
+    // physically checking equipment in at the counter right now, not booking a future
+    // appointment (that's what the "kiosk"/Drop offs Booked seed data represents).
+    const equipment = items.map((it) =>
+      buildEquip({ type: it.type, category: it.category, brand: it.brand, model: it.model, size: it.size, colour: it.colour, services: it.services, serviceData: it.serviceData }, "", "pending"),
+    );
     // apply price overrides from parked items
     items.forEach((it, i) => {
       if (it.priceOverride != null && it.priceOverride !== "") equipment[i].priceOverride = Number(it.priceOverride);
@@ -689,7 +750,9 @@ export const useAppStore = create<AppState>((set, get) => ({
           if (j.id !== editId) return j;
           const stamp = stampNow();
           const who = st.activeStaff || "Staff";
-          // preserve completion ticks for services that already existed on the same equipment slot
+          // preserve completion ticks — and each item's own stage/workStatus — for equipment
+          // that already existed on the same slot; only genuinely new items get the default
+          // "pending"/"Checked-in" stage assigned above.
           const mergedEquipment = equipment.map((eq, i) => {
             const prevEq = j.equipment[i];
             if (!prevEq) return eq;
@@ -697,7 +760,7 @@ export const useAppStore = create<AppState>((set, get) => ({
               const prevIdx = prevEq.services.indexOf(name);
               return prevIdx >= 0 ? !!prevEq.doneFlags[prevIdx] : false;
             });
-            return { ...eq, doneFlags, loc: prevEq.loc };
+            return { ...eq, doneFlags, loc: prevEq.loc, stage: prevEq.stage, workStatus: prevEq.workStatus };
           });
           return {
             ...j,
@@ -728,9 +791,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         customer: f.customer.trim(),
         email: f.email || (f.customer.trim().split(/\s+/)[0]?.toLowerCase() || "customer") + "@pistelabs.com",
         phone: f.phone || "+353 86 863 3044",
-        stage: "kiosk",
         status: "",
-        workStatus: "Booked",
         due: f.due || "—",
         pickup: f.pickup || "—",
         dropoff: "",

@@ -10,11 +10,13 @@ interface Props {
 
 export function JobEntry({ row, variant }: Props) {
   const openJob = useAppStore((s) => s.openJob);
-  const setDragId = useAppStore((s) => s.setDragId);
-  const clearDrag = () => useAppStore.getState().setDragId(null);
+  const setDragEq = useAppStore((s) => s.setDragEq);
+  const clearDrag = () => useAppStore.getState().setDragEq(null);
 
   const onOpen = () => openJob(row.jobId, row.eqIdx);
-  const onDragStart = () => setDragId(row.jobId);
+  // Drag payload is this specific equipment item — dropping it only ever moves this one item,
+  // never its siblings on the same job.
+  const onDragStart = () => setDragEq({ jobId: row.jobId, eqIdx: row.eqIdx });
   const onDragEnd = () => clearDrag();
 
   if (variant === "row") {

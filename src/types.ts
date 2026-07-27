@@ -51,6 +51,10 @@ export interface Equipment {
   /** parallel to `services` — whether that line item's work is ticked complete */
   doneFlags: boolean[];
   loc?: string;
+  /** which board column this specific piece of equipment sits in — independent of its siblings */
+  stage: Stage;
+  /** Job Details status-bar label for this specific piece of equipment */
+  workStatus: string;
 }
 
 /** Derived, read-only view of one service line (see README "State Management"). */
@@ -70,6 +74,10 @@ export interface JobUpdate {
   hold?: boolean;
   resolved?: boolean;
   resolvedAt?: string;
+  /** which equipment item (index into job.equipment) a hold note applies to — notes are
+   * shared/job-level, but holds are per-item, so this lets the resolve flow target the
+   * right note even when several items on the same job have independent holds. */
+  eqIdx?: number;
 }
 
 export interface Job {
@@ -77,9 +85,8 @@ export interface Job {
   customer: string;
   email: string;
   phone: string;
-  stage: Stage;
+  /** whole-card tint / OVERDUE pill — stays a job-level due-date concern */
   status: CardStatus;
-  workStatus: string;
   due: string;
   pickup: string;
   dropoff?: string;
