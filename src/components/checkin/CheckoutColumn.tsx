@@ -22,7 +22,6 @@ export function CheckoutColumn() {
   const swapToEditor = useAppStore((s) => s.swapToEditor);
   const removeItem = useAppStore((s) => s.removeItem);
   const createJob = useAppStore((s) => s.createJob);
-  const closeNew = useAppStore((s) => s.closeNew);
 
   const [priceDraft, setPriceDraft] = useState("");
 
@@ -285,9 +284,6 @@ export function CheckoutColumn() {
             </button>
           </>
         )}
-        <button onClick={closeNew} className="h-[34px] rounded-[9px] text-[13px] font-medium text-zinc-500 hover:text-ink">
-          Cancel
-        </button>
       </div>
     </div>
   );
