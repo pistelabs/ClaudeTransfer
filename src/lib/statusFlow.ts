@@ -11,7 +11,7 @@ export const STATUS_FLOW: StatusStep[] = [
   { label: "Booked", color: "#64748b", stage: "kiosk" },
   { label: "Checked-in", color: "#0ea5e9", stage: "pending" },
   { label: "In progress", color: "#8b5cf6", stage: "in_progress" },
-  { label: "Pending", color: "#f59e0b", stage: null },
+  { label: "Pending", color: "#f59e0b", stage: "pending" },
   { label: "Ready", color: "#10b981", stage: "awaiting" },
   { label: "Collected", color: "#16a34a", stage: "archive" },
 ];

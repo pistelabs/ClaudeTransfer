@@ -502,7 +502,9 @@ export const useAppStore = create<AppState>((set, get) => ({
       return;
     }
     if (status.label === "Pending") {
-      set({ holdPrompt: true, holdReason: "", holdEqIdx: eqIdx, holdMoveStage: null, menuOpen: false });
+      // Same as dragging onto the Pending column: the item only actually moves once a hold
+      // reason is confirmed, so hand the target stage to the prompt rather than moving now.
+      set({ holdPrompt: true, holdReason: "", holdEqIdx: eqIdx, holdMoveStage: "pending", menuOpen: false });
       return;
     }
     if (status.label === "Ready") {
