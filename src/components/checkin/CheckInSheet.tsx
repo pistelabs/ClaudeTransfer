@@ -83,67 +83,71 @@ export function CheckInSheet() {
         </div>
 
         <div className="flex min-h-0 flex-1">
-          <div className="flex flex-1 flex-col gap-[22px] overflow-y-auto bg-surface-50 p-5">
-            <div className="flex flex-col gap-[11px]">
-              <span className="text-[10.5px] font-bold uppercase tracking-wide text-zinc-400">Customer Details</span>
-              <CustomerSearch />
-            </div>
+          <div className="flex min-h-0 flex-1 flex-col">
+            <div className="flex flex-1 flex-col gap-[22px] overflow-y-auto bg-surface-50 p-5">
+              <div className="flex flex-col gap-[11px]">
+                <span className="text-[10.5px] font-bold uppercase tracking-wide text-zinc-400">Customer Details</span>
+                <CustomerSearch />
+              </div>
 
-            <div className="grid min-w-0 grid-cols-2 items-start gap-[22px]">
-              <NewEquipmentForm />
-              <EquipmentReAddPanel />
-            </div>
+              <div className="grid min-w-0 grid-cols-2 items-start gap-[22px]">
+                <NewEquipmentForm />
+                <EquipmentReAddPanel />
+              </div>
 
-            <ServicesSection />
+              <ServicesSection />
 
-            <div className="flex flex-col gap-[11px]">
-              <span className="text-[10.5px] font-bold uppercase tracking-wide text-zinc-400">Collection</span>
-              <div className="flex gap-2.5">
-                <div className="flex flex-1 flex-col gap-1.5">
-                  <span className="text-[11px] text-zinc-500">Due date</span>
-                  <DueDatePicker />
+              <div className="flex flex-col gap-[11px]">
+                <span className="text-[10.5px] font-bold uppercase tracking-wide text-zinc-400">Collection</span>
+                <div className="flex gap-2.5">
+                  <div className="flex flex-1 flex-col gap-1.5">
+                    <span className="text-[11px] text-zinc-500">Due date</span>
+                    <DueDatePicker />
+                  </div>
+                  <div className="flex flex-1 flex-col gap-1.5">
+                    <span className="text-[11px] text-zinc-500">Pickup</span>
+                    <select
+                      value={nf.pickup}
+                      onChange={(e) => patchNf({ pickup: e.target.value })}
+                      className="h-[38px] w-full cursor-pointer rounded-[9px] border border-border px-2.5 text-[13px] outline-none focus:border-sky focus:shadow-[0_0_0_3px_rgba(2,132,199,0.14)]"
+                    >
+                      <option value="">Select time</option>
+                      {slots.map((t) => (
+                        <option key={t} value={t}>
+                          {t}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
-                <div className="flex flex-1 flex-col gap-1.5">
-                  <span className="text-[11px] text-zinc-500">Pickup</span>
-                  <select
-                    value={nf.pickup}
-                    onChange={(e) => patchNf({ pickup: e.target.value })}
-                    className="h-[38px] w-full cursor-pointer rounded-[9px] border border-border px-2.5 text-[13px] outline-none focus:border-sky focus:shadow-[0_0_0_3px_rgba(2,132,199,0.14)]"
-                  >
-                    <option value="">Select time</option>
-                    {slots.map((t) => (
-                      <option key={t} value={t}>
-                        {t}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <span className="text-[10.5px] font-bold uppercase tracking-wide text-zinc-400">Notes</span>
+                <textarea
+                  value={nf.notes}
+                  onChange={(e) => patchNf({ notes: e.target.value })}
+                  placeholder="Any notes for this job..."
+                  className="min-h-[72px] w-full resize-y rounded-[9px] border border-border px-3 py-2.5 text-[13px] leading-relaxed outline-none focus:border-sky focus:shadow-[0_0_0_3px_rgba(2,132,199,0.14)]"
+                />
               </div>
             </div>
 
-            <div className="flex flex-col gap-1.5">
-              <span className="text-[10.5px] font-bold uppercase tracking-wide text-zinc-400">Notes</span>
-              <textarea
-                value={nf.notes}
-                onChange={(e) => patchNf({ notes: e.target.value })}
-                placeholder="Any notes for this job..."
-                className="min-h-[72px] w-full resize-y rounded-[9px] border border-border px-3 py-2.5 text-[13px] leading-relaxed outline-none focus:border-sky focus:shadow-[0_0_0_3px_rgba(2,132,199,0.14)]"
-              />
+            <div className="flex-shrink-0 border-t border-border bg-white p-4">
+              <button
+                onClick={addAnotherItem}
+                disabled={!nf.brand.trim()}
+                className="flex h-11 w-full items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-[15px] text-[13px] font-semibold text-white"
+                style={{
+                  background: nf.brand.trim() ? "#0284c7" : "#bae6fd",
+                  cursor: nf.brand.trim() ? "pointer" : "not-allowed",
+                  boxShadow: nf.brand.trim() ? "0 1px 2px rgba(2,132,199,0.35)" : "none",
+                }}
+              >
+                <Plus size={14} strokeWidth={2.4} />
+                Add Equipment to Job
+              </button>
             </div>
-
-            <button
-              onClick={addAnotherItem}
-              disabled={!nf.brand.trim()}
-              className="flex h-9 items-center gap-1.5 whitespace-nowrap rounded-lg px-[15px] text-[13px] font-semibold text-white"
-              style={{
-                background: nf.brand.trim() ? "#0284c7" : "#bae6fd",
-                cursor: nf.brand.trim() ? "pointer" : "not-allowed",
-                boxShadow: nf.brand.trim() ? "0 1px 2px rgba(2,132,199,0.35)" : "none",
-              }}
-            >
-              <Plus size={14} strokeWidth={2.4} />
-              Add Equipment to Job
-            </button>
           </div>
 
           <CheckoutColumn />
