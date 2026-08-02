@@ -9,12 +9,19 @@ run the appointment itself, then close it out to the POS or the workshop queue.
 
 ## Running it
 
+Needs Node **^20.19 || >=22.12** — the version Vite, oxlint and rolldown require.
+`nvm use` picks it up from `.nvmrc`.
+
 ```bash
 npm install
 npm run dev      # http://localhost:5173
 npm run build    # typecheck + production bundle
+npm run preview  # serve the built bundle
 npm run lint
 ```
+
+Fonts (Roboto, Geist) are fetched from Google Fonts at runtime, so the first load wants
+network access. Offline the app still runs, just in a system sans-serif.
 
 ## Stack
 
