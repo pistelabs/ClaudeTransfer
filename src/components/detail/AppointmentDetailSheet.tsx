@@ -1,34 +1,48 @@
-import { CalendarCheck, ChevronDown, EllipsisVertical, Trash2, X } from 'lucide-react';
+import { CalendarCheck, EllipsisVertical, Globe, Trash2, X } from 'lucide-react';
 import { STAFF } from '../../data/catalogue';
+import { formatBookedAt, initialsOf } from '../../lib/dates';
 import { useScheduler } from '../../store/useScheduler';
 import { Avatar } from '../ui/Avatar';
+import { Badge, Button } from '../ui/primitives';
 import { useEscape, useOutsideClick } from '../ui/hooks';
 import { AppointmentTab } from './AppointmentTab';
 import { CompleteDialog } from './CompleteDialog';
 import { EquipmentTab } from './EquipmentTab';
 import { FittingTab } from './FittingTab';
 import { useDetail } from './useDetail';
-import type { DetailTab } from '../../types';
+import type { BadgeVariant } from '../ui/primitives';
+import type { BookingSource, DetailTab } from '../../types';
 
 const TAB_LABELS = ['Appointment', 'Fitting', 'Equipment'];
+
+const STATUS_VARIANT: Record<'today' | 'past' | 'upcoming', BadgeVariant> = {
+  today: 'default',
+  past: 'success',
+  upcoming: 'secondary',
+};
+
+/** How a booking reached the diary: a named staff member, the website, or internally. */
+function describeSource(via: BookingSource) {
+  if (via === 'online') return { kind: 'online' as const, label: 'Online', initials: '', color: '' };
+  if (via === 'internal') return { kind: 'internal' as const, label: 'Internal', initials: '', color: '' };
+  const staff = STAFF[via];
+  if (!staff) return { kind: 'internal' as const, label: 'Unknown', initials: '', color: '' };
+  return { kind: 'staff' as const, label: staff.name, initials: staff.initials ?? initialsOf(staff.name), color: staff.dot };
+}
 
 export function AppointmentDetailSheet() {
   const detail = useDetail();
   const detailTab = useScheduler((s) => s.detailTab);
-  const staffOpen = useScheduler((s) => s.detailStaffOpen);
   const apptMenu = useScheduler((s) => s.apptMenu);
   const showComplete = useScheduler((s) => s.showComplete);
   const closeDetail = useScheduler((s) => s.closeDetail);
   const setDetailTab = useScheduler((s) => s.setDetailTab);
-  const setStaffOpen = useScheduler((s) => s.setDetailStaffOpen);
-  const reassignFitter = useScheduler((s) => s.reassignFitter);
   const toggleApptMenu = useScheduler((s) => s.toggleApptMenu);
   const closeApptMenu = useScheduler((s) => s.closeApptMenu);
   const openComplete = useScheduler((s) => s.openComplete);
   const rescheduleAppt = useScheduler((s) => s.rescheduleAppt);
   const deleteAppt = useScheduler((s) => s.deleteAppt);
 
-  const staffRef = useOutsideClick<HTMLDivElement>(staffOpen, () => setStaffOpen(false));
   const menuRef = useOutsideClick<HTMLDivElement>(apptMenu, closeApptMenu);
   useEscape(!showComplete, closeDetail);
 
@@ -38,7 +52,7 @@ export function AppointmentDetailSheet() {
   // Meeting blocks are internal — one Details tab, no fitting or equipment.
   const tabs = isMeeting ? ['Details'] : TAB_LABELS;
   const activeTab: DetailTab = isMeeting ? 0 : detailTab;
-  const fitter = STAFF[appt.s];
+  const source = describeSource(appt.bookedVia);
 
   return (
     <>
@@ -54,56 +68,36 @@ export function AppointmentDetailSheet() {
 
           <div className="detail__head">
             <div className="detail__title-row">
-              <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-                <div className="detail__title">{isMeeting ? appt.c : type.label}</div>
-                <span className={`detail__status detail__status--${status.modifier}`}>{status.label}</span>
+              <div className="detail__heading">
+                <h2 className="detail__title">{isMeeting ? appt.c : type.label}</h2>
+                <Badge variant={STATUS_VARIANT[status.modifier]}>{status.label}</Badge>
               </div>
 
-              {!isMeeting && (
-                <div className="detail__fitter" ref={staffRef}>
-                  <button
-                    className="detail__fitter-trigger"
-                    type="button"
-                    aria-expanded={staffOpen}
-                    onClick={() => setStaffOpen(!staffOpen)}
-                  >
-                    <Avatar initials={fitter.initials} color={fitter.dot} size={28} fontSize={10.5} />
-                    <span style={{ flex: 1, minWidth: 0 }}>
-                      <span className="detail__fitter-name">{fitter.name}</span>
-                      <span className="detail__fitter-role">{fitter.role}</span>
+              {/* When and how the booking was taken, opposite the booking name. */}
+              <div className="booked-meta">
+                <span className="booked-meta__label">Booked</span>
+                <span className="booked-meta__value">
+                  {formatBookedAt(appt.bookedAt)}
+                  <span className="booked-meta__sep" aria-hidden>
+                    ·
+                  </span>
+                  {source.kind === 'staff' ? (
+                    <span className="booked-meta__staff">
+                      <Avatar initials={source.initials} color={source.color} size={18} fontSize={8} />
+                      {source.label}
                     </span>
-                    <ChevronDown size={15} strokeWidth={2} color="var(--n-400)" />
-                  </button>
-                  {staffOpen && (
-                    <div className="detail__fitter-menu" role="listbox">
-                      {STAFF.map((s, si) => (
-                        <button
-                          className={`detail__fitter-row${si === appt.s ? ' detail__fitter-row--on' : ''}`}
-                          type="button"
-                          key={s.name}
-                          onClick={() => reassignFitter(si)}
-                        >
-                          <Avatar initials={s.initials} color={s.dot} size={28} fontSize={10.5} />
-                          <span style={{ flex: 1, minWidth: 0 }}>
-                            <span className="detail__fitter-name">{s.name}</span>
-                            <span className="detail__fitter-role">{s.role}</span>
-                          </span>
-                        </button>
-                      ))}
-                    </div>
+                  ) : (
+                    <Badge variant={source.kind === 'online' ? 'default' : 'secondary'}>
+                      {source.kind === 'online' && <Globe size={12} strokeWidth={2.2} />}
+                      {source.label}
+                    </Badge>
                   )}
-                </div>
-              )}
+                </span>
+              </div>
 
-              <button
-                className="icon-btn"
-                type="button"
-                style={{ width: 30, height: 30 }}
-                aria-label="Close"
-                onClick={closeDetail}
-              >
+              <Button variant="ghost" size="icon" aria-label="Close" onClick={closeDetail}>
                 <X size={16} strokeWidth={2} />
-              </button>
+              </Button>
             </div>
 
             <div className="detail__tabs" role="tablist">

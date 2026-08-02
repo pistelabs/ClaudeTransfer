@@ -93,6 +93,17 @@ export function monthLabel(monthOffset: number, now = new Date()): string {
   return `${d.toLocaleString('en-GB', { month: 'long' })} ${d.getFullYear()}`;
 }
 
+/** `2026-07-28T14:14:00Z` → `28 Jul 2026, 2:14 PM` — when a booking was taken. */
+export function formatBookedAt(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '—';
+  const date = `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+  const mer = d.getHours() < 12 ? 'AM' : 'PM';
+  let h = d.getHours() % 12;
+  if (h === 0) h = 12;
+  return `${date}, ${h}:${String(d.getMinutes()).padStart(2, '0')} ${mer}`;
+}
+
 /** `Emma Stone` → `ES`. */
 export function initialsOf(name: string): string {
   const parts = String(name || '?').trim().split(/\s+/);

@@ -1,0 +1,272 @@
+/**
+ * shadcn/ui component styling, expressed against the project's tokens.
+ * Anatomy and variant names follow shadcn so these can be swapped for the
+ * generated components later without touching call sites.
+ */
+
+/* ---- Card ---- */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+  color: var(--n-800);
+  background: #fff;
+  border: 1px solid var(--n-150);
+  border-radius: var(--r-input);
+  box-shadow: 0 1px 2px rgb(10 10 10 / 4%);
+}
+
+.card__header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px 12px;
+  align-items: center;
+}
+
+.card__title {
+  grid-column: 1;
+  color: var(--n-950);
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.card__description {
+  grid-column: 1;
+  color: var(--n-450);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* Sits in the header's trailing cell, spanning both rows — shadcn's CardAction. */
+.card__action {
+  grid-row: span 2 / span 2;
+  grid-column: 2;
+  align-self: center;
+  justify-self: end;
+}
+
+.card__content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* A card whose header and content are separated by a rule. */
+.card--divided .card__content {
+  padding-top: 14px;
+  border-top: 1px solid var(--n-75);
+}
+
+/* ---- Badge ---- */
+
+.badge {
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
+  padding: 2px 8px;
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.45;
+  white-space: nowrap;
+  border: 1px solid transparent;
+  border-radius: var(--r-control);
+}
+
+.badge--default {
+  color: #fff;
+  background: var(--primary);
+}
+
+.badge--secondary {
+  color: var(--n-600);
+  background: var(--n-60);
+}
+
+.badge--outline {
+  color: var(--n-600);
+  background: #fff;
+  border-color: var(--n-150);
+}
+
+.badge--success {
+  color: var(--success-text);
+  background: var(--success-tint);
+  border-color: var(--success-border);
+}
+
+.badge--warning {
+  color: var(--warning-text);
+  background: var(--warning-bg);
+  border-color: var(--warning-border);
+}
+
+.badge--destructive {
+  color: var(--danger-text);
+  background: var(--danger-tint);
+  border-color: var(--danger-border);
+}
+
+/* ---- Separator ---- */
+
+.separator {
+  flex: 0 0 auto;
+  background: var(--n-150);
+}
+
+.separator--horizontal {
+  width: 100%;
+  height: 1px;
+}
+
+.separator--vertical {
+  width: 1px;
+  height: 100%;
+  min-height: 1em;
+}
+
+/* ---- Label ---- */
+
+.label {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  color: var(--n-700);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+  user-select: none;
+}
+
+/* ---- Button ---- */
+
+.button {
+  display: inline-flex;
+  gap: 7px;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  border: 1px solid transparent;
+  border-radius: var(--r-control);
+  outline: none;
+  cursor: pointer;
+  transition:
+    background-color 0.12s ease,
+    border-color 0.12s ease,
+    color 0.12s ease;
+}
+
+.button:focus-visible {
+  box-shadow: var(--ring);
+}
+
+.button:disabled {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.button--default {
+  color: #fff;
+  background: var(--primary);
+}
+
+.button--default:hover {
+  background: var(--primary-hover);
+}
+
+.button--secondary {
+  color: var(--n-800);
+  background: var(--n-60);
+}
+
+.button--secondary:hover {
+  background: var(--n-100);
+}
+
+.button--outline {
+  color: var(--n-800);
+  background: #fff;
+  border-color: var(--n-150);
+}
+
+.button--outline:hover {
+  background: var(--n-30);
+}
+
+.button--ghost {
+  color: var(--n-600);
+  background: transparent;
+}
+
+.button--ghost:hover {
+  color: var(--n-950);
+  background: var(--n-50);
+}
+
+.button--destructive {
+  color: #fff;
+  background: var(--danger);
+}
+
+.button--destructive:hover {
+  background: #be123c;
+}
+
+.button--success {
+  color: var(--success-text);
+  background: var(--success-tint);
+  border-color: var(--success-border);
+}
+
+.button--size-sm {
+  height: 32px;
+  padding: 0 12px;
+  font-size: 12.5px;
+}
+
+.button--size-default {
+  height: 36px;
+  padding: 0 14px;
+}
+
+.button--size-lg {
+  height: 40px;
+  padding: 0 18px;
+}
+
+.button--size-icon {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+}
+
+/* ---- DataRow ---- */
+
+.data-row {
+  display: flex;
+  gap: 16px;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.data-row__label {
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 8px;
+  align-items: center;
+  margin: 0;
+  color: var(--n-450);
+  font-size: 12.5px;
+}
+
+.data-row__value {
+  margin: 0;
+  color: var(--n-950);
+  font-size: 13px;
+  font-weight: 500;
+  text-align: right;
+}

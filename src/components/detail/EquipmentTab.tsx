@@ -9,6 +9,7 @@ import {
 } from '../../data/catalogue';
 import { useScheduler } from '../../store/useScheduler';
 import type { EquipItem } from '../../types';
+import { Badge, Button, Card, CardAction, CardContent, CardHeader, CardTitle, Label } from '../ui/primitives';
 import { PartyPills } from './PartyPills';
 import type { DetailInfo } from './useDetail';
 
@@ -44,12 +45,28 @@ function EquipmentEntry({ item }: { item: EquipItem }) {
   const flexOptions = equipFlex(item.kind);
 
   return (
-    <div className="equip">
+    <Card className="equip">
+      <CardHeader>
+        <CardTitle>Equipment</CardTitle>
+        <CardAction>
+          <Button
+            variant="ghost"
+            size="icon"
+            title="Remove this equipment"
+            aria-label="Remove this equipment"
+            onClick={() => removeEquip(item.uid)}
+          >
+            <Trash2 size={15} strokeWidth={2} />
+          </Button>
+        </CardAction>
+      </CardHeader>
+      <CardContent>
       <div className="equip__row">
         <div style={{ flex: '0 0 130px' }}>
-          <label className="equip__label">Equipment</label>
+          <Label htmlFor={`kind-${item.uid}`}>Type</Label>
           <select
             className="equip__input"
+            id={`kind-${item.uid}`}
             value={item.kind}
             onChange={(e) => updateEquip(item.uid, 'kind', e.target.value)}
           >
@@ -61,18 +78,20 @@ function EquipmentEntry({ item }: { item: EquipItem }) {
           </select>
         </div>
         <div style={{ flex: '1 1 170px', minWidth: 150 }}>
-          <label className="equip__label">Make &amp; model</label>
+          <Label htmlFor={`model-${item.uid}`}>Make &amp; model</Label>
           <input
             className="equip__input"
+            id={`model-${item.uid}`}
             value={item.model}
             placeholder="e.g. Lange RX 120"
             onChange={(e) => updateEquip(item.uid, 'model', e.target.value)}
           />
         </div>
         <div style={{ flex: '0 0 96px' }}>
-          <label className="equip__label">Size</label>
+          <Label htmlFor={`size-${item.uid}`}>Size</Label>
           <select
             className="equip__input"
+            id={`size-${item.uid}`}
             value={item.size}
             onChange={(e) => updateEquip(item.uid, 'size', e.target.value)}
           >
@@ -86,9 +105,10 @@ function EquipmentEntry({ item }: { item: EquipItem }) {
         </div>
         {flexOptions.length > 0 && (
           <div style={{ flex: '0 0 92px' }}>
-            <label className="equip__label">Flex</label>
+            <Label htmlFor={`flex-${item.uid}`}>Flex</Label>
             <select
               className="equip__input"
+              id={`flex-${item.uid}`}
               value={item.flex}
               onChange={(e) => updateEquip(item.uid, 'flex', e.target.value)}
             >
@@ -101,17 +121,14 @@ function EquipmentEntry({ item }: { item: EquipItem }) {
             </select>
           </div>
         )}
-        <button className="equip__delete" type="button" title="Remove" onClick={() => removeEquip(item.uid)}>
-          <Trash2 size={15} strokeWidth={2} />
-        </button>
       </div>
 
       <div className="equip__services">
         <div className="equip__services-head">
-          <div className="answer-label">Services</div>
-          <div className="equip__svc-count">
+          <div className="answer-label">Services applied</div>
+          <Badge variant={item.services.length > 0 ? 'default' : 'secondary'}>
             {item.services.length === 0 ? 'None selected' : `${item.services.length} selected`}
-          </div>
+          </Badge>
         </div>
 
         <div className="equip__svc-tabs" role="tablist">
@@ -209,7 +226,7 @@ function EquipmentEntry({ item }: { item: EquipItem }) {
                   </div>
                   <div className="equip-entry__fields">
                     <div style={{ flex: '1 1 170px', minWidth: 140 }}>
-                      <label className="equip__label">Location</label>
+                      <Label htmlFor={`loc-${svc.sid}`}>Location</Label>
                       <input
                         className="equip-entry__input"
                         value={svc.location}
@@ -218,7 +235,7 @@ function EquipmentEntry({ item }: { item: EquipItem }) {
                       />
                     </div>
                     <div style={{ flex: '0 0 110px' }}>
-                      <label className="equip__label">Side</label>
+                      <Label htmlFor={`side-${svc.sid}`}>Side</Label>
                       <select
                         className="equip-entry__input"
                         value={svc.side}
@@ -232,7 +249,7 @@ function EquipmentEntry({ item }: { item: EquipItem }) {
                       </select>
                     </div>
                     <div style={{ flex: '1 1 170px', minWidth: 140 }}>
-                      <label className="equip__label">Note</label>
+                      <Label htmlFor={`note-${svc.sid}`}>Note</Label>
                       <input
                         className="equip-entry__input"
                         value={svc.note}
@@ -247,6 +264,7 @@ function EquipmentEntry({ item }: { item: EquipItem }) {
           </div>
         )}
       </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

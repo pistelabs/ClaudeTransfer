@@ -39,9 +39,17 @@ export interface Appointment {
   /** buffer before / after, minutes */
   bb: number;
   ba: number;
-  /** name of the staff member who took the booking */
-  by?: string | null;
+  /** when the booking was taken, ISO 8601 */
+  bookedAt: string;
+  /** how it was taken: a staff index, or `'online'` for customer self-service */
+  bookedVia: BookingSource;
 }
+
+/**
+ * A staff index when a member of staff took the booking, `'online'` when the
+ * customer booked themselves, `'internal'` for blocks nobody books — team meetings.
+ */
+export type BookingSource = number | 'online' | 'internal';
 
 /** An appointment placed into a lane by the overlap packer. */
 export interface LaidOutAppt extends Appointment {
@@ -121,7 +129,6 @@ export interface EquipServiceGroup {
 
 /** Captured information for one appointment, answers kept per person on the booking. */
 export interface ApptRecord {
-  bookedBy?: number;
   questionnaire?: QuestionnaireMode;
   /** customer questionnaire answers, keyed by index in the party */
   fittingByCustomer?: Record<number, Answers>;

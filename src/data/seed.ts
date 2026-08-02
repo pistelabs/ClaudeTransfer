@@ -1,11 +1,11 @@
-import type { Appointment, ApptRecord, Customer, TypeCode } from '../types';
+import type { Appointment, ApptRecord, BookingSource, Customer, TypeCode } from '../types';
 
 /**
  * Seeded bookings. `d` is the day index in the source week; the busy day is
  * shifted so it lands on today when the app boots (see {@link seedAppointments}).
  * Replace this whole module with the bookings API.
  */
-const BASE: Omit<Appointment, 'id' | 'bb' | 'ba'>[] = [
+const BASE: Omit<Appointment, 'id' | 'bb' | 'ba' | 'bookedAt' | 'bookedVia'>[] = [
   // Tuesday (day 1) — busy
   { d: 1, s: 0, st: 540, du: 90, t: 'BF', c: 'Daniel Reyes', n: 'New Lange RX 120, narrow heel. Bring old boots.' },
   { d: 1, s: 0, st: 660, du: 45, t: 'HM', c: 'Lena Fischer', n: 'Heat mold liners, session 2.' },
@@ -55,15 +55,38 @@ function buffersFor(t: TypeCode): { bb: number; ba: number } {
   return { bb: 0, ba: 0 };
 }
 
+/**
+ * Roughly two in five bookings come in through the website; the rest are taken
+ * by whichever staff member answered. Deterministic so the demo is stable.
+ */
+function sourceFor(i: number, staffCount: number): BookingSource {
+  return i % 5 === 0 || i % 5 === 3 ? 'online' : i % staffCount;
+}
+
+/** Bookings are taken somewhere between a day and three weeks ahead. */
+function bookedAtFor(i: number, dayIdx: number, now: Date): string {
+  const appointment = new Date(now.getFullYear(), now.getMonth(), now.getDate() + (dayIdx - ((now.getDay() + 6) % 7)));
+  const leadDays = 1 + ((i * 7) % 20);
+  const taken = new Date(appointment);
+  taken.setDate(taken.getDate() - leadDays);
+  taken.setHours(9 + ((i * 3) % 9), (i * 17) % 60, 0, 0);
+  return taken.toISOString();
+}
+
 /** Shifts the seeded week so the busy Tuesday lands on today. */
-export function seedAppointments(todayIdx: number): Appointment[] {
+export function seedAppointments(todayIdx: number, staffCount = 4, now = new Date()): Appointment[] {
   const offset = (todayIdx - 1 + 7) % 7;
-  return BASE.map((a, i) => ({
-    ...a,
-    d: (a.d + offset) % 7,
-    id: 'b' + i,
-    ...buffersFor(a.t),
-  }));
+  return BASE.map((a, i) => {
+    const d = (a.d + offset) % 7;
+    return {
+      ...a,
+      d,
+      id: 'b' + i,
+      ...buffersFor(a.t),
+      bookedAt: bookedAtFor(i, d, now),
+      bookedVia: sourceFor(i, staffCount),
+    };
+  });
 }
 
 export const SEED_CUSTOMERS: Customer[] = [
@@ -90,7 +113,6 @@ export const SEED_CUSTOMERS: Customer[] = [
 /** Information already captured against a few of the seeded bookings. */
 export const SEED_RECORDS: Record<string, ApptRecord> = {
   b0: {
-    bookedBy: 0,
     questionnaire: 'email',
     fittingByCustomer: {
       0: { height: '182 cm', weight: '81 kg', ability: 'Advanced', days: '16–40', terrain: 'All-mountain', injuries: 'Left ankle fracture, 2019' },
@@ -101,7 +123,6 @@ export const SEED_RECORDS: Record<string, ApptRecord> = {
     details: { mondo: '27.5 / EU 43', current: 'Salomon S/Pro 120, 4 seasons', issues: 'Narrow heel / heel lift', orthotic: 'No' },
   },
   b1: {
-    bookedBy: 1,
     questionnaire: 'now',
     fittingByCustomer: {
       0: { height: '168 cm', weight: '62 kg', ability: 'Intermediate', days: '6–15', terrain: 'Groomed piste', injuries: '' },
@@ -109,7 +130,6 @@ export const SEED_RECORDS: Record<string, ApptRecord> = {
     details: { boots: 'Nordica Speedmachine 95', liner: 'Stock liner', session: 'Re-mold / adjustment' },
   },
   b2: {
-    bookedBy: 0,
     questionnaire: 'email',
     fittingByCustomer: {
       0: { height: '175 cm', weight: '78 kg', ability: 'Expert / Race', days: '40+', terrain: 'Race', injuries: '' },

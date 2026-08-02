@@ -466,8 +466,6 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
       si = found === -1 ? 0 : found;
     }
 
-    const by = s.bookedBy !== null ? STAFF[s.bookedBy].name : null;
-    const note = [f.note.trim(), by ? `Booked by ${by}` : ''].filter(Boolean).join(' · ');
     const sv = serviceById(f.service);
     const seats = Array.from({ length: seatCountOf(s) }, (_, i) => seatAt(s, i));
     const names = seats.map((x) => x.customer.trim()).filter(Boolean);
@@ -480,11 +478,13 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
       du: f.dur,
       t: f.type,
       c: names[0] || f.customer.trim(),
-      n: note,
-      by,
+      n: f.note.trim(),
       bb: sv?.bb ?? 0,
       ba: sv?.ba ?? 0,
       party: names.length > 1 ? names : undefined,
+      // Taken in store right now; a self-service booking would arrive as 'online'.
+      bookedAt: new Date().toISOString(),
+      bookedVia: s.bookedBy ?? 'online',
     };
 
     set((st) => ({
@@ -495,7 +495,6 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
           fittingByCustomer: { 0: { ...st.fitting } },
           details: { ...seats[0].details },
           seats: seats.map((x) => ({ customer: x.customer, details: x.details })),
-          bookedBy: st.bookedBy ?? undefined,
           questionnaire: st.questionnaire,
         },
       },
@@ -589,6 +588,8 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
       n: 'Internal · all hands',
       bb: 0,
       ba: 0,
+      bookedAt: new Date().toISOString(),
+      bookedVia: 'internal',
     }));
     set((s) => ({ appts: [...s.appts, ...blocks], showMeeting: false, view: 'day', selDay: m.day }));
   },

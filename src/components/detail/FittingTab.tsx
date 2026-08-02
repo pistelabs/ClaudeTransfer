@@ -3,6 +3,7 @@ import { FITTING_QUESTIONS, STAFF_QUESTIONS } from '../../data/catalogue';
 import { useScheduler } from '../../store/useScheduler';
 import type { Answers, QuestionField } from '../../types';
 import { Field } from '../ui/Field';
+import { Badge, Button, Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle, Label } from '../ui/primitives';
 import { PartyPills } from './PartyPills';
 import type { DetailInfo } from './useDetail';
 
@@ -62,63 +63,75 @@ export function FittingTab({ detail }: { detail: DetailInfo }) {
         </button>
       </div>
 
-      <div className="capture-note">
-        {onCustomer
-          ? 'Completed by the customer before or during the appointment'
-          : 'Recorded by the fitter during the appointment'}
-      </div>
-
-      {!editable && !hasAnswers ? (
-        <div className="empty-state" style={{ marginTop: 14 }}>
-          <div className="empty-state__title">Check in to start the assessment</div>
-          <div className="empty-state__body">
-            These measurements unlock once the customer is checked in at the bench.
-          </div>
-        </div>
-      ) : (
-        <>
-          <div className="answer-grid">
-            {questions.map((q: QuestionField) => {
-              const value = answers[q.id] ?? '';
-              if (!editable) {
-                return (
-                  <div className="answer-readonly" key={q.id}>
-                    <div className="answer-label">{q.label}</div>
-                    <div className={`answer-readonly__value${value ? '' : ' answer-readonly__value--empty'}`}>
-                      {value || 'Not recorded'}
-                    </div>
-                  </div>
-                );
-              }
-              return (
-                <div key={q.id}>
-                  <div className="answer-label">{q.label}</div>
-                  <Field
-                    field={q}
-                    value={value}
-                    className="answer-input"
-                    onChange={(v) => (onCustomer ? setCustAnswer(custIdx, q.id, v) : setStaffAnswer(custIdx, q.id, v))}
-                  />
-                </div>
-              );
-            })}
-          </div>
-
-          {editable && (
-            <div className="save-row">
-              {stamp && <span className="save-stamp">Saved {stamp}</span>}
-              <button
-                className={`save-btn${stamp ? ' save-btn--done' : ''}`}
-                type="button"
-                onClick={() => markSaved(suffix)}
-              >
-                <Check size={15} strokeWidth={2.4} />
-                {stamp ? 'Completed' : onCustomer ? 'Complete customer questions' : 'Complete assessment'}
-              </button>
-            </div>
+      <Card className="detail__panel">
+        <CardHeader>
+          <CardTitle>{onCustomer ? 'Customer questions' : 'Staff assessment'}</CardTitle>
+          <CardDescription>
+            {onCustomer
+              ? 'Completed by the customer before or during the appointment'
+              : 'Recorded by the fitter during the appointment'}
+          </CardDescription>
+          {stamp && (
+            <CardAction>
+              <Badge variant="success">
+                <Check size={12} strokeWidth={3} />
+                Saved {stamp}
+              </Badge>
+            </CardAction>
           )}
-        </>
-      )}
+        </CardHeader>
+
+        <CardContent>
+          {!editable && !hasAnswers ? (
+            <div className="empty-state">
+              <div className="empty-state__title">Check in to start the assessment</div>
+              <div className="empty-state__body">
+                These measurements unlock once the customer is checked in at the bench.
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="answer-grid">
+                {questions.map((q: QuestionField) => {
+                  const value = answers[q.id] ?? '';
+                  if (!editable) {
+                    return (
+                      <div className="answer-readonly" key={q.id}>
+                        <div className="answer-label">{q.label}</div>
+                        <div className={`answer-readonly__value${value ? '' : ' answer-readonly__value--empty'}`}>
+                          {value || 'Not recorded'}
+                        </div>
+                      </div>
+                    );
+                  }
+                  return (
+                    <div className="answer-field" key={q.id}>
+                      <Label htmlFor={`fit-${q.id}`}>{q.label}</Label>
+                      <Field
+                        field={q}
+                        value={value}
+                        className="answer-input"
+                        onChange={(v) =>
+                          onCustomer ? setCustAnswer(custIdx, q.id, v) : setStaffAnswer(custIdx, q.id, v)
+                        }
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+
+              {editable && (
+                <div className="save-row">
+                  <Button variant={stamp ? 'success' : 'default'} onClick={() => markSaved(suffix)}>
+                    <Check size={15} strokeWidth={2.4} />
+                    {stamp ? 'Completed' : onCustomer ? 'Complete customer questions' : 'Complete assessment'}
+                  </Button>
+                </div>
+              )}
+            </>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
