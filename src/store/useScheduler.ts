@@ -144,6 +144,7 @@ interface Actions {
   closeAddMenu: () => void;
 
   setColWidth: (key: string, w: number) => void;
+  setColWidths: (entries: Record<string, number>) => void;
   setDrag: (d: DragState | null) => void;
   commitDrag: () => void;
   setSelection: (s: SelectionState | null) => void;
@@ -303,6 +304,7 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
   closeAddMenu: () => set({ addMenu: false }),
 
   setColWidth: (key, w) => set((s) => ({ colW: { ...s.colW, [key]: w } })),
+  setColWidths: (entries) => set((s) => ({ colW: { ...s.colW, ...entries } })),
   setDrag: (drag) => set({ drag }),
   /** Commits a drag, unless the target slot is already taken — those drops are rejected. */
   commitDrag: () =>

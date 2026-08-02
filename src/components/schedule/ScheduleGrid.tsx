@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, type CSSProperties, type MouseEvent } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type MouseEvent } from 'react';
 import { SHOP_HOURS, STAFF } from '../../data/catalogue';
 import { conflictIds, layout } from '../../lib/schedule';
 import {
@@ -54,6 +54,7 @@ export function ScheduleGrid() {
   const drag = useScheduler((s) => s.drag);
   const sel = useScheduler((s) => s.sel);
   const setColWidth = useScheduler((s) => s.setColWidth);
+  const setColWidths = useScheduler((s) => s.setColWidths);
   const setDrag = useScheduler((s) => s.setDrag);
   const commitDrag = useScheduler((s) => s.commitDrag);
   const setSelection = useScheduler((s) => s.setSelection);
@@ -68,7 +69,18 @@ export function ScheduleGrid() {
 
   const isWeek = view === 'week';
   const colKey = (idx: number) => `${view}:${idx}`;
-  const widthOf = (idx: number) => colW[colKey(idx)] ?? DEFAULT_WIDTH[view];
+
+  // Track the visible width so untouched columns can share it evenly.
+  const [viewportW, setViewportW] = useState(0);
+  useLayoutEffect(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const measure = () => setViewportW(el.clientWidth);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   // Appointments with the in-flight drag position applied, so the block and any
   // conflict styling track the pointer live.
@@ -117,9 +129,17 @@ export function ScheduleGrid() {
         };
       });
 
-  // Columns keep their width as a flex basis and share any spare space, so a wide
-  // window fills edge to edge while a narrow one scrolls horizontally instead.
-  const gridMinWidth = GRID.GUTTER + columns.reduce((sum, c) => sum + widthOf(c.idx), 0);
+  /**
+   * Untouched columns share the viewport evenly so a wide window fills edge to
+   * edge. A column the user has resized keeps exactly the width they set — including
+   * narrower than an even share, which leaves canvas to the right.
+   */
+  const autoWidth = Math.max(
+    DEFAULT_WIDTH[view],
+    columns.length > 0 ? Math.floor((viewportW - GRID.GUTTER) / columns.length) : 0,
+  );
+  const widthOf = (idx: number) => colW[colKey(idx)] ?? autoWidth;
+  const gridWidth = GRID.GUTTER + columns.reduce((sum, c) => sum + widthOf(c.idx), 0);
 
   // ---- interactions ------------------------------------------------------
 
@@ -127,10 +147,14 @@ export function ScheduleGrid() {
     if (e.button !== 0) return;
     e.preventDefault();
     e.stopPropagation();
-    // Measure the rendered width: columns grow past their basis to fill spare space,
-    // so the stored width alone would make the first drag jump.
-    const rendered = e.currentTarget.parentElement?.offsetWidth ?? widthOf(idx);
-    resizeRef.current = { key: colKey(idx), x: e.clientX, w: rendered };
+    // Pin every column at its current width before the first drag, so taking manual
+    // control of one column doesn't make the others jump to a different default.
+    const pinned: Record<string, number> = {};
+    for (const c of columns) {
+      if (colW[colKey(c.idx)] === undefined) pinned[colKey(c.idx)] = autoWidth;
+    }
+    if (Object.keys(pinned).length > 0) setColWidths(pinned);
+    resizeRef.current = { key: colKey(idx), x: e.clientX, w: widthOf(idx) };
   };
 
   const startDrag = (e: MouseEvent<HTMLDivElement>, a: LaidOutAppt) => {
@@ -240,7 +264,7 @@ export function ScheduleGrid() {
 
   return (
     <div className="grid" ref={scrollerRef}>
-      <div className="grid__inner" style={{ minWidth: gridMinWidth }}>
+      <div className="grid__inner" style={{ width: gridWidth }}>
         <div className="grid__head">
           <div className="grid__head-gutter" />
           {columns.map((col) => {
@@ -249,7 +273,7 @@ export function ScheduleGrid() {
               <div
                 className={`col-head${col.today ? ' col-head--today' : ''}${col.past ? ' col-head--past' : ''}`}
                 key={col.idx}
-                style={{ flex: `1 0 ${width}px` }}
+                style={{ flex: `0 0 ${width}px`, width }}
               >
                 {col.isStaff && <Avatar initials={col.initials} color={col.dot} size={24} fontSize={10} />}
                 <div style={{ flex: 1, minWidth: 0 }} title={col.fullSub}>
@@ -292,7 +316,7 @@ export function ScheduleGrid() {
                   key={col.idx}
                   data-schedcol={col.idx}
                   title="Click or drag an empty slot to book"
-                  style={{ flex: `1 0 ${width}px`, height: durToPx(GRID.HOURS * 60) }}
+                  style={{ flex: `0 0 ${width}px`, width, height: durToPx(GRID.HOURS * 60) }}
                   onMouseDown={(e) => startSelection(e, col.idx)}
                 >
                   <div className="band band--shift" style={bandStyle(col.shift[0], col.shift[1])} />
