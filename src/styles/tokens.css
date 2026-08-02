@@ -1,0 +1,90 @@
+/**
+ * Design tokens for the bootfitting scheduler.
+ * Base colour: shadcn Neutral. Primary: Sky. Radius: small.
+ */
+:root {
+  /* neutrals */
+  --n-950: #0a0a0a;
+  --n-800: #292524;
+  --n-700: #404040;
+  --n-600: #525252;
+  --n-550: #57534e;
+  --n-500: #78716c;
+  --n-450: #737373;
+  --n-400: #a3a3a3;
+  --n-350: #a8a29e;
+  --n-300: #c2beb9;
+  --n-250: #d4d4d4;
+  --n-200: #d6d3d0;
+  --n-150: #e5e5e5;
+  --n-125: #e7e5e4;
+  --n-100: #eae7e4;
+  --n-75: #f0f0f0;
+  --n-70: #f0eeec;
+  --n-60: #f2f0ee;
+  --n-50: #f5f5f5;
+  --n-45: #f5f4f2;
+  --n-30: #fafafa;
+  --n-25: #faf9f8;
+  --n-15: #fbfaf9;
+  --white: #ffffff;
+
+  /* schedule surfaces run warmer than the chrome */
+  --canvas: #eae6e2;
+  --grid-fill: #f0edea;
+  --grid-rule: #e0dbd6;
+  --app-bg: #f4f3f1;
+
+  /* semantic */
+  --primary: #0284c7;
+  --primary-hover: #0369a1;
+  --primary-tint: #f0f9ff;
+  --primary-border: #bae6fd;
+  --primary-text: #075985;
+  --primary-bg: #e0f2fe;
+
+  --success: #0d9488;
+  --success-tint: #ccfbf1;
+  --success-border: #99f6e4;
+  --success-text: #115e59;
+
+  --warning: #d97706;
+  --warning-tint: #fffbeb;
+  --warning-border: #fcd34d;
+  --warning-text: #92400e;
+  --warning-bg: #fef3c7;
+
+  --danger: #e11d48;
+  --danger-tint: #fff1f2;
+  --danger-border: #fecdd3;
+  --danger-text: #9f1239;
+
+  --dark-action: #1c1917;
+
+  /* typography */
+  --font-ui: 'Geist', system-ui, -apple-system, sans-serif;
+  --font-display: 'Roboto', system-ui, sans-serif;
+
+  /* radii */
+  --r-control: 6px;
+  --r-input: 8px;
+  --r-pill: 999px;
+
+  /* shadows */
+  --sh-header: 0 1px 2px rgb(0 0 0 / 3%);
+  --sh-dropdown: 0 12px 28px rgb(41 37 36 / 16%);
+  --sh-search: 0 16px 40px rgb(41 37 36 / 16%);
+  --sh-sheet: -18px 0 50px rgb(41 37 36 / 22%);
+  --sh-dialog: 0 18px 50px rgb(41 37 36 / 18%);
+  --sh-modal: 0 24px 60px rgb(0 0 0 / 28%);
+  --ring: 0 0 0 3px rgb(2 132 199 / 12%);
+
+  /* geometry */
+  --hour-px: 64px;
+  --gutter: 66px;
+  --header-h: 56px;
+  --sheet-w: min(880px, 94vw);
+
+  /* motion */
+  --ease-sheet: cubic-bezier(0.32, 0.72, 0, 1);
+}
