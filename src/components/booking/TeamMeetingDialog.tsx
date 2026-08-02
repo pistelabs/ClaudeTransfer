@@ -2,6 +2,7 @@ import { Check, X } from 'lucide-react';
 import { STAFF } from '../../data/catalogue';
 import { DAY_INFO, useScheduler } from '../../store/useScheduler';
 import { Avatar } from '../ui/Avatar';
+import { Badge, Button, Label } from '../ui/primitives';
 import { useEscape } from '../ui/hooks';
 
 const LENGTHS = [
@@ -43,15 +44,13 @@ export function TeamMeetingDialog() {
             <div className="dialog__title">Team meeting</div>
             <div className="dialog__sub">Blocks the selected fitters&rsquo; columns.</div>
           </div>
-          <button className="dialog__close" type="button" aria-label="Close" onClick={close}>
+          <Button variant="ghost" size="icon" aria-label="Close" onClick={close}>
             <X size={17} strokeWidth={2} />
-          </button>
+          </Button>
         </div>
 
         <div style={{ marginTop: 18 }}>
-          <label className="nc__label" htmlFor="mt-title">
-            Title
-          </label>
+          <Label htmlFor="mt-title">Title</Label>
           <input
             className="nc__input"
             id="mt-title"
@@ -64,9 +63,7 @@ export function TeamMeetingDialog() {
 
         <div className="meeting__row">
           <div style={{ flex: 1.4 }}>
-            <label className="nc__label" htmlFor="mt-day">
-              Day
-            </label>
+            <Label htmlFor="mt-day">Day</Label>
             <select
               className="nc__input"
               id="mt-day"
@@ -82,9 +79,7 @@ export function TeamMeetingDialog() {
             </select>
           </div>
           <div style={{ flex: 1 }}>
-            <label className="nc__label" htmlFor="mt-time">
-              Start
-            </label>
+            <Label htmlFor="mt-time">Start</Label>
             <input
               className="nc__input"
               id="mt-time"
@@ -96,9 +91,7 @@ export function TeamMeetingDialog() {
             />
           </div>
           <div style={{ flex: 1 }}>
-            <label className="nc__label" htmlFor="mt-dur">
-              Length
-            </label>
+            <Label htmlFor="mt-dur">Length</Label>
             <select
               className="nc__input"
               id="mt-dur"
@@ -117,11 +110,11 @@ export function TeamMeetingDialog() {
 
         <div style={{ marginTop: 16 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginBottom: 8 }}>
-            <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--n-800)' }}>Attendees</span>
+            <Label>Attendees</Label>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <span style={{ fontSize: 11.5, color: 'var(--n-350)' }}>
+              <Badge variant={meeting.who.length > 0 ? 'outline' : 'secondary'}>
                 {meeting.who.length} of {STAFF.length} selected
-              </span>
+              </Badge>
               <button
                 type="button"
                 style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '3px 4px', background: 'none', border: 'none', cursor: 'pointer' }}
@@ -156,12 +149,12 @@ export function TeamMeetingDialog() {
         </div>
 
         <div className="dialog__actions">
-          <button className="btn-secondary" type="button" onClick={close}>
+          <Button variant="outline" size="lg" onClick={close}>
             Cancel
-          </button>
-          <button className="btn-primary" type="button" disabled={!canSave} onClick={save}>
+          </Button>
+          <Button size="lg" disabled={!canSave} onClick={save}>
             Add meeting
-          </button>
+          </Button>
         </div>
       </div>
     </div>

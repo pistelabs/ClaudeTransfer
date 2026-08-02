@@ -90,10 +90,24 @@ export function Button({
 
 // ---- Definition row ------------------------------------------------------
 
-/** A labelled fact inside a Card — the read-only counterpart to Label + Input. */
-export function DataRow({ icon, label, children }: { icon?: ReactNode; label: string; children: ReactNode }) {
+/**
+ * A labelled fact inside a Card — the read-only counterpart to Label + Input.
+ * Pass `control` when the value is an interactive field rather than text, so it
+ * gets left-aligned and room to breathe.
+ */
+export function DataRow({
+  icon,
+  label,
+  control,
+  children,
+}: {
+  icon?: ReactNode;
+  label: string;
+  control?: boolean;
+  children: ReactNode;
+}) {
   return (
-    <div className="data-row">
+    <div className={cx('data-row', control && 'data-row--control')}>
       <dt className="data-row__label">
         {icon}
         {label}

@@ -131,13 +131,25 @@
 
 .label {
   display: flex;
-  gap: 6px;
+  gap: 4px;
   align-items: center;
   color: var(--n-700);
   font-size: 12px;
   font-weight: 500;
   line-height: 1;
   user-select: none;
+}
+
+.label__required {
+  color: var(--danger);
+}
+
+/* Form rows in the booking sheet and dialogs stack label over control. */
+.field-grid .label,
+.nc__row .label,
+.meeting__row .label,
+.dialog .label {
+  margin-bottom: 7px;
 }
 
 /* ---- Button ---- */
@@ -269,4 +281,15 @@
   font-size: 13px;
   font-weight: 500;
   text-align: right;
+}
+
+/* A row whose value is an interactive control rather than text. */
+.data-row--control {
+  align-items: center;
+}
+
+.data-row--control .data-row__value {
+  flex: 0 1 280px;
+  min-width: 0;
+  text-align: left;
 }

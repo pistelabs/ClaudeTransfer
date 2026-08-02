@@ -1,5 +1,6 @@
 import { Mail, MessageCircle, X } from 'lucide-react';
 import { useScheduler } from '../../store/useScheduler';
+import { Button, Label } from '../ui/primitives';
 import { useEscape } from '../ui/hooks';
 
 export function NewCustomerDialog() {
@@ -25,16 +26,14 @@ export function NewCustomerDialog() {
             <div className="dialog__title">Add a customer</div>
             <div className="dialog__sub">Enter the customer&rsquo;s information below.</div>
           </div>
-          <button className="dialog__close" type="button" aria-label="Close" onClick={close}>
+          <Button variant="ghost" size="icon" aria-label="Close" onClick={close}>
             <X size={17} strokeWidth={2} />
-          </button>
+          </Button>
         </div>
 
         <div className="nc__row" style={{ marginTop: 20 }}>
           <div style={{ flex: 1 }}>
-            <label className="nc__label" htmlFor="nc-first">
-              First name
-            </label>
+            <Label htmlFor="nc-first">First name</Label>
             <input
               className="nc__input"
               id="nc-first"
@@ -44,9 +43,7 @@ export function NewCustomerDialog() {
             />
           </div>
           <div style={{ flex: 1 }}>
-            <label className="nc__label" htmlFor="nc-last">
-              Last name
-            </label>
+            <Label htmlFor="nc-last">Last name</Label>
             <input
               className="nc__input"
               id="nc-last"
@@ -59,9 +56,7 @@ export function NewCustomerDialog() {
 
         <div className="nc__row">
           <div style={{ flex: 1 }}>
-            <label className="nc__label" htmlFor="nc-email">
-              Email address
-            </label>
+            <Label htmlFor="nc-email">Email address</Label>
             <input
               className="nc__input"
               id="nc-email"
@@ -72,9 +67,7 @@ export function NewCustomerDialog() {
             />
           </div>
           <div style={{ flex: 1 }}>
-            <label className="nc__label" htmlFor="nc-phone">
-              Phone number
-            </label>
+            <Label htmlFor="nc-phone">Phone number</Label>
             <input
               className="nc__input"
               id="nc-phone"
@@ -87,7 +80,7 @@ export function NewCustomerDialog() {
         </div>
 
         <div style={{ marginTop: 18 }}>
-          <span className="nc__label">Preferred contact channel</span>
+          <Label>Preferred contact channel</Label>
           <div style={{ display: 'flex', gap: 14 }}>
             <button
               className={`nc__channel${nc.channel === 'Email' ? ' nc__channel--on' : ''}`}
@@ -111,12 +104,12 @@ export function NewCustomerDialog() {
         </div>
 
         <div className="dialog__actions">
-          <button className="btn-secondary" type="button" onClick={close}>
+          <Button variant="outline" size="lg" onClick={close}>
             Cancel
-          </button>
-          <button className="nc__save" type="button" disabled={!nc.first.trim()} onClick={saveNewCust}>
+          </Button>
+          <Button size="lg" className="nc__save" disabled={!nc.first.trim()} onClick={saveNewCust}>
             Add customer
-          </button>
+          </Button>
         </div>
       </div>
     </div>

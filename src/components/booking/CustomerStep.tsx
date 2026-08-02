@@ -9,6 +9,7 @@ import {
 } from '../../store/useScheduler';
 import type { QuestionnaireMode } from '../../types';
 import { Field } from '../ui/Field';
+import { Badge, Label } from '../ui/primitives';
 import { CustomerSearch } from './CustomerSearch';
 
 const QUESTIONNAIRE_OPTIONS: { k: QuestionnaireMode; label: string; sub: string }[] = [
@@ -48,9 +49,10 @@ export function CustomerStep() {
         <div className="field-grid">
           {fields.map((f) => (
             <div key={f.id}>
-              <label className="field-label" htmlFor={`req-${f.id}`}>
-                {f.label} {f.req ? '*' : ''}
-              </label>
+              <Label htmlFor={`req-${f.id}`}>
+                {f.label}
+                {f.req && <span className="label__required" aria-hidden>*</span>}
+              </Label>
               <Field field={{ ...f }} value={details[f.id] ?? ''} onChange={(v) => setDetailField(f.id, v)} />
             </div>
           ))}
@@ -98,14 +100,14 @@ export function CustomerStep() {
           <div className="questionnaire-inline">
             <div className="questionnaire-inline__head">
               <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--n-800)' }}>Fitting questionnaire</div>
-              <div style={{ fontSize: 11.5, color: 'var(--n-350)' }}>
+              <Badge variant={answered > 0 ? 'outline' : 'secondary'}>
                 {answered} of {FITTING_QUESTIONS.length} answered
-              </div>
+              </Badge>
             </div>
             <div className="field-grid" style={{ marginTop: 14 }}>
               {FITTING_QUESTIONS.map((f) => (
                 <div key={f.id}>
-                  <label className="field-label">{f.label}</label>
+                  <Label>{f.label}</Label>
                   <Field field={f} value={fitting[f.id] ?? ''} onChange={(v) => setFittingField(f.id, v)} />
                 </div>
               ))}

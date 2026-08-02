@@ -8,23 +8,21 @@ import { PartyPills } from './PartyPills';
 import type { DetailInfo } from './useDetail';
 
 /**
- * Two backend-defined question sets rendered identically. Customer questions can
- * be filled before or during the appointment; the staff assessment only unlocks
- * once that person is checked in. Both are saved per person, not per booking.
+ * Two backend-defined question sets rendered identically — same card, same
+ * labelled fields, same completion action. Both are editable at any point and
+ * saved per person on the booking, not per appointment.
  */
 export function FittingTab({ detail }: { detail: DetailInfo }) {
-  const { appt, party, custIdx } = detail;
+  const { appt, custIdx } = detail;
   const who = useScheduler((s) => s.detailWho);
   const setWho = useScheduler((s) => s.setDetailWho);
   const records = useScheduler((s) => s.records);
   const saved = useScheduler((s) => s.saved);
-  const checkins = useScheduler((s) => s.checkins);
   const setCustAnswer = useScheduler((s) => s.setCustAnswer);
   const setStaffAnswer = useScheduler((s) => s.setStaffAnswer);
   const markSaved = useScheduler((s) => s.markSaved);
 
   const rec = records[appt.id] ?? {};
-  const checkedIn = !!checkins[party[custIdx].key];
   const onCustomer = who === 'customer';
 
   const answers: Answers = onCustomer
@@ -33,10 +31,6 @@ export function FittingTab({ detail }: { detail: DetailInfo }) {
   const questions = onCustomer ? FITTING_QUESTIONS : STAFF_QUESTIONS;
   const suffix = onCustomer ? `c${custIdx}` : `s${custIdx}`;
   const stamp = saved[`${appt.id}:${suffix}`];
-
-  const hasAnswers = questions.some((q) => (answers[q.id] ?? '').trim());
-  // Staff measurements are captured at the bench; before check-in they are read-only.
-  const editable = onCustomer || checkedIn;
 
   return (
     <div>
@@ -82,54 +76,26 @@ export function FittingTab({ detail }: { detail: DetailInfo }) {
         </CardHeader>
 
         <CardContent>
-          {!editable && !hasAnswers ? (
-            <div className="empty-state">
-              <div className="empty-state__title">Check in to start the assessment</div>
-              <div className="empty-state__body">
-                These measurements unlock once the customer is checked in at the bench.
+          <div className="answer-grid">
+            {questions.map((q: QuestionField) => (
+              <div className="answer-field" key={q.id}>
+                <Label htmlFor={`fit-${q.id}`}>{q.label}</Label>
+                <Field
+                  field={q}
+                  value={answers[q.id] ?? ''}
+                  className="answer-input"
+                  onChange={(v) => (onCustomer ? setCustAnswer(custIdx, q.id, v) : setStaffAnswer(custIdx, q.id, v))}
+                />
               </div>
-            </div>
-          ) : (
-            <>
-              <div className="answer-grid">
-                {questions.map((q: QuestionField) => {
-                  const value = answers[q.id] ?? '';
-                  if (!editable) {
-                    return (
-                      <div className="answer-readonly" key={q.id}>
-                        <div className="answer-label">{q.label}</div>
-                        <div className={`answer-readonly__value${value ? '' : ' answer-readonly__value--empty'}`}>
-                          {value || 'Not recorded'}
-                        </div>
-                      </div>
-                    );
-                  }
-                  return (
-                    <div className="answer-field" key={q.id}>
-                      <Label htmlFor={`fit-${q.id}`}>{q.label}</Label>
-                      <Field
-                        field={q}
-                        value={value}
-                        className="answer-input"
-                        onChange={(v) =>
-                          onCustomer ? setCustAnswer(custIdx, q.id, v) : setStaffAnswer(custIdx, q.id, v)
-                        }
-                      />
-                    </div>
-                  );
-                })}
-              </div>
+            ))}
+          </div>
 
-              {editable && (
-                <div className="save-row">
-                  <Button variant={stamp ? 'success' : 'default'} onClick={() => markSaved(suffix)}>
-                    <Check size={15} strokeWidth={2.4} />
-                    {stamp ? 'Completed' : onCustomer ? 'Complete customer questions' : 'Complete assessment'}
-                  </Button>
-                </div>
-              )}
-            </>
-          )}
+          <div className="save-row">
+            <Button variant={stamp ? 'success' : 'default'} onClick={() => markSaved(suffix)}>
+              <Check size={15} strokeWidth={2.4} />
+              {stamp ? 'Completed' : onCustomer ? 'Complete customer questions' : 'Complete assessment'}
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>

@@ -411,24 +411,6 @@
   box-shadow: var(--ring);
 }
 
-.answer-readonly {
-  padding: 11px 12px;
-  background: #fff;
-  border: 1px solid var(--n-150);
-  border-radius: var(--r-control);
-}
-
-.answer-readonly__value {
-  margin-top: 3px;
-  color: var(--n-800);
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.answer-readonly__value--empty {
-  color: var(--n-300);
-}
-
 .save-row {
   display: flex;
   gap: 12px;
@@ -961,23 +943,6 @@
   background: var(--n-25);
 }
 
-.complete__action--primary {
-  color: #fff;
-  background: var(--primary);
-  border: none;
-}
-
-.complete__action--primary:hover {
-  background: var(--primary-hover);
-}
-
-.complete__action--back {
-  flex: 0 0 auto;
-  gap: 7px;
-  padding: 0 16px;
-  color: var(--n-550);
-}
-
 /* ---- workshop triage ---- */
 
 .workshop__head {
@@ -1019,12 +984,6 @@
   font-weight: 600;
   white-space: nowrap;
   text-overflow: ellipsis;
-}
-
-.workshop__group-count {
-  flex: 0 0 auto;
-  color: var(--n-350);
-  font-size: 11.5px;
 }
 
 .workshop__rows {
@@ -1070,21 +1029,6 @@
   color: var(--success);
   font-size: 13px;
   font-weight: 600;
-}
-
-.workshop__status {
-  padding: 2px 8px;
-  color: var(--warning-text);
-  font-size: 11px;
-  font-weight: 600;
-  white-space: nowrap;
-  background: var(--warning-bg);
-  border-radius: var(--r-pill);
-}
-
-.workshop__status--done {
-  color: var(--success-text);
-  background: var(--success-tint);
 }
 
 .workshop__meta {

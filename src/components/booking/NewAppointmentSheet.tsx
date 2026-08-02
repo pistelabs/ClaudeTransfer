@@ -9,6 +9,7 @@ import {
   type SchedulerStore,
 } from '../../store/useScheduler';
 import { Avatar } from '../ui/Avatar';
+import { Button } from '../ui/primitives';
 import { useEscape } from '../ui/hooks';
 import { CustomerStep } from './CustomerStep';
 import { DateTimeStep } from './DateTimeStep';
@@ -105,9 +106,9 @@ export function NewAppointmentSheet() {
                   <span className="sheet__booked-by-name">{booker.name}</span>
                 </button>
               )}
-              <button className="icon-btn" type="button" aria-label="Close" onClick={closeAdd}>
+              <Button variant="ghost" size="icon" aria-label="Close" onClick={closeAdd}>
                 <X size={17} strokeWidth={2} />
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -157,9 +158,9 @@ export function NewAppointmentSheet() {
                     </span>
                   </div>
                   <div style={{ flex: 1 }} />
-                  <button className="summary__change" type="button" onClick={() => setSheetPage('book')}>
+                  <Button variant="outline" size="sm" onClick={() => setSheetPage('book')}>
                     Change
-                  </button>
+                  </Button>
                 </div>
 
                 <div className="section-label">Customer</div>
@@ -195,32 +196,31 @@ export function NewAppointmentSheet() {
             <div className="sheet__footer-actions">
               {onBook ? (
                 <>
-                  <button className="btn-secondary" type="button" onClick={closeAdd}>
+                  <Button variant="outline" size="lg" onClick={closeAdd}>
                     Cancel
-                  </button>
-                  <button
-                    className="btn-primary"
-                    type="button"
+                  </Button>
+                  <Button
+                    size="lg"
                     disabled={!canContinue}
                     onClick={() => (rescheduleId ? saveAppt() : setSheetPage('details'))}
                   >
                     {rescheduleId ? 'Save new time' : 'Next'}
-                  </button>
+                  </Button>
                 </>
               ) : (
                 <>
-                  <button className="btn-secondary" type="button" onClick={() => setSheetPage('book')}>
+                  <Button variant="outline" size="lg" onClick={() => setSheetPage('book')}>
                     <ChevronLeft size={15} strokeWidth={2} />
                     Back
-                  </button>
-                  <button
-                    className={`btn-primary${clash ? ' btn-primary--danger' : ''}`}
-                    type="button"
+                  </Button>
+                  <Button
+                    variant={clash ? 'destructive' : 'default'}
+                    size="lg"
                     disabled={missing > 0}
                     onClick={saveAppt}
                   >
                     {clash ? 'Schedule anyway' : 'Confirm booking'}
-                  </button>
+                  </Button>
                 </>
               )}
             </div>

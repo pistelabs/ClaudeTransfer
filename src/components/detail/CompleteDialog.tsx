@@ -1,6 +1,7 @@
 import { Check, ChevronLeft, CreditCard, FileText, Minus, Wrench, X } from 'lucide-react';
 import { useScheduler, type SchedulerStore } from '../../store/useScheduler';
 import { Avatar } from '../ui/Avatar';
+import { Badge, Button } from '../ui/primitives';
 import { useEscape } from '../ui/hooks';
 import type { DetailInfo } from './useDetail';
 
@@ -64,9 +65,9 @@ export function CompleteDialog({ detail }: { detail: DetailInfo }) {
             <div className="dialog__title">Complete appointment</div>
             <div className="dialog__sub">{detail.type.label} work complete</div>
           </div>
-          <button className="dialog__close" type="button" aria-label="Close" onClick={closeComplete}>
+          <Button variant="ghost" size="icon" aria-label="Close" onClick={closeComplete}>
             <X size={17} strokeWidth={2} />
-          </button>
+          </Button>
         </div>
 
         {onReview ? (
@@ -124,14 +125,14 @@ export function CompleteDialog({ detail }: { detail: DetailInfo }) {
             <Totals detail={detail} />
 
             <div className="complete__actions">
-              <button className="complete__action" type="button" onClick={() => setCompleteStep('workshop')}>
+              <Button variant="outline" size="lg" className="complete__action" onClick={() => setCompleteStep('workshop')}>
                 <Wrench size={16} strokeWidth={2} />
                 Add to Workshop
-              </button>
-              <button className="complete__action complete__action--primary" type="button" onClick={finishComplete}>
+              </Button>
+              <Button size="lg" className="complete__action" onClick={finishComplete}>
                 <CreditCard size={16} strokeWidth={2} />
                 Send to POS
-              </button>
+              </Button>
             </div>
           </>
         ) : (
@@ -158,11 +159,11 @@ export function CompleteDialog({ detail }: { detail: DetailInfo }) {
                   <div className="workshop__group-head">
                     <Avatar initials={g.member.initials} color={detail.type.border} size={26} fontSize={10} />
                     <span className="workshop__group-name">{g.member.name}</span>
-                    <span className="workshop__group-count">
+                    <Badge variant={g.rows.length > 0 ? 'outline' : 'secondary'}>
                       {g.rows.length === 0
                         ? 'No services'
                         : `${g.rows.length} ${g.rows.length === 1 ? 'service' : 'services'}`}
-                    </span>
+                    </Badge>
                   </div>
                   {g.rows.length === 0 ? (
                     <div className="workshop__empty">Nothing recorded for this customer.</div>
@@ -180,9 +181,9 @@ export function CompleteDialog({ detail }: { detail: DetailInfo }) {
                             <span className="workshop__row-title">
                               <span className="workshop__service">{r.service}</span>
                               <span className="workshop__price">{r.price}</span>
-                              <span className={`workshop__status${r.done ? ' workshop__status--done' : ''}`}>
+                              <Badge variant={r.done ? 'success' : 'warning'}>
                                 {r.done ? 'Complete' : 'To workshop'}
-                              </span>
+                              </Badge>
                             </span>
                             <span className="workshop__meta">
                               <span>
@@ -210,18 +211,14 @@ export function CompleteDialog({ detail }: { detail: DetailInfo }) {
             <Totals detail={detail} />
 
             <div className="complete__actions">
-              <button
-                className="complete__action complete__action--back"
-                type="button"
-                onClick={() => setCompleteStep('review')}
-              >
+              <Button variant="outline" size="lg" onClick={() => setCompleteStep('review')}>
                 <ChevronLeft size={15} strokeWidth={2} />
                 Back
-              </button>
-              <button className="complete__action complete__action--primary" type="button" onClick={finishComplete}>
+              </Button>
+              <Button size="lg" className="complete__action" onClick={finishComplete}>
                 <Wrench size={16} strokeWidth={2} />
                 Add to workshop queue and send to POS
-              </button>
+              </Button>
             </div>
           </>
         )}

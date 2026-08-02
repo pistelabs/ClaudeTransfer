@@ -1,8 +1,8 @@
-import { Calendar, Check, Clock, Hourglass, Mail, Phone, Tag, Users } from 'lucide-react';
+import { Calendar, Check, Clock, Hourglass, Mail, Phone, UserCog, Users } from 'lucide-react';
 import { rangeLabel } from '../../lib/time';
 import { DAY_INFO, useScheduler } from '../../store/useScheduler';
 import { Avatar } from '../ui/Avatar';
-import { Badge, Button, Card, CardContent, CardHeader, CardTitle, DataRow, Label } from '../ui/primitives';
+import { Badge, Button, Card, CardContent, CardHeader, CardTitle, DataRow } from '../ui/primitives';
 import { FitterSelect } from './FitterSelect';
 import type { DetailInfo } from './useDetail';
 
@@ -40,11 +40,12 @@ export function AppointmentTab({ detail }: { detail: DetailInfo }) {
                 {buffer}
               </DataRow>
             )}
-            <DataRow icon={<Tag {...ICON} />} label="Service">
-              <Badge variant="outline" style={{ color: type.text, background: type.bg, borderColor: type.border }}>
-                {type.label}
-              </Badge>
-            </DataRow>
+            {/* The fitter is editable in line with the other facts, not in its own section. */}
+            {!isMeeting && (
+              <DataRow icon={<UserCog {...ICON} />} label="Bootfitter" control>
+                <FitterSelect current={appt.s} />
+              </DataRow>
+            )}
           </dl>
         </CardContent>
       </Card>
@@ -64,17 +65,6 @@ export function AppointmentTab({ detail }: { detail: DetailInfo }) {
         </Card>
       ) : (
         <>
-          {/* Reassigning the fitter belongs with the editable fields, not in the header. */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Assigned fitter</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Label htmlFor="assigned-fitter">Bootfitter</Label>
-              <FitterSelect current={appt.s} />
-            </CardContent>
-          </Card>
-
           <Card>
             <CardHeader>
               <CardTitle>{party.length > 1 ? `Customers (${party.length})` : 'Customer'}</CardTitle>
