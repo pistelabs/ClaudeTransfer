@@ -182,10 +182,7 @@
   grid-template-columns: repeat(auto-fill, minmax(86px, 1fr));
   gap: 8px;
   align-content: start;
-  max-height: 236px;
   margin-top: 9px;
-  padding-right: 2px;
-  overflow-y: auto;
 }
 
 .slot {
@@ -241,20 +238,20 @@
 
 .fitter {
   position: relative;
-  margin-top: 7px;
+  margin-top: 6px;
 }
 
 .fitter__trigger {
   display: flex;
-  gap: 11px;
+  gap: 9px;
   align-items: center;
   width: 100%;
-  height: 48px;
-  padding: 8px 12px;
+  height: 40px;
+  padding: 6px 10px;
   text-align: left;
   background: #fff;
   border: 1px solid var(--n-125);
-  border-radius: var(--r-input);
+  border-radius: var(--r-control);
   cursor: pointer;
 }
 
@@ -272,14 +269,13 @@
 
 .fitter__name {
   color: var(--n-800);
-  font-size: 13.5px;
+  font-size: 13px;
   font-weight: 600;
 }
 
 .fitter__sub {
-  margin-top: 1px;
   color: var(--n-500);
-  font-size: 11.5px;
+  font-size: 11px;
 }
 
 .fitter__menu {
@@ -296,12 +292,12 @@
 }
 
 .fitter__menu--down {
-  top: 52px;
+  top: 44px;
 }
 
 /* Flips above the trigger when the viewport bottom would clip it. */
 .fitter__menu--up {
-  bottom: 52px;
+  bottom: 44px;
 }
 
 .fitter__row {
@@ -327,16 +323,6 @@
 
 .fitter__row--busy {
   opacity: 0.75;
-}
-
-.fitter__hint {
-  margin-top: 6px;
-  color: var(--n-350);
-  font-size: 11.5px;
-}
-
-.fitter__hint--warn {
-  color: var(--danger-text);
 }
 
 /* ---- double-booking warning ---- */
@@ -851,7 +837,7 @@
   gap: 12px;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .duration__reset {
@@ -884,6 +870,7 @@
   flex: 0 0 auto;
   gap: 2px;
   align-items: center;
+  height: 40px;
   padding: 3px;
   background: #fff;
   border: 1px solid var(--n-125);
@@ -906,23 +893,16 @@
   text-align: center;
 }
 
-.duration__note {
-  flex: 1 1 auto;
-  min-width: 0;
-  color: var(--n-350);
-  font-size: 11.5px;
-  line-height: 1.4;
-}
 
 /* ---- duration + fitter share a row above the slots ---- */
 
 .booking-controls {
   display: flex;
   flex-wrap: wrap;
-  gap: 14px 18px;
+  gap: 12px 18px;
   align-items: flex-start;
-  margin-bottom: 16px;
-  padding-bottom: 15px;
+  margin-bottom: 14px;
+  padding-bottom: 13px;
   border-bottom: 1px solid var(--n-100);
 }
 

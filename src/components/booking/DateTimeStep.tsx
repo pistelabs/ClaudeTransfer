@@ -232,14 +232,6 @@ function DurationStepper() {
             <Plus size={15} strokeWidth={2.4} />
           </Button>
         </div>
-
-        <span className="duration__note">
-          {adjusted
-            ? `Adjusted for this booking · standard is ${durationLabel(standard)}`
-            : standard !== null
-              ? 'Standard length for this service'
-              : 'Adjust in 15-minute steps'}
-        </span>
       </div>
     </div>
   );

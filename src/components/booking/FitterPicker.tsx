@@ -2,7 +2,7 @@ import { useRef } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { STAFF } from '../../data/catalogue';
 import { slotOpen, slotsFor } from '../../lib/schedule';
-import { fmtTime, parseTime } from '../../lib/time';
+import { parseTime } from '../../lib/time';
 import { useScheduler } from '../../store/useScheduler';
 import { Avatar } from '../ui/Avatar';
 import { Label } from '../ui/primitives';
@@ -49,15 +49,6 @@ export function FitterPicker() {
   };
 
   const selected = staffSel === null ? null : STAFF[staffSel];
-  const hint =
-    staffSel === null
-      ? 'Leave unassigned to see every fitter’s open times.'
-      : onTimeStep
-        ? isFree(staffSel)
-          ? `${STAFF[staffSel].name.split(' ')[0]} is free at ${fmtTime(startMin)}`
-          : `${STAFF[staffSel].name.split(' ')[0]} is not available at ${fmtTime(startMin)}`
-        : `Times below show only ${STAFF[staffSel].name.split(' ')[0]}’s availability.`;
-  const hintWarn = staffSel !== null && onTimeStep && !isFree(staffSel);
 
   const rows = [{ idx: null as number | null, name: 'Unassigned', role: 'Any available staff member', initials: '?', dot: null as string | null, free: true }].concat(
     STAFF.map((s, si) => ({ idx: si, name: s.name, role: s.role, initials: s.initials, dot: s.dot, free: isFree(si) })),
@@ -79,8 +70,8 @@ export function FitterPicker() {
           <Avatar
             initials={selected ? selected.initials : '?'}
             color={selected?.dot}
-            size={30}
-            fontSize={11}
+            size={26}
+            fontSize={10}
             unassigned={!selected}
           />
           <span style={{ flex: 1, minWidth: 0 }}>
@@ -124,7 +115,6 @@ export function FitterPicker() {
           </div>
         )}
       </div>
-      <div className={`fitter__hint${hintWarn ? ' fitter__hint--warn' : ''}`}>{hint}</div>
     </div>
   );
 }
