@@ -175,6 +175,24 @@ export interface DragState {
   y0: number;
 }
 
+/** One booking summarised for the overlap notice. */
+export interface OverlapEntry {
+  id: string;
+  customer: string;
+  time: string;
+}
+
+/**
+ * Raised after a manual move lands on top of existing bookings. Informational
+ * only — the move is already committed and nothing is blocked.
+ */
+export interface OverlapNotice {
+  moved: OverlapEntry;
+  clashes: OverlapEntry[];
+  fitter: string;
+  day: string;
+}
+
 /** In-flight sweep over empty grid space. */
 export interface SelectionState {
   col: number;

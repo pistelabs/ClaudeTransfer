@@ -11,7 +11,7 @@ import {
 import { SEED_CUSTOMERS, SEED_RECORDS, seedAppointments } from '../data/seed';
 import { dateKeyOf, todayIndex, weekDays } from '../lib/dates';
 import { collisionsFor, partyOf, slotOpen } from '../lib/schedule';
-import { parseTime, stampNow, toTimeValue } from '../lib/time';
+import { parseTime, rangeLabel, stampNow, toTimeValue } from '../lib/time';
 import type {
   Answers,
   Appointment,
@@ -25,6 +25,8 @@ import type {
   FittingSide,
   MeetingDraft,
   NewCustomerDraft,
+  OverlapEntry,
+  OverlapNotice,
   QuestionnaireMode,
   Seat,
   SelectionState,
@@ -68,6 +70,8 @@ interface State {
   colW: Record<string, number>;
   drag: DragState | null;
   sel: SelectionState | null;
+  /** raised when a manual move lands on existing bookings; informational only */
+  overlapNotice: OverlapNotice | null;
 
   // ---- chrome ----
   searchQ: string;
@@ -147,6 +151,7 @@ interface Actions {
   setColWidths: (entries: Record<string, number>) => void;
   setDrag: (d: DragState | null) => void;
   commitDrag: () => void;
+  dismissOverlapNotice: () => void;
   setSelection: (s: SelectionState | null) => void;
 
   openAdd: () => void;
@@ -230,6 +235,7 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
   colW: {},
   drag: null,
   sel: null,
+  overlapNotice: null,
 
   searchQ: '',
   searchOpen: false,
@@ -306,18 +312,39 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
   setColWidth: (key, w) => set((s) => ({ colW: { ...s.colW, [key]: w } })),
   setColWidths: (entries) => set((s) => ({ colW: { ...s.colW, ...entries } })),
   setDrag: (drag) => set({ drag }),
-  /** Commits a drag, unless the target slot is already taken — those drops are rejected. */
+  /**
+   * Commits a drag. An overlap never blocks the move — staff double-book
+   * deliberately — but it raises a notice so the clash cannot pass unnoticed.
+   */
   commitDrag: () =>
     set((s) => {
       const d = s.drag;
       if (!d || !d.moved) return { drag: null };
-      const blocked = collisionsFor(s.appts, { id: d.id, d: d.d, s: d.s, st: d.st, du: d.du }).length > 0;
-      if (blocked) return { drag: null };
+
+      const moved = s.appts.find((a) => a.id === d.id);
+      const clashes = collisionsFor(s.appts, { id: d.id, d: d.d, s: d.s, st: d.st, du: d.du });
+      const entry = (a: Appointment, st = a.st, du = a.du): OverlapEntry => ({
+        id: a.id,
+        customer: a.c,
+        time: rangeLabel(st, st + du),
+      });
+
       return {
         drag: null,
         appts: s.appts.map((a) => (a.id === d.id ? { ...a, d: d.d, s: d.s, st: d.st } : a)),
+        overlapNotice:
+          moved && clashes.length > 0
+            ? {
+                moved: entry(moved, d.st, d.du),
+                clashes: clashes.map((a) => entry(a)),
+                fitter: STAFF[d.s]?.name ?? '',
+                day: `${DAYS[d.d].long}, ${DAYS[d.d].date}`,
+              }
+            : s.overlapNotice,
       };
     }),
+
+  dismissOverlapNotice: () => set({ overlapNotice: null }),
   setSelection: (sel) => set({ sel }),
 
   // ---- new appointment --------------------------------------------------

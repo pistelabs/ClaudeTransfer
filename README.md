@@ -67,8 +67,9 @@ the "now" line and the Today/Upcoming/Past pills meaningful whenever you open it
 ## Behaviour worth knowing
 
 - **Drag to reschedule.** A 4px jitter threshold separates a click from a drag, so a plain
-  click still opens the detail sheet. Drops snap to 15 minutes, can move between columns
-  and days, and are rejected when the target slot is already taken.
+  click still opens the detail sheet. Drops snap to 15 minutes and can move between columns
+  and days. A drop onto an occupied slot is allowed — staff double-book deliberately — and
+  raises a non-blocking notice naming what it now overlaps.
 - **Click or drag empty space.** A click books a 15-minute anchor that expands to the chosen
   service's full duration; a drag sweeps a custom window. Either way the sheet opens
   prefilled with day, fitter, start and duration.
@@ -91,7 +92,10 @@ the "now" line and the Today/Upcoming/Past pills meaningful whenever you open it
 - The handoff's prose describes the header as date navigation on the left and search in the
   centre. The prototype and every reference screenshot put search on the left and the date
   navigation in the centre; this build follows the prototype and screenshots.
-- The prototype allows a drag onto an occupied slot and flags the result as a conflict. The
-  handoff's interaction notes say such drops are rejected, so that is what this build does.
-  Conflicts still arise from overlapping seed data and from deliberate in-store overrides,
-  so the conflict badge and block styling stay meaningful.
+- The handoff's interaction notes say a drop onto an occupied slot is rejected. In practice
+  staff move bookings on top of each other on purpose, so this build allows the move and
+  raises an informational notice instead. The clash is still surfaced everywhere it was
+  before: rose hatching on both blocks, a warning icon, and the header conflict badge.
+- The handoff locks the staff assessment until the customer is checked in. Both sides of the
+  Fitting tab are now the same editable form, so that lock is gone; the card still says the
+  assessment is recorded by the fitter during the appointment.
