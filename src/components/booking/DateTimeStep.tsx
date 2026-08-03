@@ -1,9 +1,10 @@
-import { ChevronLeft, ChevronRight, Info } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Info, Minus, Plus, RotateCcw } from 'lucide-react';
 import { STAFF, serviceById } from '../../data/catalogue';
 import { monthCells, monthLabel } from '../../lib/dates';
 import { bufferClashesFor, slotsFor } from '../../lib/schedule';
 import { durationLabel, fmtTime, parseTime, rangeLabel } from '../../lib/time';
-import { DAY_INFO, useScheduler } from '../../store/useScheduler';
+import { DAY_INFO, MAX_DURATION, MIN_DURATION, useScheduler } from '../../store/useScheduler';
+import { Button, Label } from '../ui/primitives';
 
 const WEEKDAYS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
 
@@ -108,6 +109,8 @@ function TimeSlots() {
 
   return (
     <div className="timeslots">
+      <DurationStepper />
+
       <div className="section-label">Select a time</div>
       <div className="timeslots__summary">
         {openCount} open {openCount === 1 ? 'slot' : 'slots'} · {who} · {day.short}
@@ -165,6 +168,70 @@ function TimeSlots() {
           })}
         </div>
       )}
+    </div>
+  );
+}
+
+/**
+ * Adjusts how long this one booking runs, independently of the service's
+ * standard length. Sits above the time slots because changing it changes which
+ * start times are still open.
+ */
+function DurationStepper() {
+  const dur = useScheduler((s) => s.form.dur);
+  const service = useScheduler((s) => s.form.service);
+  const setDuration = useScheduler((s) => s.setDuration);
+
+  const standard = serviceById(service)?.du ?? null;
+  const adjusted = standard !== null && dur !== standard;
+
+  return (
+    <div className="duration">
+      <div className="duration__head">
+        <Label htmlFor="booking-duration">Duration</Label>
+        {adjusted && (
+          <button className="duration__reset" type="button" onClick={() => setDuration(standard)}>
+            <RotateCcw size={12} strokeWidth={2.2} />
+            Reset to {durationLabel(standard)}
+          </button>
+        )}
+      </div>
+
+      <div className="duration__row">
+        <div className="duration__stepper">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="duration__btn"
+            aria-label="Shorten by 15 minutes"
+            disabled={dur <= MIN_DURATION}
+            onClick={() => setDuration(dur - 15)}
+          >
+            <Minus size={15} strokeWidth={2.4} />
+          </Button>
+          <output className="duration__value" id="booking-duration">
+            {durationLabel(dur)}
+          </output>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="duration__btn"
+            aria-label="Extend by 15 minutes"
+            disabled={dur >= MAX_DURATION}
+            onClick={() => setDuration(dur + 15)}
+          >
+            <Plus size={15} strokeWidth={2.4} />
+          </Button>
+        </div>
+
+        <span className="duration__note">
+          {adjusted
+            ? `Adjusted for this booking · standard is ${durationLabel(standard)}`
+            : standard !== null
+              ? 'Standard length for this service'
+              : 'Adjust in 15-minute steps'}
+        </span>
+      </div>
     </div>
   );
 }

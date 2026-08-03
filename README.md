@@ -70,6 +70,9 @@ the "now" line and the Today/Upcoming/Past pills meaningful whenever you open it
   click still opens the detail sheet. Drops snap to 15 minutes and can move between columns
   and days. A drop onto an occupied slot is allowed — staff double-book deliberately — and
   raises a non-blocking notice naming what it now overlaps.
+- **Duration is per booking.** The date/time step carries a 15-minute stepper above the
+  slots, so a booking can run longer or shorter than its service's standard length. Changing
+  it re-filters the open start times immediately, and a one-click reset restores the standard.
 - **Click or drag empty space.** A click books a 15-minute anchor that expands to the chosen
   service's full duration; a drag sweeps a custom window. Either way the sheet opens
   prefilled with day, fitter, start and duration.

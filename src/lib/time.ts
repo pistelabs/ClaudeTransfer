@@ -40,10 +40,20 @@ export function rangeLabel(st: number, en: number): string {
   return `${fmtTime(st, !sameMeridiem)}–${fmtTime(en, true)}`;
 }
 
-/** `90` → `1.5 hr`, `45` → `45 min`. */
+/**
+ * `45` → `45 min`, `90` → `1.5 hr`, `75` → `1 hr 15 min`.
+ *
+ * Whole and half hours keep the decimal form the service catalogue uses; the
+ * quarter-hour values a per-booking adjustment can produce spell themselves out,
+ * because "1.3 hr" reads as neither 1:18 nor 1:15.
+ */
 export function durationLabel(mins: number): string {
   if (mins < 60) return `${mins} min`;
-  return mins % 60 === 0 ? `${mins / 60} hr` : `${(mins / 60).toFixed(1)} hr`;
+  const hours = Math.floor(mins / 60);
+  const rest = mins % 60;
+  if (rest === 0) return `${hours} hr`;
+  if (rest === 30) return `${hours + 0.5} hr`;
+  return `${hours} hr ${rest} min`;
 }
 
 /** `HH:MM` → minutes from midnight. */

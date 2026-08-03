@@ -39,6 +39,10 @@ import type {
 const TODAY = todayIndex();
 const DAYS = weekDays();
 
+/** A booking can be trimmed to one grid step, or stretched to the longest shift. */
+export const MIN_DURATION = 15;
+export const MAX_DURATION = Math.max(...STAFF.map((s) => s.shift[1] - s.shift[0]));
+
 function emptySeat(): Seat {
   return { customer: '', custQuery: '', custPicked: null, details: {} };
 }
@@ -164,6 +168,7 @@ interface Actions {
   pickService: (sv: Service) => void;
   pickDate: (dayIdx: number, key: string) => void;
   pickTime: (mins: number) => void;
+  setDuration: (mins: number) => void;
   setFormStaff: (idx: number | null) => void;
   setStaffOpen: (open: boolean, up?: boolean) => void;
   setMonthOffset: (fn: (n: number) => number) => void;
@@ -434,6 +439,15 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
 
   pickDate: (dayIdx, key) => set((s) => ({ form: { ...s.form, day: dayIdx, dateKey: key }, svcStep: 'time' })),
   pickTime: (mins) => set((s) => ({ form: { ...s.form, time: toTimeValue(mins) } })),
+
+  /**
+   * Overrides the service's standard length for this booking only. Snapped to
+   * the grid and clamped to something a shift could actually fit.
+   */
+  setDuration: (mins) =>
+    set((s) => ({
+      form: { ...s.form, dur: Math.max(MIN_DURATION, Math.min(MAX_DURATION, Math.round(mins / 15) * 15)) },
+    })),
   setFormStaff: (idx) => set((s) => ({ form: { ...s.form, staff: idx }, staffOpen: false })),
   setStaffOpen: (staffOpen, staffUp = false) => set({ staffOpen, staffUp }),
   setMonthOffset: (fn) => set((s) => ({ monthOffset: fn(s.monthOffset) })),
