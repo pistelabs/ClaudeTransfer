@@ -1,10 +1,12 @@
+import { useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight, Info, Minus, Plus, RotateCcw } from 'lucide-react';
 import { STAFF, serviceById } from '../../data/catalogue';
 import { monthCells, monthLabel } from '../../lib/dates';
 import { bufferClashesFor, slotsFor } from '../../lib/schedule';
-import { durationLabel, fmtTime, parseTime, rangeLabel } from '../../lib/time';
+import { durationLabel, fmtTime, parseTime } from '../../lib/time';
 import { DAY_INFO, MAX_DURATION, MIN_DURATION, useScheduler } from '../../store/useScheduler';
 import { Button, Label } from '../ui/primitives';
+import { FitterPicker } from './FitterPicker';
 
 const WEEKDAYS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
 
@@ -18,8 +20,18 @@ export function DateTimeStep() {
   const showTime = svcStep === 'time';
   const cells = monthCells(monthOffset);
 
+  // This step only mounts once a service is chosen, so bring it into view on
+  // mount rather than leaving the picker scrolled off the bottom of the sheet.
+  const stepRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = stepRef.current;
+    if (!el) return;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    el.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+  }, []);
+
   return (
-    <div className="book-step">
+    <div className="book-step" ref={stepRef}>
       <div className="calendar">
         <div className="section-label">Select a date</div>
         <div className="calendar__card">
@@ -101,7 +113,6 @@ function TimeSlots() {
 
   const slots = slotsFor(appts, staffSel, form.day, dur, rescheduleId);
   const openCount = slots.filter((s) => s.ok).length;
-  const valid = slots.some((s) => s.min === current && s.ok);
   const day = DAY_INFO[form.day];
   const who = staffSel === null ? 'any fitter' : STAFF[staffSel].name.split(' ')[0];
 
@@ -109,16 +120,14 @@ function TimeSlots() {
 
   return (
     <div className="timeslots">
-      <DurationStepper />
+      <div className="booking-controls">
+        <DurationStepper />
+        <FitterPicker />
+      </div>
 
       <div className="section-label">Select a time</div>
       <div className="timeslots__summary">
         {openCount} open {openCount === 1 ? 'slot' : 'slots'} · {who} · {day.short}
-      </div>
-
-      <div className={`timeslots__window${valid ? '' : ' timeslots__window--invalid'}`}>
-        {rangeLabel(current, current + dur)}&nbsp; · &nbsp;{durationLabel(dur)}
-        {valid ? '' : '  ·  not available'}
       </div>
 
       {bufferHit.length > 0 && (

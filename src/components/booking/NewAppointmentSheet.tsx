@@ -13,7 +13,6 @@ import { Button } from '../ui/primitives';
 import { useEscape } from '../ui/hooks';
 import { CustomerStep } from './CustomerStep';
 import { DateTimeStep } from './DateTimeStep';
-import { FitterPicker } from './FitterPicker';
 import { NewCustomerDialog } from './NewCustomerDialog';
 import { ServicePicker } from './ServicePicker';
 import { WhosBookingGate } from './WhosBookingGate';
@@ -118,7 +117,6 @@ export function NewAppointmentSheet() {
                 <ServicePicker />
                 {/* Date only appears once a service is chosen; time sits beside it. */}
                 {svcStep !== 'service' && <DateTimeStep />}
-                {svcStep === 'time' && <FitterPicker />}
               </>
             ) : (
               <>

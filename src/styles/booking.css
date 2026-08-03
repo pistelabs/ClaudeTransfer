@@ -56,6 +56,8 @@
   flex-wrap: wrap;
   gap: 18px;
   align-items: flex-start;
+  /* breathing room when this step is scrolled into view on selection */
+  scroll-margin-top: 14px;
 }
 
 .calendar {
@@ -175,23 +177,6 @@
   font-size: 11.5px;
 }
 
-.timeslots__window {
-  margin-top: 8px;
-  padding: 8px 11px;
-  color: var(--primary-text);
-  font-size: 12.5px;
-  font-weight: 600;
-  background: var(--primary-tint);
-  border: 1px solid var(--primary-border);
-  border-radius: 7px;
-}
-
-.timeslots__window--invalid {
-  color: var(--danger-text);
-  background: var(--danger-tint);
-  border-color: var(--danger-border);
-}
-
 .timeslots__grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(86px, 1fr));
@@ -256,8 +241,7 @@
 
 .fitter {
   position: relative;
-  max-width: 360px;
-  margin-top: 11px;
+  margin-top: 7px;
 }
 
 .fitter__trigger {
@@ -858,9 +842,8 @@
 /* ---- per-booking duration override ---- */
 
 .duration {
-  margin-bottom: 16px;
-  padding-bottom: 14px;
-  border-bottom: 1px solid var(--n-100);
+  flex: 1 1 210px;
+  min-width: 0;
 }
 
 .duration__head {
@@ -892,7 +875,7 @@
 .duration__row {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 12px;
+  gap: 6px 12px;
   align-items: center;
 }
 
@@ -929,4 +912,21 @@
   color: var(--n-350);
   font-size: 11.5px;
   line-height: 1.4;
+}
+
+/* ---- duration + fitter share a row above the slots ---- */
+
+.booking-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 18px;
+  align-items: flex-start;
+  margin-bottom: 16px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid var(--n-100);
+}
+
+.fitter-field {
+  flex: 1 1 240px;
+  min-width: 0;
 }

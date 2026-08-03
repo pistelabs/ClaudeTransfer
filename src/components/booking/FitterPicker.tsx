@@ -5,6 +5,7 @@ import { slotOpen, slotsFor } from '../../lib/schedule';
 import { fmtTime, parseTime } from '../../lib/time';
 import { useScheduler } from '../../store/useScheduler';
 import { Avatar } from '../ui/Avatar';
+import { Label } from '../ui/primitives';
 import { useOutsideClick } from '../ui/hooks';
 
 const ROW_H = 52;
@@ -63,10 +64,18 @@ export function FitterPicker() {
   );
 
   return (
-    <div>
-      <div className="section-label">Bootfitter</div>
+    <div className="fitter-field">
+      <Label htmlFor="booking-fitter">Bootfitter</Label>
       <div className="fitter" ref={wrapRef}>
-        <button className="fitter__trigger" type="button" ref={triggerRef} aria-expanded={open} onClick={toggle}>
+        <button
+          className="fitter__trigger"
+          type="button"
+          id="booking-fitter"
+          ref={triggerRef}
+          aria-haspopup="listbox"
+          aria-expanded={open}
+          onClick={toggle}
+        >
           <Avatar
             initials={selected ? selected.initials : '?'}
             color={selected?.dot}
