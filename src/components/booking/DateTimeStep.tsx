@@ -125,9 +125,11 @@ function TimeSlots() {
         <FitterPicker />
       </div>
 
-      <div className="section-label">Select a time</div>
-      <div className="timeslots__summary">
-        {openCount} open {openCount === 1 ? 'slot' : 'slots'} · {who} · {day.short}
+      <div className="timeslots__head">
+        <div className="section-label">Select a time</div>
+        <div className="timeslots__summary">
+          {openCount} open {openCount === 1 ? 'slot' : 'slots'} · {who} · {day.short}
+        </div>
       </div>
 
       {bufferHit.length > 0 && (
