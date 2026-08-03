@@ -81,8 +81,9 @@ the "now" line and the Today/Upcoming/Past pills meaningful whenever you open it
 - **Answers are per person, not per booking.** A multi-customer booking keeps its own
   required-at-booking answers, fitting questionnaire, staff assessment, check-in and
   equipment record for each person on it.
-- **The staff assessment unlocks on check-in.** Before the customer is checked in the
-  measurements are read-only; the customer questionnaire can be filled at any time.
+- **Both sides of the Fitting tab are the same form.** Customer questions and the staff
+  assessment share a card, a labelled field grid and a completion action, and either can be
+  filled at any point. Check-in timestamps the arrival but no longer gates the assessment.
 - **Column widths persist per column** and per view; the shift-hours label drops out below
   190px so name and role keep priority. Columns share any spare width so a wide window
   fills edge to edge, and scroll horizontally when it is narrow.
