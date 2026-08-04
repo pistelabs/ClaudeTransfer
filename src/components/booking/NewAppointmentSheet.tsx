@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef } from 'react';
 import { ChevronLeft, Mountain, TriangleAlert, X } from 'lucide-react';
-import { STAFF, serviceById } from '../../data/catalogue';
+import { STAFF, STORE, serviceById } from '../../data/catalogue';
 import { collisionsFor, slotsFor } from '../../lib/schedule';
 import { parseTime, rangeLabel } from '../../lib/time';
 import {
@@ -105,7 +105,7 @@ export function NewAppointmentSheet() {
               <div className="sheet__title">{rescheduleId ? 'Reschedule appointment' : 'New appointment'}</div>
               <span className="sheet__brand">
                 <Mountain size={13} strokeWidth={2} />
-                Alpine Bootfit
+                {STORE.name}
               </span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>

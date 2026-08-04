@@ -18,6 +18,9 @@ export const TYPES: Record<TypeCode, ApptType> = {
   MT: { label: 'Team Meeting', bg: '#d6d3d0', border: '#292524', text: '#292524' },
 };
 
+/** The branch this console is signed in to. Comes from the account in a real deployment. */
+export const STORE = { name: 'Alpine Bootfit', location: 'Chamonix' };
+
 /** shift = scheduled working window, brk = unpaid lunch, both in minutes from midnight. */
 export const STAFF: Staff[] = [
   { name: 'Erik Lund', role: 'Master Bootfitter', dot: '#0284c7', initials: 'EL', shift: [510, 1050], brk: [750, 795] },

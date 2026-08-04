@@ -1,5 +1,5 @@
-import { ChevronDown, ChevronLeft, ChevronRight, Plus, TriangleAlert, Users } from 'lucide-react';
-import { STAFF } from '../../data/catalogue';
+import { ChevronDown, ChevronLeft, ChevronRight, MapPin, Plus, TriangleAlert, Users } from 'lucide-react';
+import { STAFF, STORE } from '../../data/catalogue';
 import { conflictIds } from '../../lib/schedule';
 import { DAY_INFO, useScheduler } from '../../store/useScheduler';
 import { GlobalSearch } from './GlobalSearch';
@@ -39,6 +39,11 @@ export function HeaderBar() {
 
   return (
     <header className="header">
+      <span className="store-pill" title={`${STORE.name} · ${STORE.location}`}>
+        <MapPin size={13} strokeWidth={2.2} />
+        {STORE.location}
+      </span>
+
       <GlobalSearch />
 
       <div className="header__nav">
