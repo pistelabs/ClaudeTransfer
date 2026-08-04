@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef } from 'react';
 import { ChevronLeft, Mountain, TriangleAlert, X } from 'lucide-react';
 import { STAFF, serviceById } from '../../data/catalogue';
 import { collisionsFor, slotsFor } from '../../lib/schedule';
@@ -34,7 +35,21 @@ export function NewAppointmentSheet() {
     showWhoGate,
   } = store;
 
-  useEscape(!showWho && !showNewCust, closeAdd);
+  // a nested popover claims Escape first
+  useEscape(!showWho && !showNewCust && !store.staffOpen, closeAdd);
+
+  // Each page is a fresh form, so start it at the top rather than inheriting the
+  // other page's scroll. Focus has to move too: React reuses the footer button
+  // between pages, and the browser scrolls whatever is focused back into view,
+  // which would undo the reset. Focusing the panel also lands assistive tech at
+  // the top of the new step.
+  const bodyRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const el = bodyRef.current;
+    if (!el) return;
+    el.scrollTop = 0;
+    el.focus({ preventScroll: true });
+  }, [sheetPage]);
 
   const onBook = sheetPage === 'book';
   const startMin = parseTime(form.time);
@@ -111,7 +126,7 @@ export function NewAppointmentSheet() {
             </div>
           </div>
 
-          <div className="sheet__body">
+          <div className="sheet__body" ref={bodyRef} tabIndex={-1}>
             {onBook ? (
               <>
                 <ServicePicker />
@@ -199,6 +214,7 @@ export function NewAppointmentSheet() {
                   </Button>
                   <Button
                     size="lg"
+                    className={canContinue ? 'is-ready' : undefined}
                     disabled={!canContinue}
                     onClick={() => (rescheduleId ? saveAppt() : setSheetPage('details'))}
                   >

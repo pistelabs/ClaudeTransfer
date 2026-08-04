@@ -293,3 +293,20 @@
   min-width: 0;
   text-align: left;
 }
+
+/*
+ * Draws the eye to an action the moment it becomes available — a few pulses,
+ * then it settles, so it prompts without nagging.
+ */
+@keyframes button-ready {
+  from {
+    box-shadow: 0 0 0 0 rgb(2 132 199 / 50%);
+  }
+  to {
+    box-shadow: 0 0 0 9px rgb(2 132 199 / 0%);
+  }
+}
+
+.button.is-ready {
+  animation: button-ready 1.15s ease-out 3;
+}

@@ -20,14 +20,18 @@ export function DateTimeStep() {
   const showTime = svcStep === 'time';
   const cells = monthCells(monthOffset);
 
-  // This step only mounts once a service is chosen, so bring it into view on
-  // mount rather than leaving the picker scrolled off the bottom of the sheet.
+  // Bring the picker into view when it appears after a service is chosen, rather
+  // than leaving it off the bottom of the sheet. Skipped when a time is already
+  // chosen — that means the step is remounting on the way back from page 2, which
+  // should land at the top of the sheet, not scrolled down to here.
   const stepRef = useRef<HTMLDivElement>(null);
+  const scrollOnMount = !useScheduler.getState().timePicked;
   useEffect(() => {
     const el = stepRef.current;
-    if (!el) return;
+    if (!el || !scrollOnMount) return;
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     el.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

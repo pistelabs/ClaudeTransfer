@@ -94,6 +94,8 @@ interface State {
   staffUp: boolean;
   prefilled: boolean;
   prefilledDur: number | null;
+  /** true once a specific start time has been chosen, not merely a date */
+  timePicked: boolean;
   rescheduleId: string | null;
   bookedBy: number | null;
   showWho: boolean;
@@ -257,6 +259,7 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
   staffUp: false,
   prefilled: false,
   prefilledDur: null,
+  timePicked: false,
   rescheduleId: null,
   bookedBy: null,
   showWho: false,
@@ -369,6 +372,7 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
       fitting: {},
       prefilled: false,
       prefilledDur: null,
+      timePicked: false,
       svcStep: 'service',
       svcTab: 'fitting',
       custQuery: '',
@@ -428,17 +432,31 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
   pickService: (sv) =>
     set((s) =>
       s.form.service === sv.id
-        ? { form: { ...s.form, service: null }, svcStep: 'service', seatIdx: 0, seatData: {} }
+        ? { form: { ...s.form, service: null }, svcStep: 'service', seatIdx: 0, seatData: {}, timePicked: false }
         : {
             form: { ...s.form, service: sv.id, type: sv.t, dur: s.prefilledDur || sv.du },
             svcStep: s.prefilled ? 'time' : 'date',
             seatIdx: 0,
             seatData: {},
+            timePicked: s.prefilled,
           },
     ),
 
-  pickDate: (dayIdx, key) => set((s) => ({ form: { ...s.form, day: dayIdx, dateKey: key }, svcStep: 'time' })),
-  pickTime: (mins) => set((s) => ({ form: { ...s.form, time: toTimeValue(mins) } })),
+  pickDate: (dayIdx, key) =>
+    set((s) => ({ form: { ...s.form, day: dayIdx, dateKey: key }, svcStep: 'time', timePicked: false })),
+  /**
+   * Picks a start time and, when exactly one fitter is free for it, assigns them
+   * — with no choice to make, leaving it on Unassigned is just an extra click.
+   */
+  pickTime: (mins) =>
+    set((s) => {
+      const form = { ...s.form, time: toTimeValue(mins) };
+      const free = STAFF.map((_, i) => i).filter((i) =>
+        slotOpen(s.appts, i, form.day, mins, form.dur, s.rescheduleId),
+      );
+      if (free.length === 1) form.staff = free[0];
+      return { form, timePicked: true };
+    }),
 
   /**
    * Overrides the service's standard length for this booking only. Snapped to
@@ -698,6 +716,7 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
       svcStep: 'time',
       prefilled: true,
       prefilledDur: a.du,
+      timePicked: true,
       rescheduleId: a.id,
       custQuery: a.c,
       custPicked: null,

@@ -6,7 +6,7 @@ import { parseTime } from '../../lib/time';
 import { useScheduler } from '../../store/useScheduler';
 import { Avatar } from '../ui/Avatar';
 import { Label } from '../ui/primitives';
-import { useOutsideClick } from '../ui/hooks';
+import { useEscape, useOutsideClick } from '../ui/hooks';
 
 const ROW_H = 52;
 
@@ -19,6 +19,8 @@ export function FitterPicker() {
   const form = useScheduler((s) => s.form);
   const svcStep = useScheduler((s) => s.svcStep);
   const appts = useScheduler((s) => s.appts);
+  const rescheduleId = useScheduler((s) => s.rescheduleId);
+  const timePicked = useScheduler((s) => s.timePicked);
   const open = useScheduler((s) => s.staffOpen);
   const up = useScheduler((s) => s.staffUp);
   const setFormStaff = useScheduler((s) => s.setFormStaff);
@@ -26,6 +28,8 @@ export function FitterPicker() {
 
   const triggerRef = useRef<HTMLButtonElement>(null);
   const wrapRef = useOutsideClick<HTMLDivElement>(open, () => setStaffOpen(false));
+  // Escape closes the menu, not the whole sheet behind it
+  useEscape(open, () => setStaffOpen(false));
 
   const staffSel = form.staff;
   const startMin = parseTime(form.time);
@@ -33,8 +37,8 @@ export function FitterPicker() {
 
   const isFree = (si: number) =>
     onTimeStep
-      ? slotOpen(appts, si, form.day, startMin, form.dur)
-      : slotsFor(appts, si, form.day, form.dur).some((x) => x.ok);
+      ? slotOpen(appts, si, form.day, startMin, form.dur, rescheduleId)
+      : slotsFor(appts, si, form.day, form.dur, rescheduleId).some((x) => x.ok);
 
   /** Flips the menu above the trigger when there isn't room below. */
   const toggle = () => {
@@ -50,9 +54,22 @@ export function FitterPicker() {
 
   const selected = staffSel === null ? null : STAFF[staffSel];
 
-  const rows = [{ idx: null as number | null, name: 'Unassigned', role: 'Any available staff member', initials: '?', dot: null as string | null, free: true }].concat(
-    STAFF.map((s, si) => ({ idx: si, name: s.name, role: s.role, initials: s.initials, dot: s.dot, free: isFree(si) })),
-  );
+  // Once a start time is chosen the list narrows to whoever can actually take it.
+  // The current selection stays listed even if busy, so the trigger always matches
+  // a row. Before that, every fitter is offered — a date alone constrains nothing.
+  const candidates = STAFF.map((s, si) => ({
+    idx: si,
+    name: s.name,
+    role: s.role,
+    initials: s.initials,
+    dot: s.dot,
+    free: isFree(si),
+  })).filter((r) => !timePicked || r.free || r.idx === staffSel);
+
+  const rows = [
+    { idx: null as number | null, name: 'Unassigned', role: 'Any available staff member', initials: '?', dot: null as string | null, free: true },
+    ...candidates,
+  ];
 
   return (
     <div className="fitter-field">

@@ -82,6 +82,11 @@
   white-space: nowrap;
 }
 
+/* Focused programmatically on page change, so it takes no focus ring of its own. */
+.sheet__body:focus {
+  outline: none;
+}
+
 .sheet__body {
   display: flex;
   flex: 1;
