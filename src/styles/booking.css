@@ -596,7 +596,6 @@
   display: flex;
   gap: 11px;
   align-items: center;
-  margin-top: 9px;
   padding: 11px 12px;
   background: var(--primary-tint);
   border: 1px solid var(--primary-border);
@@ -636,12 +635,19 @@
   flex: 0 0 auto;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   color: var(--n-500);
-  background: none;
-  border: none;
+  background: #fff;
+  border: 1px solid var(--primary-border);
+  border-radius: var(--r-control);
   cursor: pointer;
+}
+
+.cust-picked__clear:hover {
+  color: var(--danger-text);
+  background: var(--danger-tint);
+  border-color: var(--danger-border);
 }
 
 /* ---- required fields, notes, questionnaire ---- */

@@ -27,6 +27,36 @@ export function CustomerSearch() {
         .slice(0, MAX_RESULTS)
     : [];
 
+  // The chosen customer replaces the search box rather than stacking under it —
+  // clearing them with the ✕ brings the search back.
+  if (picked) {
+    return (
+      <div className="cust-picked">
+        <Avatar initials={initialsOf(`${picked.first} ${picked.last}`)} color={CUSTOMER_COLOR} size={34} fontSize={12} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div className="cust-picked__name">
+            {picked.first} {picked.last}
+          </div>
+          <div className="cust-picked__meta">
+            {picked.email}&nbsp; · &nbsp;{picked.phone}
+          </div>
+        </div>
+        <span className="cust-picked__visits">
+          {picked.visits === 1 ? '1 visit' : `${picked.visits} visits`}
+        </span>
+        <button
+          className="cust-picked__clear"
+          type="button"
+          title="Change customer"
+          aria-label="Change customer"
+          onClick={clearCustomer}
+        >
+          <X size={16} strokeWidth={2} />
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="cust-search">
@@ -36,30 +66,11 @@ export function CustomerSearch() {
           value={custQuery}
           placeholder={`Search existing customer (min ${MIN_QUERY} characters)…`}
           aria-label="Search existing customer"
+          autoFocus
           onChange={(e) => setCustQuery(e.target.value)}
           onFocus={() => setCustFocus(true)}
         />
       </div>
-
-      {picked && (
-        <div className="cust-picked">
-          <Avatar initials={initialsOf(`${picked.first} ${picked.last}`)} color={CUSTOMER_COLOR} size={34} fontSize={12} />
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div className="cust-picked__name">
-              {picked.first} {picked.last}
-            </div>
-            <div className="cust-picked__meta">
-              {picked.email}&nbsp; · &nbsp;{picked.phone}
-            </div>
-          </div>
-          <span className="cust-picked__visits">
-            {picked.visits === 1 ? '1 visit' : `${picked.visits} visits`}
-          </span>
-          <button className="cust-picked__clear" type="button" title="Clear" onClick={clearCustomer}>
-            <X size={15} strokeWidth={2} />
-          </button>
-        </div>
-      )}
 
       {dropOpen && (
         <div className="cust-drop">
