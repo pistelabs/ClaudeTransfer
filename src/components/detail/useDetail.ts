@@ -31,11 +31,14 @@ function equipmentByPerson(store: SchedulerStore, id: string, partySize: number)
   return Array.from({ length: partySize }, (_, i) => store.equipment[`${id}:${i}`] ?? []);
 }
 
-/** Live subtotal across every priced service on every person's equipment. */
+/**
+ * Live subtotal across every person's equipment. Services marked as included in
+ * the appointment price are recorded but not billed on top.
+ */
 export function totalsFor(store: SchedulerStore, id: string, partySize: number) {
   let subtotal = 0;
   for (const list of equipmentByPerson(store, id, partySize)) {
-    for (const e of list) for (const sv of e.services) subtotal += priceValue(sv.price);
+    for (const e of list) for (const sv of e.services) if (sv.charged) subtotal += priceValue(sv.price);
   }
   return { balance: formatMoney(subtotal), subtotal: formatMoney(subtotal), paid: formatMoney(0) };
 }

@@ -39,6 +39,7 @@ function EquipmentEntry({ item }: { item: EquipItem }) {
   const removeLast = useScheduler((s) => s.removeLastEquipService);
   const removeInstance = useScheduler((s) => s.removeEquipServiceInstance);
   const updateService = useScheduler((s) => s.updateEquipService);
+  const toggleCharge = useScheduler((s) => s.toggleEquipServiceCharge);
 
   const groups = equipServiceGroups(item.kind);
   const group = groups.find((g) => g.key === item.tab) ?? groups[0];
@@ -214,7 +215,16 @@ function EquipmentEntry({ item }: { item: EquipItem }) {
                       {svc.name}
                       {suffix}
                     </span>
-                    <span className="equip-entry__price">{svc.price}</span>
+                    {/* Included in the appointment price, or billed on top. */}
+                    <button
+                      className={`charge-pill${svc.charged ? ' charge-pill--charged' : ''}`}
+                      type="button"
+                      aria-pressed={svc.charged}
+                      title={svc.charged ? 'Billed on top — click to include' : 'Included — click to charge'}
+                      onClick={() => toggleCharge(item.uid, svc.sid)}
+                    >
+                      {svc.charged ? `+${svc.price}` : 'Included'}
+                    </button>
                     <button
                       className="equip-entry__remove"
                       type="button"

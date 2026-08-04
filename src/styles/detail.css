@@ -208,17 +208,23 @@
   gap: 14px;
 }
 
+/* Exactly two columns: date beside time, duration beside buffer. */
 .detail__facts {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 11px 22px;
   margin: 0;
 }
 
-/* Facts read as a table of label/value pairs, hairline-separated. */
-.detail__facts .data-row + .data-row {
-  margin-top: 9px;
-  padding-top: 9px;
+@media (width <= 620px) {
+  .detail__facts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* The editable fitter row is separated from the read-only facts above it. */
+.detail__facts .data-row--full {
+  padding-top: 12px;
   border-top: 1px solid var(--n-75);
 }
 
@@ -1069,4 +1075,47 @@
   padding: 12px 2px;
   color: var(--n-300);
   font-size: 11.5px;
+}
+
+/* ---- included / charged toggle on a recorded service ---- */
+
+.charge-pill {
+  flex: 0 0 auto;
+  padding: 3px 10px;
+  font-size: 11.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--n-600);
+  background: var(--n-60);
+  border: 1px solid transparent;
+  border-radius: var(--r-pill);
+  cursor: pointer;
+  transition:
+    background-color 0.12s ease,
+    color 0.12s ease;
+}
+
+.charge-pill:hover {
+  background: var(--n-100);
+}
+
+.charge-pill--charged {
+  color: var(--success-text);
+  background: var(--success-tint);
+  border-color: var(--success-border);
+}
+
+.charge-pill--charged:hover {
+  background: #b8f5e8;
+}
+
+.charge-pill:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+}
+
+.workshop__price--included {
+  color: var(--n-450);
+  font-weight: 500;
 }

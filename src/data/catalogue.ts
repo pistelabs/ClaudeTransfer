@@ -206,3 +206,13 @@ export function equipFlex(kind: string): string[] {
 
 /** Services that can legitimately be applied more than once to the same item. */
 export const REPEATABLE_SERVICES = ['Shell Punch', 'Shell Grind', 'Shell Heat Stretch', 'Posting / Wedge'];
+
+/**
+ * Work included in the appointment price by default. Custom insoles are the
+ * exception — they are a made-to-measure product, billed on top.
+ */
+const CHARGED_BY_DEFAULT = ['Custom Footbed', 'Cork Footbed Cast'];
+
+export function chargedByDefault(name: string): boolean {
+  return CHARGED_BY_DEFAULT.includes(name);
+}

@@ -283,6 +283,10 @@
   text-align: right;
 }
 
+.data-row--full {
+  grid-column: 1 / -1;
+}
+
 /* A row whose value is an interactive control rather than text. */
 .data-row--control {
   align-items: center;

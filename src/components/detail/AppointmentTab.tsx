@@ -1,5 +1,5 @@
-import { Calendar, Check, Clock, Hourglass, Mail, Phone, UserCog, Users } from 'lucide-react';
-import { rangeLabel } from '../../lib/time';
+import { Activity, Calendar, Check, Clock, Hourglass, Mail, Phone, UserCog, Users } from 'lucide-react';
+import { durationLabel, rangeLabel } from '../../lib/time';
 import { DAY_INFO, useScheduler } from '../../store/useScheduler';
 import { Avatar } from '../ui/Avatar';
 import { Badge, Button, Card, CardContent, CardHeader, CardTitle, DataRow } from '../ui/primitives';
@@ -25,6 +25,7 @@ export function AppointmentTab({ detail }: { detail: DetailInfo }) {
           <CardTitle>{isMeeting ? 'Meeting details' : 'Appointment details'}</CardTitle>
         </CardHeader>
         <CardContent>
+          {/* Date beside time, duration beside buffer, the fitter on its own row below. */}
           <dl className="detail__facts">
             <DataRow icon={<Calendar {...ICON} />} label="Date">
               {day.long}, {day.date}, {day.year}
@@ -33,16 +34,15 @@ export function AppointmentTab({ detail }: { detail: DetailInfo }) {
               {rangeLabel(appt.st, appt.st + appt.du)}
             </DataRow>
             <DataRow icon={<Hourglass {...ICON} />} label="Duration">
-              {appt.du} min
+              {durationLabel(appt.du)}
             </DataRow>
             {!!buffer && (
-              <DataRow icon={<Hourglass {...ICON} />} label="Buffer">
+              <DataRow icon={<Activity {...ICON} />} label="Buffer">
                 {buffer}
               </DataRow>
             )}
-            {/* The fitter is editable in line with the other facts, not in its own section. */}
             {!isMeeting && (
-              <DataRow icon={<UserCog {...ICON} />} label="Bootfitter" control>
+              <DataRow icon={<UserCog {...ICON} />} label="Bootfitter" control full>
                 <FitterSelect current={appt.s} />
               </DataRow>
             )}

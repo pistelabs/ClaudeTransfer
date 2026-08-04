@@ -9,6 +9,7 @@ interface WorkshopRow {
   key: string;
   service: string;
   price: string;
+  charged: boolean;
   item: string;
   side: string;
   location: string;
@@ -25,7 +26,8 @@ function workshopGroups(store: SchedulerStore, detail: DetailInfo) {
         return {
           key,
           service: sv.name.toUpperCase(),
-          price: sv.price,
+          price: sv.charged ? `+${sv.price}` : 'Included',
+          charged: sv.charged,
           item: e.kind + (e.model ? ` · ${e.model}` : ''),
           side: sv.side || 'Both',
           location: sv.location || '—',
@@ -180,7 +182,9 @@ export function CompleteDialog({ detail }: { detail: DetailInfo }) {
                           <span style={{ flex: 1, minWidth: 0 }}>
                             <span className="workshop__row-title">
                               <span className="workshop__service">{r.service}</span>
-                              <span className="workshop__price">{r.price}</span>
+                              <span className={`workshop__price${r.charged ? '' : ' workshop__price--included'}`}>
+                                {r.price}
+                              </span>
                               <Badge variant={r.done ? 'success' : 'warning'}>
                                 {r.done ? 'Complete' : 'To workshop'}
                               </Badge>

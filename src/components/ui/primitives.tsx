@@ -93,21 +93,24 @@ export function Button({
 /**
  * A labelled fact inside a Card — the read-only counterpart to Label + Input.
  * Pass `control` when the value is an interactive field rather than text, so it
- * gets left-aligned and room to breathe.
+ * gets left-aligned and room to breathe, and `full` to span a fact grid's columns.
  */
 export function DataRow({
   icon,
   label,
   control,
+  full,
   children,
 }: {
   icon?: ReactNode;
   label: string;
   control?: boolean;
+  /** span the full width of a multi-column fact grid */
+  full?: boolean;
   children: ReactNode;
 }) {
   return (
-    <div className={cx('data-row', control && 'data-row--control')}>
+    <div className={cx('data-row', control && 'data-row--control', full && 'data-row--full')}>
       <dt className="data-row__label">
         {icon}
         {label}

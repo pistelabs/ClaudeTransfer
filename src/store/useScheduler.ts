@@ -4,6 +4,7 @@ import {
   EQUIP_KINDS,
   REPEATABLE_SERVICES,
   STAFF,
+  chargedByDefault,
   equipServiceGroups,
   requiredFields,
   serviceById,
@@ -221,6 +222,7 @@ interface Actions {
   removeLastEquipService: (uid: string, name: string) => void;
   removeEquipServiceInstance: (uid: string, sid: string) => void;
   updateEquipService: (uid: string, sid: string, key: 'location' | 'side' | 'note', val: string) => void;
+  toggleEquipServiceCharge: (uid: string, sid: string) => void;
 
   openComplete: () => void;
   closeComplete: () => void;
@@ -773,7 +775,7 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
               ...e,
               services: e.services.some((sv) => sv.name === name)
                 ? e.services.filter((sv) => sv.name !== name)
-                : e.services.concat({ sid: 's' + Math.random().toString(36).slice(2), name, price, location: '', side: 'Both', note: '' }),
+                : e.services.concat({ sid: 's' + Math.random().toString(36).slice(2), name, price, location: '', side: 'Both', note: '', charged: chargedByDefault(name) }),
             },
       ),
     ),
@@ -783,7 +785,18 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
       list.map((e) =>
         e.uid !== uid
           ? e
-          : { ...e, services: e.services.concat({ sid: 's' + Math.random().toString(36).slice(2), name, price, location: '', side: 'Both', note: '' }) },
+          : {
+              ...e,
+              services: e.services.concat({
+                sid: 's' + Math.random().toString(36).slice(2),
+                name,
+                price,
+                location: '',
+                side: 'Both',
+                note: '',
+                charged: chargedByDefault(name),
+              }),
+            },
       ),
     ),
 
@@ -804,6 +817,16 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
     setEquip(set, get, (list) =>
       list.map((e) =>
         e.uid !== uid ? e : { ...e, services: e.services.map((sv) => (sv.sid === sid ? { ...sv, [key]: val } : sv)) },
+      ),
+    ),
+
+  /** Flips a service between included in the appointment price and billed on top. */
+  toggleEquipServiceCharge: (uid, sid) =>
+    setEquip(set, get, (list) =>
+      list.map((e) =>
+        e.uid !== uid
+          ? e
+          : { ...e, services: e.services.map((sv) => (sv.sid === sid ? { ...sv, charged: !sv.charged } : sv)) },
       ),
     ),
 

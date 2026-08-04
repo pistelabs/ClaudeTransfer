@@ -107,6 +107,8 @@ export interface EquipService {
   location: string;
   side: 'Left' | 'Right' | 'Both';
   note: string;
+  /** false when the work is covered by the appointment price rather than billed on top */
+  charged: boolean;
 }
 
 export interface EquipItem {
