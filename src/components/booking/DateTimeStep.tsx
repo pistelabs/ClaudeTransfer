@@ -192,7 +192,7 @@ function TimeSlots() {
  * standard length. Sits above the time slots because changing it changes which
  * start times are still open.
  */
-function DurationStepper() {
+export function DurationStepper() {
   const dur = useScheduler((s) => s.form.dur);
   const service = useScheduler((s) => s.form.service);
   const setDuration = useScheduler((s) => s.setDuration);

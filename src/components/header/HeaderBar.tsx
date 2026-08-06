@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronLeft, ChevronRight, MapPin, Plus, TriangleAlert, Users } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, MapPin, Plus, TriangleAlert, UserCheck, Users } from 'lucide-react';
 import { STAFF, STORE } from '../../data/catalogue';
 import { conflictIds } from '../../lib/schedule';
 import { DAY_INFO, useScheduler } from '../../store/useScheduler';
@@ -19,6 +19,7 @@ export function HeaderBar() {
   const toggleAddMenu = useScheduler((s) => s.toggleAddMenu);
   const closeAddMenu = useScheduler((s) => s.closeAddMenu);
   const openMeeting = useScheduler((s) => s.openMeeting);
+  const openQueueAdd = useScheduler((s) => s.openQueueAdd);
 
   const isWeek = view === 'week';
   const addRef = useOutsideClick<HTMLDivElement>(addMenu, closeAddMenu);
@@ -120,6 +121,15 @@ export function HeaderBar() {
 
           {addMenu && (
             <div className="add-menu">
+              <button className="add-menu__item" type="button" onClick={openQueueAdd}>
+                <span className="add-menu__icon">
+                  <UserCheck size={15} strokeWidth={2} />
+                </span>
+                <span>
+                  <span className="add-menu__title">Check in a walk-in</span>
+                  <span className="add-menu__sub">Queue them with no time yet</span>
+                </span>
+              </button>
               <button className="add-menu__item" type="button" onClick={openMeeting}>
                 <span className="add-menu__icon">
                   <Users size={15} strokeWidth={2} />

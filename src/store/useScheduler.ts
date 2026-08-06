@@ -79,7 +79,7 @@ interface State {
   sel: SelectionState | null;
   /** raised when a manual move lands on existing bookings; informational only */
   overlapNotice: OverlapNotice | null;
-  /** people waiting at the shop, checked in at the portal with nothing scheduled */
+  /** people waiting at the shop, checked in with nothing scheduled */
   walkIns: WalkIn[];
   walkInsOpen: boolean;
   /** a walk-in being dragged from the queue onto the schedule */
@@ -93,6 +93,8 @@ interface State {
 
   // ---- new appointment sheet ----
   showAdd: boolean;
+  /** the sheet is adding to the check-in queue rather than to the schedule */
+  queueAdd: boolean;
   sheetPage: SheetPage;
   svcStep: ServiceStep;
   svcTab: string;
@@ -173,6 +175,7 @@ interface Actions {
   setSelection: (s: SelectionState | null) => void;
 
   openAdd: () => void;
+  openQueueAdd: () => void;
   closeAdd: () => void;
   startBooking: (colIdx: number, mins: number, dur: number | null) => void;
   setBookedBy: (idx: number) => void;
@@ -192,6 +195,7 @@ interface Actions {
   setQuestionnaire: (m: QuestionnaireMode) => void;
   switchSeat: (i: number) => void;
   saveAppt: () => void;
+  saveWalkIn: () => void;
 
   setCustQuery: (v: string) => void;
   setCustFocus: (v: boolean) => void;
@@ -266,6 +270,7 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
   addMenu: false,
 
   showAdd: false,
+  queueAdd: false,
   sheetPage: 'book',
   svcStep: 'service',
   svcTab: 'fitting',
@@ -434,6 +439,7 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
   openAdd: () =>
     set((s) => ({
       showAdd: true,
+      queueAdd: false,
       addMenu: false,
       showWho: true,
       bookedBy: null,
@@ -456,8 +462,47 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
       form: { ...freshForm(s.selDay), day: s.selDay },
     })),
 
+  /**
+   * Same sheet, but for the check-in queue: somebody is standing at the desk
+   * with no appointment, so there is no date, time or fitter to choose — only
+   * what they have come in for and who they are.
+   */
+  openQueueAdd: () =>
+    set((s) => ({
+      showAdd: true,
+      queueAdd: true,
+      walkInsOpen: true,
+      addMenu: false,
+      showWho: true,
+      bookedBy: null,
+      staffOpen: false,
+      rescheduleId: null,
+      sheetPage: 'book',
+      details: {},
+      questionnaire: 'email',
+      fitting: {},
+      prefilled: false,
+      prefilledDur: null,
+      timePicked: false,
+      svcStep: 'service',
+      svcTab: 'fitting',
+      custQuery: '',
+      custPicked: null,
+      seatIdx: 0,
+      seatData: {},
+      form: { ...freshForm(s.selDay), day: s.selDay },
+    })),
+
   closeAdd: () =>
-    set({ showAdd: false, showWho: false, staffOpen: false, showNewCust: false, custFocus: false, rescheduleId: null }),
+    set({
+      showAdd: false,
+      queueAdd: false,
+      showWho: false,
+      staffOpen: false,
+      showNewCust: false,
+      custFocus: false,
+      rescheduleId: null,
+    }),
 
   startBooking: (colIdx, mins, dur) =>
     set((s) => {
@@ -467,6 +512,7 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
       return {
         prefilledDur: dur,
         showAdd: true,
+        queueAdd: false,
         addMenu: false,
         showWho: true,
         bookedBy: null,
@@ -635,6 +681,57 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
       seatData: {},
       showAdd: false,
       selDay: f.day,
+      svcStep: 'service',
+      sheetPage: 'book',
+      details: {},
+      custQuery: '',
+      custPicked: null,
+      form: freshForm(f.day),
+    }));
+  },
+
+  /**
+   * Puts somebody on the check-in queue instead of the schedule. Everything the
+   * booking sheet captured is kept — service, party, note, answers — but no day,
+   * time or fitter, because that is the decision being deferred. The stamp
+   * records the staff member who did it, as against the portal doing it itself.
+   */
+  saveWalkIn: () => {
+    const s = get();
+    const f = s.form;
+    if (!f.customer.trim() || !f.service) return;
+    if (seatMissingTotal(s) > 0) return;
+
+    const seats = Array.from({ length: seatCountOf(s) }, (_, i) => seatAt(s, i));
+    const names = seats.map((x) => x.customer.trim()).filter(Boolean);
+
+    const walkIn: WalkIn = {
+      id: 'w' + Date.now(),
+      t: f.type,
+      c: names[0] || f.customer.trim(),
+      n: f.note.trim(),
+      party: names.length > 1 ? names : undefined,
+      du: f.dur,
+      checkedInAt: new Date().toISOString(),
+      checkedInBy: s.bookedBy ?? 'self',
+    };
+
+    set((st) => ({
+      walkIns: [...st.walkIns, walkIn],
+      records: {
+        ...st.records,
+        [walkIn.id]: {
+          fittingByCustomer: { 0: { ...st.fitting } },
+          details: { ...seats[0].details },
+          seats: seats.map((x) => ({ customer: x.customer, details: x.details })),
+          questionnaire: st.questionnaire,
+        },
+      },
+      seatIdx: 0,
+      seatData: {},
+      showAdd: false,
+      queueAdd: false,
+      walkInsOpen: true,
       svcStep: 'service',
       sheetPage: 'book',
       details: {},

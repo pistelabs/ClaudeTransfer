@@ -1,8 +1,8 @@
 import { useLayoutEffect, useRef } from 'react';
-import { ChevronLeft, Mountain, TriangleAlert, X } from 'lucide-react';
+import { ChevronLeft, Mountain, TriangleAlert, UserCheck, X } from 'lucide-react';
 import { STAFF, STORE, serviceById } from '../../data/catalogue';
 import { collisionsFor, slotsFor } from '../../lib/schedule';
-import { parseTime, rangeLabel } from '../../lib/time';
+import { durationLabel, parseTime, rangeLabel } from '../../lib/time';
 import {
   DAY_INFO,
   seatMissingTotal,
@@ -13,7 +13,7 @@ import { Avatar } from '../ui/Avatar';
 import { Button } from '../ui/primitives';
 import { useEscape } from '../ui/hooks';
 import { CustomerStep } from './CustomerStep';
-import { DateTimeStep } from './DateTimeStep';
+import { DateTimeStep, DurationStepper } from './DateTimeStep';
 import { NewCustomerDialog } from './NewCustomerDialog';
 import { ServicePicker } from './ServicePicker';
 import { WhosBookingGate } from './WhosBookingGate';
@@ -28,10 +28,12 @@ export function NewAppointmentSheet() {
     showNewCust,
     bookedBy,
     rescheduleId,
+    queueAdd,
     appts,
     closeAdd,
     setSheetPage,
     saveAppt,
+    saveWalkIn,
     showWhoGate,
   } = store;
 
@@ -57,8 +59,9 @@ export function NewAppointmentSheet() {
   const slotValid = svcStep === 'time' && slots.some((s) => s.min === startMin && s.ok);
 
   // A clash warns rather than blocks — in-store staff may double-book deliberately.
+  // A queue entry has no time, so it can't clash with anything.
   const clashes =
-    svcStep === 'time' && form.staff !== null
+    !queueAdd && svcStep === 'time' && form.staff !== null
       ? collisionsFor(appts, { id: rescheduleId, d: form.day, s: form.staff, st: startMin, du: form.dur })
       : [];
   const clash = clashes.length > 0;
@@ -69,20 +72,24 @@ export function NewAppointmentSheet() {
       )}`
     : '';
 
-  const canContinue = !!form.service && svcStep === 'time' && slotValid;
+  // A queue entry stops at the service: no date, no time, no fitter to validate.
+  const canContinue = queueAdd ? !!form.service : !!form.service && svcStep === 'time' && slotValid;
   const missing = seatMissingTotal(store);
   const svc = serviceById(form.service);
   const booker = bookedBy === null ? null : STAFF[bookedBy];
+  const title = queueAdd ? 'Check in a walk-in' : rescheduleId ? 'Reschedule appointment' : 'New appointment';
 
   const bookMsg = !form.service
     ? 'Choose a service'
-    : svcStep !== 'time'
-      ? 'Pick a date and time'
-      : slotValid
-        ? clash
-          ? 'Overlaps an existing booking'
-          : 'Continue to customer details'
-        : 'Pick an available time';
+    : queueAdd
+      ? 'Continue to customer details'
+      : svcStep !== 'time'
+        ? 'Pick a date and time'
+        : slotValid
+          ? clash
+            ? 'Overlaps an existing booking'
+            : 'Continue to customer details'
+          : 'Pick an available time';
 
   const detailsMsg = !form.customer.trim()
     ? 'Select a customer to continue'
@@ -97,12 +104,12 @@ export function NewAppointmentSheet() {
           className={`sheet${showWho ? ' sheet--gated' : ''}`}
           role="dialog"
           aria-modal="true"
-          aria-label={rescheduleId ? 'Reschedule appointment' : 'New appointment'}
+          aria-label={title}
           onClick={(e) => e.stopPropagation()}
         >
           <div className="sheet__header">
             <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
-              <div className="sheet__title">{rescheduleId ? 'Reschedule appointment' : 'New appointment'}</div>
+              <div className="sheet__title">{title}</div>
               <span className="sheet__brand">
                 <Mountain size={13} strokeWidth={2} />
                 {STORE.name}
@@ -130,8 +137,25 @@ export function NewAppointmentSheet() {
             {onBook ? (
               <>
                 <ServicePicker />
-                {/* Date only appears once a service is chosen; time sits beside it. */}
-                {svcStep !== 'service' && <DateTimeStep />}
+                {/* A walk-in has no date or time — how long to allow for them is the
+                    only scheduling decision left, and it can still be adjusted later. */}
+                {queueAdd ? (
+                  form.service !== null && (
+                    <div className="queue-note">
+                      <UserCheck size={15} strokeWidth={2} style={{ flex: '0 0 auto', marginTop: 1 }} />
+                      <div>
+                        <div className="queue-note__title">They wait in the check-in queue</div>
+                        <div className="queue-note__body">
+                          No fitter or time is set now. Drag them onto a column when somebody is free.
+                        </div>
+                      </div>
+                      <DurationStepper />
+                    </div>
+                  )
+                ) : (
+                  // Date only appears once a service is chosen; time sits beside it.
+                  svcStep !== 'service' && <DateTimeStep />
+                )}
               </>
             ) : (
               <>
@@ -152,24 +176,41 @@ export function NewAppointmentSheet() {
                     </span>
                   </div>
                   <div className="summary__divider" />
-                  <div>
-                    <span className="summary__label">Date</span>
-                    <span className="summary__value">
-                      {DAY_INFO[form.day].short} {DAY_INFO[form.day].date}
-                    </span>
-                  </div>
-                  <div className="summary__divider" />
-                  <div>
-                    <span className="summary__label">Time</span>
-                    <span className="summary__value">{rangeLabel(startMin, startMin + form.dur)}</span>
-                  </div>
-                  <div className="summary__divider" />
-                  <div>
-                    <span className="summary__label">Fitter</span>
-                    <span className="summary__value">
-                      {form.staff === null ? 'Unassigned' : STAFF[form.staff].name}
-                    </span>
-                  </div>
+                  {queueAdd ? (
+                    // No date, time or fitter to summarise — that is the point of a queue entry.
+                    <>
+                      <div>
+                        <span className="summary__label">Waiting since</span>
+                        <span className="summary__value">Now</span>
+                      </div>
+                      <div className="summary__divider" />
+                      <div>
+                        <span className="summary__label">Expected</span>
+                        <span className="summary__value">{durationLabel(form.dur)}</span>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div>
+                        <span className="summary__label">Date</span>
+                        <span className="summary__value">
+                          {DAY_INFO[form.day].short} {DAY_INFO[form.day].date}
+                        </span>
+                      </div>
+                      <div className="summary__divider" />
+                      <div>
+                        <span className="summary__label">Time</span>
+                        <span className="summary__value">{rangeLabel(startMin, startMin + form.dur)}</span>
+                      </div>
+                      <div className="summary__divider" />
+                      <div>
+                        <span className="summary__label">Fitter</span>
+                        <span className="summary__value">
+                          {form.staff === null ? 'Unassigned' : STAFF[form.staff].name}
+                        </span>
+                      </div>
+                    </>
+                  )}
                   <div style={{ flex: 1 }} />
                   <Button variant="outline" size="sm" onClick={() => setSheetPage('book')}>
                     Change
@@ -231,9 +272,9 @@ export function NewAppointmentSheet() {
                     variant={clash ? 'destructive' : 'default'}
                     size="lg"
                     disabled={missing > 0}
-                    onClick={saveAppt}
+                    onClick={queueAdd ? saveWalkIn : saveAppt}
                   >
-                    {clash ? 'Schedule anyway' : 'Confirm booking'}
+                    {queueAdd ? 'Add to queue' : clash ? 'Schedule anyway' : 'Confirm booking'}
                   </Button>
                 </>
               )}

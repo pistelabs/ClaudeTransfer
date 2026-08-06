@@ -1,5 +1,6 @@
-import { Activity, Calendar, Check, Clock, Hourglass, Mail, Phone, UserCog, Users } from 'lucide-react';
-import { formatClockTime } from '../../lib/dates';
+import { Activity, Calendar, Check, Clock, Hourglass, Mail, Phone, UserCheck, UserCog, Users } from 'lucide-react';
+import { formatBookedAt } from '../../lib/dates';
+import { checkInLabel } from '../../lib/schedule';
 import { durationLabel, rangeLabel } from '../../lib/time';
 import { DAY_INFO, useScheduler } from '../../store/useScheduler';
 import { Avatar } from '../ui/Avatar';
@@ -41,7 +42,12 @@ export function AppointmentTab({ detail }: { detail: DetailInfo }) {
             )}
             {isWalkIn && (
               <DataRow icon={<Clock {...ICON} />} label="Checked in">
-                {formatClockTime(detail.checkedInAt!)}
+                {formatBookedAt(detail.checkedInAt!)}
+              </DataRow>
+            )}
+            {isWalkIn && (
+              <DataRow icon={<UserCheck {...ICON} />} label="Checked in by">
+                {checkInLabel(detail.checkedInBy!)}
               </DataRow>
             )}
             <DataRow icon={<Hourglass {...ICON} />} label={isWalkIn ? 'Expected' : 'Duration'}>

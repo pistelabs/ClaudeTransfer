@@ -1,5 +1,5 @@
 import { STAFF } from '../data/catalogue';
-import type { Appointment, LaidOutAppt } from '../types';
+import type { Appointment, CheckInSource, LaidOutAppt } from '../types';
 
 /**
  * Greedy lane packing: appointments that overlap in time share a column,
@@ -133,6 +133,15 @@ export function slotsFor(
     out.push({ min: t, ok: slotOpen(appts, staffIdx, dayIdx, t, dur, excludeId) });
   }
   return out;
+}
+
+/**
+ * How a walk-in reached the queue, as it reads on screen: `Self check in` when
+ * they used the portal, `Maya Torres check in` when a fitter did it at the desk.
+ */
+export function checkInLabel(by: CheckInSource): string {
+  if (by === 'self') return 'Self check in';
+  return `${STAFF[by]?.name ?? 'Staff'} check in`;
 }
 
 /** Every customer on a booking; single-customer bookings yield one name. */

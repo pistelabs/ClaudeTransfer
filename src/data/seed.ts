@@ -90,15 +90,16 @@ export function seedAppointments(todayIdx: number, staffCount = 4, now = new Dat
 }
 
 /**
- * People waiting at the shop who checked themselves in at the portal. Seeded a
- * little way back from now so the queue reads as a real morning's walk-ins.
+ * People waiting at the shop, seeded a little way back from now so the queue
+ * reads as a real morning's walk-ins. Mixed sources: two checked themselves in
+ * at the portal, one was put on the queue by a fitter at the desk.
  */
 export function seedWalkIns(now = new Date()): WalkIn[] {
   const at = (minsAgo: number) => new Date(now.getTime() - minsAgo * 60000).toISOString();
   return [
-    { id: 'w1', t: 'SH', c: 'Nora Whelan', n: 'Pressure over the navicular, left boot.', du: 45, checkedInAt: at(18) },
-    { id: 'w2', t: 'HM', c: 'Felix Braun', n: 'Liners packed out after 30 days.', du: 45, checkedInAt: at(47) },
-    { id: 'w3', t: 'TU', c: 'Orla Byrne', n: 'Edges caught a rock, wants a tune before the weekend.', du: 45, checkedInAt: at(74) },
+    { id: 'w1', t: 'SH', c: 'Nora Whelan', n: 'Pressure over the navicular, left boot.', du: 45, checkedInAt: at(18), checkedInBy: 'self' },
+    { id: 'w2', t: 'HM', c: 'Felix Braun', n: 'Liners packed out after 30 days.', du: 45, checkedInAt: at(47), checkedInBy: 1 },
+    { id: 'w3', t: 'TU', c: 'Orla Byrne', n: 'Edges caught a rock, wants a tune before the weekend.', du: 45, checkedInAt: at(74), checkedInBy: 'self' },
   ];
 }
 

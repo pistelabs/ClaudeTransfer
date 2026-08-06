@@ -104,14 +104,17 @@ export function formatBookedAt(iso: string): string {
   return `${date}, ${h}:${String(d.getMinutes()).padStart(2, '0')} ${mer}`;
 }
 
-/** `2026-08-04T10:42:00Z` → `10:42 AM` — the time alone, for same-day events. */
-export function formatClockTime(iso: string): string {
+/**
+ * `2026-08-04T10:42:00Z` → `4 Aug, 10:42 AM` — compact enough for the walk-in
+ * card, but still carrying the date: a queue entry outlives the day it was made.
+ */
+export function formatStamp(iso: string): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return '—';
   const mer = d.getHours() < 12 ? 'AM' : 'PM';
   let h = d.getHours() % 12;
   if (h === 0) h = 12;
-  return `${h}:${String(d.getMinutes()).padStart(2, '0')} ${mer}`;
+  return `${d.getDate()} ${MONTHS[d.getMonth()]}, ${h}:${String(d.getMinutes()).padStart(2, '0')} ${mer}`;
 }
 
 /** `Emma Stone` → `ES`. */

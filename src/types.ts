@@ -53,9 +53,10 @@ export interface Appointment {
 export type BookingSource = number | 'online' | 'internal' | 'walkin';
 
 /**
- * Somebody who walked in and checked themselves in at the portal. Carries no
- * day, time or fitter — that is the whole point — so it is kept apart from
- * {@link Appointment} rather than sharing a shape full of meaningless zeroes.
+ * Somebody waiting at the shop, checked in either at the portal or by a member
+ * of staff at the desk. Carries no day, time or fitter — that is the whole
+ * point — so it is kept apart from {@link Appointment} rather than sharing a
+ * shape full of meaningless zeroes.
  */
 export interface WalkIn {
   id: string;
@@ -66,9 +67,18 @@ export interface WalkIn {
   party?: string[];
   /** the service's standard length, for planning where to slot them in */
   du: number;
-  /** when they checked in at the portal, ISO 8601 */
+  /** when they checked in, ISO 8601 */
   checkedInAt: string;
+  /** who put them on the queue */
+  checkedInBy: CheckInSource;
 }
+
+/**
+ * How somebody joined the check-in queue: `'self'` when they checked themselves
+ * in at the portal, otherwise the index of the staff member who did it for them
+ * at the desk.
+ */
+export type CheckInSource = number | 'self';
 
 /** An appointment placed into a lane by the overlap packer. */
 export interface LaidOutAppt extends Appointment {

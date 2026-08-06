@@ -1,6 +1,6 @@
 import { CalendarCheck, EllipsisVertical, Globe, Trash2, X } from 'lucide-react';
 import { STAFF } from '../../data/catalogue';
-import { formatBookedAt, formatClockTime, initialsOf } from '../../lib/dates';
+import { formatBookedAt, initialsOf } from '../../lib/dates';
 import { useScheduler } from '../../store/useScheduler';
 import { Avatar } from '../ui/Avatar';
 import { Badge, Button } from '../ui/primitives';
@@ -11,7 +11,7 @@ import { EquipmentTab } from './EquipmentTab';
 import { FittingTab } from './FittingTab';
 import { useDetail } from './useDetail';
 import type { BadgeVariant } from '../ui/primitives';
-import type { BookingSource, DetailTab } from '../../types';
+import type { BookingSource, CheckInSource, DetailTab } from '../../types';
 
 const TAB_LABELS = ['Appointment', 'Fitting', 'Equipment'];
 
@@ -22,8 +22,13 @@ const STATUS_VARIANT: Record<'today' | 'past' | 'upcoming' | 'waiting', BadgeVar
   waiting: 'warning',
 };
 
-/** How a booking reached the diary: a named staff member, the website, or internally. */
-function describeSource(via: BookingSource) {
+/**
+ * How a booking reached the diary: a named staff member, the website, or
+ * internally. Doubles as the walk-in check-in source, where `'self'` means they
+ * checked themselves in at the portal.
+ */
+function describeSource(via: BookingSource | CheckInSource) {
+  if (via === 'self') return { kind: 'internal' as const, label: 'Self check in', initials: '', color: '' };
   if (via === 'online') return { kind: 'online' as const, label: 'Online', initials: '', color: '' };
   if (via === 'walkin') return { kind: 'internal' as const, label: 'Walk in', initials: '', color: '' };
   if (via === 'internal') return { kind: 'internal' as const, label: 'Internal', initials: '', color: '' };
@@ -54,7 +59,8 @@ export function AppointmentDetailSheet() {
   // Meeting blocks are internal — one Details tab, no fitting or equipment.
   const tabs = isMeeting ? ['Details'] : TAB_LABELS;
   const activeTab: DetailTab = isMeeting ? 0 : detailTab;
-  const source = describeSource(appt.bookedVia);
+  // A walk-in has no booking source; who checked them in is the equivalent fact.
+  const source = describeSource(isWalkIn ? detail.checkedInBy! : appt.bookedVia);
 
   return (
     <>
@@ -76,31 +82,24 @@ export function AppointmentDetailSheet() {
               </div>
 
               {/* When and how it arrived, opposite the name. A walk-in has no booking
-                  to date — what matters is that they are here, and since when. */}
+                  to date — what matters is when they checked in and who did it. */}
               <div className="booked-meta">
                 <span className="booked-meta__label">{isWalkIn ? 'Walk in' : 'Booked'}</span>
                 <span className="booked-meta__value">
-                  {isWalkIn ? (
-                    // the label already says Walk in; repeating it as a badge is noise
-                    formatClockTime(detail.checkedInAt!)
+                  {formatBookedAt(isWalkIn ? detail.checkedInAt! : appt.bookedAt)}
+                  <span className="booked-meta__sep" aria-hidden>
+                    ·
+                  </span>
+                  {source.kind === 'staff' ? (
+                    <span className="booked-meta__staff">
+                      <Avatar initials={source.initials} color={source.color} size={18} fontSize={8} />
+                      {source.label}
+                    </span>
                   ) : (
-                    <>
-                      {formatBookedAt(appt.bookedAt)}
-                      <span className="booked-meta__sep" aria-hidden>
-                        ·
-                      </span>
-                      {source.kind === 'staff' ? (
-                        <span className="booked-meta__staff">
-                          <Avatar initials={source.initials} color={source.color} size={18} fontSize={8} />
-                          {source.label}
-                        </span>
-                      ) : (
-                        <Badge variant={source.kind === 'online' ? 'default' : 'secondary'}>
-                          {source.kind === 'online' && <Globe size={12} strokeWidth={2.2} />}
-                          {source.label}
-                        </Badge>
-                      )}
-                    </>
+                    <Badge variant={source.kind === 'online' ? 'default' : 'secondary'}>
+                      {source.kind === 'online' && <Globe size={12} strokeWidth={2.2} />}
+                      {source.label}
+                    </Badge>
                   )}
                 </span>
               </div>

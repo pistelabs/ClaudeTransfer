@@ -1,8 +1,8 @@
 import { useEffect, useRef, type MouseEvent } from 'react';
-import { ChevronLeft, ChevronRight, UserCheck } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, UserCheck } from 'lucide-react';
 import { STAFF, TYPES } from '../../data/catalogue';
-import { formatClockTime, initialsOf } from '../../lib/dates';
-import { partyOf, slotOpen } from '../../lib/schedule';
+import { formatStamp, initialsOf } from '../../lib/dates';
+import { checkInLabel, partyOf, slotOpen } from '../../lib/schedule';
 import { GRID_END_MIN, durationLabel, minsAtOffset } from '../../lib/time';
 import { useScheduler } from '../../store/useScheduler';
 import { Avatar } from '../ui/Avatar';
@@ -23,6 +23,7 @@ export function WalkInColumn() {
   const open = useScheduler((s) => s.walkInsOpen);
   const toggle = useScheduler((s) => s.toggleWalkIns);
   const openDetail = useScheduler((s) => s.openDetail);
+  const openQueueAdd = useScheduler((s) => s.openQueueAdd);
   const dragId = useScheduler((s) => s.walkInDrag?.id ?? null);
   const startWalkInDrag = useScheduler((s) => s.startWalkInDrag);
   const setWalkInDrag = useScheduler((s) => s.setWalkInDrag);
@@ -116,7 +117,16 @@ export function WalkInColumn() {
         <UserCheck size={15} strokeWidth={2.2} color="var(--n-400)" />
         <span className="walkins__title">Checked in</span>
         <span className="walkins__count">{walkIns.length}</span>
-        <button className="walkins__collapse" type="button" title="Hide checked in" onClick={toggle}>
+        <button
+          className="walkins__btn"
+          type="button"
+          title="Check somebody in"
+          aria-label="Check somebody in"
+          onClick={openQueueAdd}
+        >
+          <Plus size={16} strokeWidth={2.2} />
+        </button>
+        <button className="walkins__btn" type="button" title="Hide checked in" onClick={toggle}>
           <ChevronLeft size={15} strokeWidth={2.2} />
         </button>
       </div>
@@ -125,7 +135,9 @@ export function WalkInColumn() {
         {walkIns.length === 0 ? (
           <div className="walkins__empty">
             <div className="empty-state__title">Nobody waiting</div>
-            <div className="empty-state__body">Walk-ins who check in at the portal appear here.</div>
+            <div className="empty-state__body">
+              People who check in at the portal appear here. Staff can add one with the + above.
+            </div>
           </div>
         ) : (
           walkIns.map((w) => {
@@ -151,8 +163,12 @@ export function WalkInColumn() {
                 <span className="walkin__service" style={{ color: type.text, background: type.bg }}>
                   {type.label}
                 </span>
+                {/* Who checked them in and exactly when — the date included, because
+                    a queue entry can outlive the day it was made. The source gets a
+                    line of its own: a fitter's full name does not share one well. */}
+                <span className="walkin__source">{checkInLabel(w.checkedInBy)}</span>
                 <div className="walkin__meta">
-                  <span className="walkin__since">Since {formatClockTime(w.checkedInAt)}</span>
+                  <span className="walkin__stamp">{formatStamp(w.checkedInAt)}</span>
                   <span className="walkin__dur">{durationLabel(w.du)}</span>
                 </div>
               </button>

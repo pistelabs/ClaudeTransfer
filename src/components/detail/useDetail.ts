@@ -2,7 +2,7 @@ import { STAFF, TYPES } from '../../data/catalogue';
 import { initialsOf } from '../../lib/dates';
 import { formatMoney, normalizeName, partyOf, priceValue } from '../../lib/schedule';
 import { TODAY_IDX, equipListOf, useScheduler, type SchedulerStore } from '../../store/useScheduler';
-import type { Appointment, ApptType, Customer, EquipItem } from '../../types';
+import type { Appointment, ApptType, CheckInSource, Customer, EquipItem } from '../../types';
 
 export interface PartyMember {
   name: string;
@@ -17,10 +17,12 @@ export interface DetailInfo {
   type: ApptType;
   /** internal team-meeting block: no customer, no fitting or equipment tabs */
   isMeeting: boolean;
-  /** checked in at the portal with no day, time or fitter assigned */
+  /** waiting in the check-in queue with no day, time or fitter assigned */
   isWalkIn: boolean;
   /** when they checked in, for walk-ins only */
   checkedInAt: string | null;
+  /** who checked them in — the portal or a staff member — for walk-ins only */
+  checkedInBy: CheckInSource | null;
   party: PartyMember[];
   /** index of the person currently being viewed, clamped to the party */
   custIdx: number;
@@ -113,6 +115,7 @@ export function useDetail(): DetailInfo | null {
     isMeeting,
     isWalkIn: !!walkIn,
     checkedInAt: walkIn ? walkIn.checkedInAt : null,
+    checkedInBy: walkIn ? walkIn.checkedInBy : null,
     party,
     custIdx,
     attendees,
