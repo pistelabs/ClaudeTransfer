@@ -69,7 +69,10 @@ the "now" line and the Today/Upcoming/Past pills meaningful whenever you open it
 - **Walk-ins queue on the left.** People who check in at the portal arrive with no day,
   time or fitter, so they are held apart from the schedule in a collapsible column rather
   than forced into the grid. Opening one shows the same three tabs as any booking, minus
-  the scheduling facts, with the check-in time in place of the booking line.
+  the scheduling facts, with the check-in time in place of the booking line. Drag one onto a
+  column to book it in: the slot previews as a dashed block, and the drop turns it into an
+  ordinary appointment that keeps the time it checked in. In week view a column is a day
+  rather than a fitter, so the drop takes the first fitter free at that time.
 - **Drag to reschedule.** A 4px jitter threshold separates a click from a drag, so a plain
   click still opens the detail sheet. Drops snap to 15 minutes and can move between columns
   and days. A drop onto an occupied slot is allowed — staff double-book deliberately — and

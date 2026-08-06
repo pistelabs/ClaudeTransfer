@@ -36,6 +36,7 @@ import type {
   SheetPage,
   View,
   WalkIn,
+  WalkInDrag,
 } from '../types';
 
 const TODAY = todayIndex();
@@ -81,6 +82,8 @@ interface State {
   /** people waiting at the shop, checked in at the portal with nothing scheduled */
   walkIns: WalkIn[];
   walkInsOpen: boolean;
+  /** a walk-in being dragged from the queue onto the schedule */
+  walkInDrag: WalkInDrag | null;
 
   // ---- chrome ----
   searchQ: string;
@@ -164,6 +167,9 @@ interface Actions {
   commitDrag: () => void;
   dismissOverlapNotice: () => void;
   toggleWalkIns: () => void;
+  startWalkInDrag: (id: string, x: number, y: number) => void;
+  setWalkInDrag: (d: WalkInDrag | null) => void;
+  dropWalkIn: () => void;
   setSelection: (s: SelectionState | null) => void;
 
   openAdd: () => void;
@@ -252,6 +258,7 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
   overlapNotice: null,
   walkIns: seedWalkIns(),
   walkInsOpen: true,
+  walkInDrag: null,
 
   searchQ: '',
   searchOpen: false,
@@ -364,6 +371,62 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
   dismissOverlapNotice: () => set({ overlapNotice: null }),
 
   toggleWalkIns: () => set((s) => ({ walkInsOpen: !s.walkInsOpen })),
+
+  startWalkInDrag: (id, x, y) =>
+    set((s) => {
+      const w = s.walkIns.find((x2) => x2.id === id);
+      if (!w) return s;
+      return { walkInDrag: { id, label: w.c, du: w.du, moved: false, x0: x, y0: y, over: null } };
+    }),
+
+  setWalkInDrag: (walkInDrag) => set({ walkInDrag }),
+
+  /**
+   * Books a dragged walk-in into the slot it was dropped on. It stops being a
+   * walk-in and becomes an ordinary appointment, keeping the time it checked in
+   * so the record still shows how it arrived. An overlap is allowed and
+   * reported, exactly as when an existing booking is dragged onto another.
+   */
+  dropWalkIn: () =>
+    set((s) => {
+      const drag = s.walkInDrag;
+      const w = drag && s.walkIns.find((x) => x.id === drag.id);
+      if (!drag || !w || !drag.over) return { walkInDrag: null };
+
+      const { d, s: staffIdx, st } = drag.over;
+      const appt: Appointment = {
+        id: 'u' + Date.now(),
+        d,
+        s: staffIdx,
+        st,
+        du: w.du,
+        t: w.t,
+        c: w.c,
+        n: w.n,
+        party: w.party,
+        bb: 0,
+        ba: 0,
+        bookedAt: w.checkedInAt,
+        bookedVia: 'walkin',
+      };
+
+      const clashes = collisionsFor(s.appts, { id: appt.id, d, s: staffIdx, st, du: w.du });
+      return {
+        walkInDrag: null,
+        walkIns: s.walkIns.filter((x) => x.id !== w.id),
+        appts: [...s.appts, appt],
+        selDay: d,
+        overlapNotice:
+          clashes.length > 0
+            ? {
+                moved: { id: appt.id, customer: appt.c, time: rangeLabel(st, st + w.du) },
+                clashes: clashes.map((a) => ({ id: a.id, customer: a.c, time: rangeLabel(a.st, a.st + a.du) })),
+                fitter: STAFF[staffIdx]?.name ?? '',
+                day: `${DAYS[d].long}, ${DAYS[d].date}`,
+              }
+            : s.overlapNotice,
+      };
+    }),
   setSelection: (sel) => set({ sel }),
 
   // ---- new appointment --------------------------------------------------

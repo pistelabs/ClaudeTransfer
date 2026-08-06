@@ -214,6 +214,20 @@ export interface OverlapNotice {
   day: string;
 }
 
+/**
+ * A walk-in being dragged out of the queue onto the schedule. `over` is the
+ * slot under the pointer, or null when the pointer is not over a column.
+ */
+export interface WalkInDrag {
+  id: string;
+  label: string;
+  du: number;
+  moved: boolean;
+  x0: number;
+  y0: number;
+  over: { d: number; s: number; st: number } | null;
+}
+
 /** In-flight sweep over empty grid space. */
 export interface SelectionState {
   col: number;

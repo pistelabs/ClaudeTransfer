@@ -181,6 +181,43 @@
   pointer-events: none;
 }
 
+/* Where a walk-in dragged out of the queue would land. */
+.ghost {
+  position: absolute;
+  right: 3px;
+  left: 2px;
+  z-index: 9;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 4px 7px;
+  overflow: hidden;
+  /* Opaque: it is frequently dragged over an existing block, and two sets of
+     text reading through each other is illegible. */
+  background: var(--primary-bg);
+  border: 1.5px dashed var(--primary);
+  border-radius: var(--r-control);
+  pointer-events: none;
+}
+
+.ghost__name {
+  overflow: hidden;
+  color: var(--primary-text);
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.ghost__time {
+  overflow: hidden;
+  color: var(--primary-text);
+  font-size: 11px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  opacity: 0.85;
+}
+
 .now-line {
   position: absolute;
   right: 0;
@@ -554,6 +591,11 @@
 .walkin:hover {
   background: var(--n-25);
   box-shadow: 0 2px 6px rgb(41 37 36 / 10%);
+}
+
+.walkin--dragging {
+  opacity: 0.5;
+  cursor: grabbing;
 }
 
 .walkin__head {

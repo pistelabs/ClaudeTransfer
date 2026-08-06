@@ -52,6 +52,7 @@ export function ScheduleGrid() {
   const staffFilter = useScheduler((s) => s.staffFilter);
   const colW = useScheduler((s) => s.colW);
   const drag = useScheduler((s) => s.drag);
+  const walkInDrag = useScheduler((s) => s.walkInDrag);
   const sel = useScheduler((s) => s.sel);
   const setColWidth = useScheduler((s) => s.setColWidth);
   const setColWidths = useScheduler((s) => s.setColWidths);
@@ -310,6 +311,11 @@ export function ScheduleGrid() {
             {columns.map((col) => {
               const width = widthOf(col.idx);
               const selected = sel?.col === col.idx ? sel : null;
+              // A walk-in being dragged in from the queue previews where it would land.
+              const incoming =
+                walkInDrag?.over && (isWeek ? walkInDrag.over.d : walkInDrag.over.s) === col.idx
+                  ? walkInDrag
+                  : null;
               return (
                 <div
                   className="sched-col"
@@ -325,6 +331,16 @@ export function ScheduleGrid() {
                   {selected && (
                     <div className="selection" style={bandStyle(selected.from, selected.to)}>
                       {rangeLabel(selected.from, selected.to)}
+                    </div>
+                  )}
+
+                  {incoming?.over && (
+                    <div className="ghost" style={bandStyle(incoming.over.st, incoming.over.st + incoming.du)}>
+                      <span className="ghost__name">{incoming.label}</span>
+                      <span className="ghost__time">
+                        {rangeLabel(incoming.over.st, incoming.over.st + incoming.du)}
+                        {isWeek && ` · ${STAFF[incoming.over.s].name}`}
+                      </span>
                     </div>
                   )}
 
