@@ -1,6 +1,7 @@
 import { HeaderBar } from './components/header/HeaderBar';
 import { ScheduleGrid } from './components/schedule/ScheduleGrid';
 import { OverlapNotice } from './components/schedule/OverlapNotice';
+import { WalkInColumn } from './components/schedule/WalkInColumn';
 import { NewAppointmentSheet } from './components/booking/NewAppointmentSheet';
 import { TeamMeetingDialog } from './components/booking/TeamMeetingDialog';
 import { AppointmentDetailSheet } from './components/detail/AppointmentDetailSheet';
@@ -15,7 +16,10 @@ export default function App() {
     <div className="app">
       <main className="app__main">
         <HeaderBar />
-        <ScheduleGrid />
+        <div className="app__body">
+          <WalkInColumn />
+          <ScheduleGrid />
+        </div>
       </main>
 
       <OverlapNotice />

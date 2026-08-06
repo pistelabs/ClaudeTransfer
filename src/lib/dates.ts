@@ -104,6 +104,16 @@ export function formatBookedAt(iso: string): string {
   return `${date}, ${h}:${String(d.getMinutes()).padStart(2, '0')} ${mer}`;
 }
 
+/** `2026-08-04T10:42:00Z` → `10:42 AM` — the time alone, for same-day events. */
+export function formatClockTime(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '—';
+  const mer = d.getHours() < 12 ? 'AM' : 'PM';
+  let h = d.getHours() % 12;
+  if (h === 0) h = 12;
+  return `${h}:${String(d.getMinutes()).padStart(2, '0')} ${mer}`;
+}
+
 /** `Emma Stone` → `ES`. */
 export function initialsOf(name: string): string {
   const parts = String(name || '?').trim().split(/\s+/);

@@ -413,3 +413,188 @@
   font-size: 12px;
   white-space: nowrap;
 }
+
+/* ---- walk-in queue ---- */
+
+.walkins {
+  display: flex;
+  flex: 0 0 244px;
+  flex-direction: column;
+  width: 244px;
+  background: #fff;
+  border-right: 1px solid var(--n-125);
+}
+
+.walkins--collapsed {
+  flex-basis: 40px;
+  width: 40px;
+}
+
+.walkins__head {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 8px;
+  align-items: center;
+  height: 42px;
+  padding: 0 8px 0 12px;
+  border-bottom: 1px solid var(--n-125);
+}
+
+.walkins__title {
+  flex: 1;
+  min-width: 0;
+  color: var(--n-800);
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.walkins__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--primary);
+  border-radius: var(--r-pill);
+}
+
+.walkins__collapse {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  color: var(--n-500);
+  background: none;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.walkins__collapse:hover {
+  color: var(--n-950);
+  background: var(--n-50);
+}
+
+/* Collapsed, the whole column is one button with the label turned on its side. */
+.walkins__rail {
+  display: flex;
+  flex: 1;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+  padding: 11px 0;
+  color: var(--n-500);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.walkins__rail:hover {
+  background: var(--n-25);
+}
+
+.walkins__rail-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--primary);
+  border-radius: var(--r-pill);
+}
+
+.walkins__rail-label {
+  color: var(--n-600);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  writing-mode: vertical-rl;
+}
+
+.walkins__list {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+  padding: 10px;
+  overflow-y: auto;
+}
+
+.walkins__empty {
+  padding: 18px 12px;
+  text-align: center;
+}
+
+.walkin {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 10px 11px;
+  text-align: left;
+  background: #fff;
+  border: 1px solid var(--n-125);
+  border-left: 3px solid var(--n-125);
+  border-radius: var(--r-control);
+  box-shadow: 0 1px 2px rgb(41 37 36 / 6%);
+  cursor: pointer;
+}
+
+.walkin:hover {
+  background: var(--n-25);
+  box-shadow: 0 2px 6px rgb(41 37 36 / 10%);
+}
+
+.walkin__head {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+}
+
+.walkin__name {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--n-950);
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.walkin__service {
+  align-self: flex-start;
+  max-width: 100%;
+  padding: 2px 7px;
+  overflow: hidden;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  border-radius: 5px;
+}
+
+.walkin__meta {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  justify-content: space-between;
+  color: var(--n-450);
+  font-size: 11px;
+}
+
+.walkin__dur {
+  flex: 0 0 auto;
+  font-variant-numeric: tabular-nums;
+}

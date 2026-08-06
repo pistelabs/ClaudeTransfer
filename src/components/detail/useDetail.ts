@@ -17,11 +17,15 @@ export interface DetailInfo {
   type: ApptType;
   /** internal team-meeting block: no customer, no fitting or equipment tabs */
   isMeeting: boolean;
+  /** checked in at the portal with no day, time or fitter assigned */
+  isWalkIn: boolean;
+  /** when they checked in, for walk-ins only */
+  checkedInAt: string | null;
   party: PartyMember[];
   /** index of the person currently being viewed, clamped to the party */
   custIdx: number;
   attendees: string;
-  status: { label: string; modifier: 'today' | 'past' | 'upcoming' };
+  status: { label: string; modifier: 'today' | 'past' | 'upcoming' | 'waiting' };
   equipment: EquipItem[];
   totals: { balance: string; subtotal: string; paid: string };
 }
@@ -43,10 +47,34 @@ export function totalsFor(store: SchedulerStore, id: string, partySize: number) 
   return { balance: formatMoney(subtotal), subtotal: formatMoney(subtotal), paid: formatMoney(0) };
 }
 
-/** Resolves everything the detail sheet needs about the open appointment. */
+/**
+ * Resolves everything the detail sheet needs about whatever is open — a
+ * scheduled appointment or a walk-in. A walk-in is presented through the same
+ * shape with placeholder scheduling fields that the sheet never reads, guarded
+ * by `isWalkIn`.
+ */
 export function useDetail(): DetailInfo | null {
   const store = useScheduler((s) => s as SchedulerStore);
-  const appt = store.appts.find((a) => a.id === store.detailId);
+  const scheduled = store.appts.find((a) => a.id === store.detailId);
+  const walkIn = scheduled ? undefined : store.walkIns.find((w) => w.id === store.detailId);
+
+  const appt: Appointment | undefined =
+    scheduled ??
+    (walkIn && {
+      id: walkIn.id,
+      d: 0,
+      s: 0,
+      st: 0,
+      du: walkIn.du,
+      t: walkIn.t,
+      c: walkIn.c,
+      n: walkIn.n,
+      party: walkIn.party,
+      bb: 0,
+      ba: 0,
+      bookedAt: walkIn.checkedInAt,
+      bookedVia: 'walkin',
+    });
   if (!appt) return null;
 
   const type = TYPES[appt.t];
@@ -70,8 +98,10 @@ export function useDetail(): DetailInfo | null {
         .join(', ')
     : '';
 
-  const status =
-    appt.d < TODAY_IDX
+  // A walk-in is here now and waiting, which says more than Today/Upcoming/Past.
+  const status = walkIn
+    ? { label: 'Waiting', modifier: 'waiting' as const }
+    : appt.d < TODAY_IDX
       ? { label: 'Completed', modifier: 'past' as const }
       : appt.d === TODAY_IDX
         ? { label: 'Today', modifier: 'today' as const }
@@ -81,6 +111,8 @@ export function useDetail(): DetailInfo | null {
     appt,
     type,
     isMeeting,
+    isWalkIn: !!walkIn,
+    checkedInAt: walkIn ? walkIn.checkedInAt : null,
     party,
     custIdx,
     attendees,

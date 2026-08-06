@@ -116,6 +116,13 @@ button {
   overflow: hidden;
 }
 
+/* The walk-in queue sits beside the grid, not inside its scroll region. */
+.app__body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
 /* ---- shared primitives ---- */
 
 .avatar {

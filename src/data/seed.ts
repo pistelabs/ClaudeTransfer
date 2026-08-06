@@ -1,4 +1,4 @@
-import type { Appointment, ApptRecord, BookingSource, Customer, TypeCode } from '../types';
+import type { Appointment, ApptRecord, BookingSource, Customer, TypeCode, WalkIn } from '../types';
 
 /**
  * Seeded bookings. `d` is the day index in the source week; the busy day is
@@ -89,6 +89,19 @@ export function seedAppointments(todayIdx: number, staffCount = 4, now = new Dat
   });
 }
 
+/**
+ * People waiting at the shop who checked themselves in at the portal. Seeded a
+ * little way back from now so the queue reads as a real morning's walk-ins.
+ */
+export function seedWalkIns(now = new Date()): WalkIn[] {
+  const at = (minsAgo: number) => new Date(now.getTime() - minsAgo * 60000).toISOString();
+  return [
+    { id: 'w1', t: 'SH', c: 'Nora Whelan', n: 'Pressure over the navicular, left boot.', du: 45, checkedInAt: at(18) },
+    { id: 'w2', t: 'HM', c: 'Felix Braun', n: 'Liners packed out after 30 days.', du: 45, checkedInAt: at(47) },
+    { id: 'w3', t: 'TU', c: 'Orla Byrne', n: 'Edges caught a rock, wants a tune before the weekend.', du: 45, checkedInAt: at(74) },
+  ];
+}
+
 export const SEED_CUSTOMERS: Customer[] = [
   { id: 'c1', first: 'Test', last: 'Customer', email: 'test.customer@pistelabs.com', phone: '+353 86 000 0001', visits: 3, channel: 'Email' },
   { id: 'c2', first: 'Daniel', last: 'Reyes', email: 'd.reyes@gmail.com', phone: '+353 87 214 8890', visits: 5, channel: 'SMS' },
@@ -108,6 +121,9 @@ export const SEED_CUSTOMERS: Customer[] = [
   { id: 'c16', first: 'Yuki', last: 'Tanaka', email: 'y.tanaka@nifty.jp', phone: '+81 90 3345 1180', visits: 4, channel: 'Email' },
   { id: 'c17', first: 'Chris', last: 'Doyle', email: 'chris.doyle@gmail.com', phone: '+353 87 662 9043', visits: 3, channel: 'Email' },
   { id: 'c18', first: 'Cara', last: 'Doyle', email: 'cara.doyle@gmail.com', phone: '+353 87 662 9044', visits: 2, channel: 'Email' },
+  { id: 'c19', first: 'Nora', last: 'Whelan', email: 'nora.whelan@gmail.com', phone: '+353 86 118 7742', visits: 1, channel: 'Email' },
+  { id: 'c20', first: 'Felix', last: 'Braun', email: 'f.braun@gmx.de', phone: '+49 160 887 2201', visits: 2, channel: 'SMS' },
+  { id: 'c21', first: 'Orla', last: 'Byrne', email: 'orla.byrne@gmail.com', phone: '+353 87 220 9915', visits: 4, channel: 'Email' },
 ];
 
 /** Information already captured against a few of the seeded bookings. */

@@ -1,6 +1,6 @@
 import { CalendarCheck, EllipsisVertical, Globe, Trash2, X } from 'lucide-react';
 import { STAFF } from '../../data/catalogue';
-import { formatBookedAt, initialsOf } from '../../lib/dates';
+import { formatBookedAt, formatClockTime, initialsOf } from '../../lib/dates';
 import { useScheduler } from '../../store/useScheduler';
 import { Avatar } from '../ui/Avatar';
 import { Badge, Button } from '../ui/primitives';
@@ -15,15 +15,17 @@ import type { BookingSource, DetailTab } from '../../types';
 
 const TAB_LABELS = ['Appointment', 'Fitting', 'Equipment'];
 
-const STATUS_VARIANT: Record<'today' | 'past' | 'upcoming', BadgeVariant> = {
+const STATUS_VARIANT: Record<'today' | 'past' | 'upcoming' | 'waiting', BadgeVariant> = {
   today: 'default',
   past: 'success',
   upcoming: 'secondary',
+  waiting: 'warning',
 };
 
 /** How a booking reached the diary: a named staff member, the website, or internally. */
 function describeSource(via: BookingSource) {
   if (via === 'online') return { kind: 'online' as const, label: 'Online', initials: '', color: '' };
+  if (via === 'walkin') return { kind: 'internal' as const, label: 'Walk in', initials: '', color: '' };
   if (via === 'internal') return { kind: 'internal' as const, label: 'Internal', initials: '', color: '' };
   const staff = STAFF[via];
   if (!staff) return { kind: 'internal' as const, label: 'Unknown', initials: '', color: '' };
@@ -48,7 +50,7 @@ export function AppointmentDetailSheet() {
 
   if (!detail) return null;
 
-  const { appt, type, isMeeting, status, totals } = detail;
+  const { appt, type, isMeeting, isWalkIn, status, totals } = detail;
   // Meeting blocks are internal — one Details tab, no fitting or equipment.
   const tabs = isMeeting ? ['Details'] : TAB_LABELS;
   const activeTab: DetailTab = isMeeting ? 0 : detailTab;
@@ -73,24 +75,32 @@ export function AppointmentDetailSheet() {
                 <Badge variant={STATUS_VARIANT[status.modifier]}>{status.label}</Badge>
               </div>
 
-              {/* When and how the booking was taken, opposite the booking name. */}
+              {/* When and how it arrived, opposite the name. A walk-in has no booking
+                  to date — what matters is that they are here, and since when. */}
               <div className="booked-meta">
-                <span className="booked-meta__label">Booked</span>
+                <span className="booked-meta__label">{isWalkIn ? 'Walk in' : 'Booked'}</span>
                 <span className="booked-meta__value">
-                  {formatBookedAt(appt.bookedAt)}
-                  <span className="booked-meta__sep" aria-hidden>
-                    ·
-                  </span>
-                  {source.kind === 'staff' ? (
-                    <span className="booked-meta__staff">
-                      <Avatar initials={source.initials} color={source.color} size={18} fontSize={8} />
-                      {source.label}
-                    </span>
+                  {isWalkIn ? (
+                    // the label already says Walk in; repeating it as a badge is noise
+                    formatClockTime(detail.checkedInAt!)
                   ) : (
-                    <Badge variant={source.kind === 'online' ? 'default' : 'secondary'}>
-                      {source.kind === 'online' && <Globe size={12} strokeWidth={2.2} />}
-                      {source.label}
-                    </Badge>
+                    <>
+                      {formatBookedAt(appt.bookedAt)}
+                      <span className="booked-meta__sep" aria-hidden>
+                        ·
+                      </span>
+                      {source.kind === 'staff' ? (
+                        <span className="booked-meta__staff">
+                          <Avatar initials={source.initials} color={source.color} size={18} fontSize={8} />
+                          {source.label}
+                        </span>
+                      ) : (
+                        <Badge variant={source.kind === 'online' ? 'default' : 'secondary'}>
+                          {source.kind === 'online' && <Globe size={12} strokeWidth={2.2} />}
+                          {source.label}
+                        </Badge>
+                      )}
+                    </>
                   )}
                 </span>
               </div>

@@ -9,7 +9,7 @@ import {
   requiredFields,
   serviceById,
 } from '../data/catalogue';
-import { SEED_CUSTOMERS, SEED_RECORDS, seedAppointments } from '../data/seed';
+import { SEED_CUSTOMERS, SEED_RECORDS, seedAppointments, seedWalkIns } from '../data/seed';
 import { dateKeyOf, todayIndex, weekDays } from '../lib/dates';
 import { collisionsFor, partyOf, slotOpen } from '../lib/schedule';
 import { parseTime, rangeLabel, stampNow, toTimeValue } from '../lib/time';
@@ -35,6 +35,7 @@ import type {
   ServiceStep,
   SheetPage,
   View,
+  WalkIn,
 } from '../types';
 
 const TODAY = todayIndex();
@@ -77,6 +78,9 @@ interface State {
   sel: SelectionState | null;
   /** raised when a manual move lands on existing bookings; informational only */
   overlapNotice: OverlapNotice | null;
+  /** people waiting at the shop, checked in at the portal with nothing scheduled */
+  walkIns: WalkIn[];
+  walkInsOpen: boolean;
 
   // ---- chrome ----
   searchQ: string;
@@ -159,6 +163,7 @@ interface Actions {
   setDrag: (d: DragState | null) => void;
   commitDrag: () => void;
   dismissOverlapNotice: () => void;
+  toggleWalkIns: () => void;
   setSelection: (s: SelectionState | null) => void;
 
   openAdd: () => void;
@@ -245,6 +250,8 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
   drag: null,
   sel: null,
   overlapNotice: null,
+  walkIns: seedWalkIns(),
+  walkInsOpen: true,
 
   searchQ: '',
   searchOpen: false,
@@ -355,6 +362,8 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
     }),
 
   dismissOverlapNotice: () => set({ overlapNotice: null }),
+
+  toggleWalkIns: () => set((s) => ({ walkInsOpen: !s.walkInsOpen })),
   setSelection: (sel) => set({ sel }),
 
   // ---- new appointment --------------------------------------------------
@@ -848,8 +857,8 @@ type Setter = (fn: (s: SchedulerStore) => Partial<SchedulerStore>) => void;
 
 /** Equipment is recorded per appointment *and* per person on the booking. */
 export function equipKeyOf(s: State): string {
-  const a = s.appts.find((x) => x.id === s.detailId);
-  const n = a ? partyOf(a).length : 1;
+  const subject = s.appts.find((x) => x.id === s.detailId) ?? s.walkIns.find((x) => x.id === s.detailId);
+  const n = subject ? partyOf(subject).length : 1;
   return `${s.detailId}:${Math.min(s.detailCust, n - 1)}`;
 }
 

@@ -1,4 +1,5 @@
 import { Activity, Calendar, Check, Clock, Hourglass, Mail, Phone, UserCog, Users } from 'lucide-react';
+import { formatClockTime } from '../../lib/dates';
 import { durationLabel, rangeLabel } from '../../lib/time';
 import { DAY_INFO, useScheduler } from '../../store/useScheduler';
 import { Avatar } from '../ui/Avatar';
@@ -9,7 +10,7 @@ import type { DetailInfo } from './useDetail';
 const ICON = { size: 15, strokeWidth: 2, color: 'var(--n-400)' } as const;
 
 export function AppointmentTab({ detail }: { detail: DetailInfo }) {
-  const { appt, type, isMeeting, party } = detail;
+  const { appt, type, isMeeting, isWalkIn, party } = detail;
   const checkins = useScheduler((s) => s.checkins);
   const checkIn = useScheduler((s) => s.checkIn);
 
@@ -22,26 +23,41 @@ export function AppointmentTab({ detail }: { detail: DetailInfo }) {
     <div className="detail__stack">
       <Card>
         <CardHeader>
-          <CardTitle>{isMeeting ? 'Meeting details' : 'Appointment details'}</CardTitle>
+          <CardTitle>{isMeeting ? 'Meeting details' : isWalkIn ? 'Walk-in details' : 'Appointment details'}</CardTitle>
         </CardHeader>
         <CardContent>
-          {/* Date beside time, duration beside buffer, the fitter on its own row below. */}
+          {/* Date beside time, duration beside buffer, the fitter on its own row below.
+              A walk-in has none of the scheduling facts — that is what makes it one. */}
           <dl className="detail__facts">
-            <DataRow icon={<Calendar {...ICON} />} label="Date">
-              {day.long}, {day.date}, {day.year}
-            </DataRow>
-            <DataRow icon={<Clock {...ICON} />} label="Time">
-              {rangeLabel(appt.st, appt.st + appt.du)}
-            </DataRow>
-            <DataRow icon={<Hourglass {...ICON} />} label="Duration">
+            {!isWalkIn && (
+              <DataRow icon={<Calendar {...ICON} />} label="Date">
+                {day.long}, {day.date}, {day.year}
+              </DataRow>
+            )}
+            {!isWalkIn && (
+              <DataRow icon={<Clock {...ICON} />} label="Time">
+                {rangeLabel(appt.st, appt.st + appt.du)}
+              </DataRow>
+            )}
+            {isWalkIn && (
+              <DataRow icon={<Clock {...ICON} />} label="Checked in">
+                {formatClockTime(detail.checkedInAt!)}
+              </DataRow>
+            )}
+            <DataRow icon={<Hourglass {...ICON} />} label={isWalkIn ? 'Expected' : 'Duration'}>
               {durationLabel(appt.du)}
             </DataRow>
-            {!!buffer && (
+            {!isWalkIn && !!buffer && (
               <DataRow icon={<Activity {...ICON} />} label="Buffer">
                 {buffer}
               </DataRow>
             )}
-            {!isMeeting && (
+            {isWalkIn && (
+              <DataRow icon={<UserCog {...ICON} />} label="Bootfitter">
+                <Badge variant="secondary">Unassigned</Badge>
+              </DataRow>
+            )}
+            {!isMeeting && !isWalkIn && (
               <DataRow icon={<UserCog {...ICON} />} label="Bootfitter" control full>
                 <FitterSelect current={appt.s} />
               </DataRow>
