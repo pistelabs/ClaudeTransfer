@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { ChevronLeft, ChevronRight, Info, Minus, Plus, RotateCcw } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Info, Minus, Plus, RotateCcw, UserCheck } from 'lucide-react';
 import { STAFF, serviceById } from '../../data/catalogue';
 import { monthCells, monthLabel } from '../../lib/dates';
 import { bufferClashesFor, slotsFor } from '../../lib/schedule';
@@ -16,6 +16,8 @@ export function DateTimeStep() {
   const monthOffset = useScheduler((s) => s.monthOffset);
   const pickDate = useScheduler((s) => s.pickDate);
   const setMonthOffset = useScheduler((s) => s.setMonthOffset);
+  const rescheduleId = useScheduler((s) => s.rescheduleId);
+  const setQueueAdd = useScheduler((s) => s.setQueueAdd);
 
   const showTime = svcStep === 'time';
   const cells = monthCells(monthOffset);
@@ -36,6 +38,18 @@ export function DateTimeStep() {
 
   return (
     <div className="book-step" ref={stepRef}>
+      {/* The way out of this step for somebody standing at the desk: the same
+          booking, with no time on it, waiting in the queue instead. */}
+      {!rescheduleId && (
+        <div className="mode-switch">
+          <UserCheck size={15} strokeWidth={2} color="var(--n-400)" />
+          <span className="mode-switch__text">No time for them yet?</span>
+          <Button variant="outline" size="sm" onClick={() => setQueueAdd(true)}>
+            Add to the check-in queue
+          </Button>
+        </div>
+      )}
+
       <div className="calendar">
         <div className="section-label">Select a date</div>
         <div className="calendar__card">

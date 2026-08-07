@@ -176,6 +176,7 @@ interface Actions {
 
   openAdd: () => void;
   openQueueAdd: () => void;
+  setQueueAdd: (on: boolean) => void;
   closeAdd: () => void;
   startBooking: (colIdx: number, mins: number, dur: number | null) => void;
   setBookedBy: (idx: number) => void;
@@ -491,6 +492,18 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
       seatIdx: 0,
       seatData: {},
       form: { ...freshForm(s.selDay), day: s.selDay },
+    })),
+
+  /**
+   * Switches a booking already in progress between the schedule and the queue,
+   * keeping everything captured so far. Coming back to the schedule reopens the
+   * date step, since choosing a day is the decision being resumed.
+   */
+  setQueueAdd: (on) =>
+    set((s) => ({
+      queueAdd: on,
+      staffOpen: false,
+      svcStep: on || !s.form.service ? s.svcStep : s.svcStep === 'service' ? 'date' : s.svcStep,
     })),
 
   closeAdd: () =>

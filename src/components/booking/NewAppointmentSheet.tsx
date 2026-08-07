@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef } from 'react';
-import { ChevronLeft, Mountain, TriangleAlert, UserCheck, X } from 'lucide-react';
+import { CalendarDays, ChevronLeft, Mountain, TriangleAlert, UserCheck, X } from 'lucide-react';
 import { STAFF, STORE, serviceById } from '../../data/catalogue';
 import { collisionsFor, slotsFor } from '../../lib/schedule';
 import { durationLabel, parseTime, rangeLabel } from '../../lib/time';
@@ -34,6 +34,7 @@ export function NewAppointmentSheet() {
     setSheetPage,
     saveAppt,
     saveWalkIn,
+    setQueueAdd,
     showWhoGate,
   } = store;
 
@@ -148,6 +149,10 @@ export function NewAppointmentSheet() {
                         <div className="queue-note__body">
                           No fitter or time is set now. Drag them onto a column when somebody is free.
                         </div>
+                        <button className="queue-note__back" type="button" onClick={() => setQueueAdd(false)}>
+                          <CalendarDays size={13} strokeWidth={2.2} />
+                          Pick a date and time instead
+                        </button>
                       </div>
                       <DurationStepper />
                     </div>
