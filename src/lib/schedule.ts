@@ -36,14 +36,30 @@ export function layout(list: Appointment[]): LaidOutAppt[] {
   return items;
 }
 
-/** Ids of appointments that overlap another booking for the same fitter on the same day. */
+/**
+ * Every fitter working a booking: the one whose column it sits in, plus anyone
+ * assisting. Availability and conflicts are answered against this whole set —
+ * an assisting fitter is as busy as the lead.
+ */
+export function fittersOf(a: Pick<Appointment, 's' | 'assist'>): number[] {
+  return a.assist?.length ? [a.s, ...a.assist] : [a.s];
+}
+
+/** Do two bookings need any of the same fitter? */
+function sharesFitter(a: Pick<Appointment, 's' | 'assist'>, b: Pick<Appointment, 's' | 'assist'>): boolean {
+  if (!a.assist?.length && !b.assist?.length) return a.s === b.s;
+  const mine = fittersOf(a);
+  return fittersOf(b).some((f) => mine.includes(f));
+}
+
+/** Ids of appointments that overlap another booking sharing a fitter on the same day. */
 export function conflictIds(list: Appointment[]): Set<string> {
   const bad = new Set<string>();
   for (let i = 0; i < list.length; i++) {
     for (let j = i + 1; j < list.length; j++) {
       const a = list[i];
       const b = list[j];
-      if (a.d !== b.d || a.s !== b.s) continue;
+      if (a.d !== b.d || !sharesFitter(a, b)) continue;
       if (a.st < b.st + b.du && b.st < a.st + a.du) {
         bad.add(a.id);
         bad.add(b.id);
@@ -57,6 +73,8 @@ export interface Candidate {
   id?: string | null;
   d: number;
   s: number;
+  /** other fitters the candidate would also occupy */
+  assist?: number[];
   st: number;
   du: number;
   bb?: number;
@@ -69,7 +87,7 @@ export function collisionsFor(appts: Appointment[], cand: Candidate): Appointmen
     (a) =>
       a.id !== cand.id &&
       a.d === cand.d &&
-      a.s === cand.s &&
+      sharesFitter(a, cand) &&
       a.st < cand.st + cand.du &&
       cand.st < a.st + a.du,
   );
@@ -80,7 +98,7 @@ export function bufferClashesFor(appts: Appointment[], cand: Candidate): Appoint
   const cb = cand.bb ?? 0;
   const ca = cand.ba ?? 0;
   return appts.filter((a) => {
-    if (a.id === cand.id || a.d !== cand.d || a.s !== cand.s) return false;
+    if (a.id === cand.id || a.d !== cand.d || !sharesFitter(a, cand)) return false;
     const aFrom = a.st - (a.bb || 0);
     const aTo = a.st + a.du + (a.ba || 0);
     const cFrom = cand.st - cb;

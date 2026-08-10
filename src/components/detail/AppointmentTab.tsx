@@ -5,7 +5,7 @@ import { durationLabel, rangeLabel } from '../../lib/time';
 import { DAY_INFO, useScheduler } from '../../store/useScheduler';
 import { Avatar } from '../ui/Avatar';
 import { Badge, Button, Card, CardContent, CardHeader, CardTitle, DataRow } from '../ui/primitives';
-import { FitterSelect } from './FitterSelect';
+import { FitterTeam } from './FitterTeam';
 import type { DetailInfo } from './useDetail';
 
 const ICON = { size: 15, strokeWidth: 2, color: 'var(--n-400)' } as const;
@@ -64,8 +64,13 @@ export function AppointmentTab({ detail }: { detail: DetailInfo }) {
               </DataRow>
             )}
             {!isMeeting && !isWalkIn && (
-              <DataRow icon={<UserCog {...ICON} />} label="Bootfitter" control full>
-                <FitterSelect current={appt.s} />
+              <DataRow
+                icon={<UserCog {...ICON} />}
+                label={appt.assist?.length ? `Bootfitters (${appt.assist.length + 1})` : 'Bootfitter'}
+                control
+                full
+              >
+                <FitterTeam lead={appt.s} assist={appt.assist ?? []} />
               </DataRow>
             )}
           </dl>

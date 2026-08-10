@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type MouseEvent } from 'react';
 import { SHOP_HOURS, STAFF } from '../../data/catalogue';
-import { conflictIds, layout } from '../../lib/schedule';
+import { conflictIds, fittersOf, layout } from '../../lib/schedule';
 import {
   GRID,
   GRID_END_MIN,
@@ -93,7 +93,9 @@ export function ScheduleGrid() {
   const clash = conflictIds(effAppts);
   const showAllStaff = staffFilter.length === 0;
   const visibleStaff = showAllStaff ? STAFF.map((_, i) => i) : [...staffFilter].sort((a, b) => a - b);
-  const weekAppts = showAllStaff ? effAppts : effAppts.filter((a) => staffFilter.includes(a.s));
+  const weekAppts = showAllStaff
+    ? effAppts
+    : effAppts.filter((a) => fittersOf(a).some((f) => staffFilter.includes(f)));
 
   const columns: Column[] = isWeek
     ? DAY_INFO.map((d, di) => ({
@@ -126,7 +128,9 @@ export function ScheduleGrid() {
           past: false,
           shift: s.shift,
           brk: s.brk,
-          appts: layout(effAppts.filter((a) => a.d === selDay && a.s === si)),
+          // A booking with more than one fitter is drawn in each of their columns:
+          // they are all busy for it. Only the lead's copy is draggable.
+          appts: layout(effAppts.filter((a) => a.d === selDay && fittersOf(a).includes(si))),
         };
       });
 
@@ -344,20 +348,27 @@ export function ScheduleGrid() {
                     </div>
                   )}
 
-                  {col.appts.map((a) => (
-                    <AppointmentBlock
-                      key={a.id}
-                      appt={a}
-                      conflict={clash.has(a.id)}
-                      dragging={drag?.id === a.id}
-                      onMouseDown={(e) => startDrag(e, a)}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (draggedRef.current === a.id) return;
-                        openDetail(a.id);
-                      }}
-                    />
-                  ))}
+                  {col.appts.map((a) => {
+                    // In an assisting fitter's column the block is a second view of
+                    // the same booking: it opens, but it is rescheduled from the lead's
+                    // column, so there is only ever one thing to drag.
+                    const lead = isWeek || a.s === col.idx;
+                    return (
+                      <AppointmentBlock
+                        key={a.id}
+                        appt={a}
+                        conflict={clash.has(a.id)}
+                        dragging={lead && drag?.id === a.id}
+                        assisting={!lead}
+                        onMouseDown={lead ? (e) => startDrag(e, a) : undefined}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (draggedRef.current === a.id) return;
+                          openDetail(a.id);
+                        }}
+                      />
+                    );
+                  })}
                 </div>
               );
             })}

@@ -1,7 +1,9 @@
 import { Check } from 'lucide-react';
-import { FITTING_QUESTIONS, STAFF_QUESTIONS } from '../../data/catalogue';
+import { FITTING_QUESTIONS, STAFF, STAFF_QUESTIONS } from '../../data/catalogue';
+import { fittersOf } from '../../lib/schedule';
 import { useScheduler } from '../../store/useScheduler';
 import type { Answers, QuestionField } from '../../types';
+import { Avatar } from '../ui/Avatar';
 import { Field } from '../ui/Field';
 import { Badge, Button, Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle, Label } from '../ui/primitives';
 import { PartyPills } from './PartyPills';
@@ -21,6 +23,7 @@ export function FittingTab({ detail }: { detail: DetailInfo }) {
   const setCustAnswer = useScheduler((s) => s.setCustAnswer);
   const setStaffAnswer = useScheduler((s) => s.setStaffAnswer);
   const markSaved = useScheduler((s) => s.markSaved);
+  const setAssessedBy = useScheduler((s) => s.setAssessedBy);
 
   const rec = records[appt.id] ?? {};
   const onCustomer = who === 'customer';
@@ -31,6 +34,12 @@ export function FittingTab({ detail }: { detail: DetailInfo }) {
   const questions = onCustomer ? FITTING_QUESTIONS : STAFF_QUESTIONS;
   const suffix = onCustomer ? `c${custIdx}` : `s${custIdx}`;
   const stamp = saved[`${appt.id}:${suffix}`];
+
+  // With more than one fitter on the booking, the assessment has to say which of
+  // them made it — otherwise a shared record has no author.
+  const team = fittersOf(appt);
+  const assessedBy = rec.assessedBy?.[custIdx] ?? appt.s;
+  const showAuthor = !onCustomer && team.length > 1;
 
   return (
     <div>
@@ -70,12 +79,38 @@ export function FittingTab({ detail }: { detail: DetailInfo }) {
               <Badge variant="success">
                 <Check size={12} strokeWidth={3} />
                 Saved {stamp}
+                {showAuthor && ` · ${STAFF[assessedBy].name}`}
               </Badge>
             </CardAction>
           )}
         </CardHeader>
 
         <CardContent>
+          {showAuthor && (
+            <div className="assessed-by">
+              <Label>Recorded by</Label>
+              <div className="assessed-by__options" role="radiogroup" aria-label="Recorded by">
+                {team.map((si) => {
+                  const s = STAFF[si];
+                  const on = si === assessedBy;
+                  return (
+                    <button
+                      className={`assessed-by__option${on ? ' assessed-by__option--on' : ''}`}
+                      type="button"
+                      role="radio"
+                      aria-checked={on}
+                      key={si}
+                      onClick={() => setAssessedBy(custIdx, si)}
+                    >
+                      <Avatar initials={s.initials} color={s.dot} size={22} fontSize={9} />
+                      {s.name}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           <div className="answer-grid">
             {questions.map((q: QuestionField) => (
               <div className="answer-field" key={q.id}>

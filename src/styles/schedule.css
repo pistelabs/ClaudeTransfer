@@ -324,6 +324,30 @@
   opacity: 0.85;
 }
 
+/* A booking worked by more than one fitter, drawn in every one of their columns.
+   The assisting copy opens the same booking but is rescheduled from the lead's. */
+.appt--assisting {
+  cursor: pointer;
+}
+
+.appt__team {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+  margin-top: 4px;
+  overflow: hidden;
+}
+
+.appt__team-label {
+  margin-left: 2px;
+  overflow: hidden;
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  opacity: 0.8;
+}
+
 /* Buffers read as protected time, not bookable work: hatched fill, dotted edge. */
 .buffer {
   position: absolute;

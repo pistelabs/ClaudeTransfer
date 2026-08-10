@@ -20,9 +20,11 @@ const BASE: Omit<Appointment, 'id' | 'bb' | 'ba' | 'bookedAt' | 'bookedVia'>[] =
   { d: 1, s: 2, st: 630, du: 45, t: 'SH', c: 'Owen Clarke', n: '' },
   { d: 1, s: 2, st: 720, du: 90, t: 'BF', c: 'Hannah Weber', n: 'Touring boot, walk mode check.' },
   { d: 1, s: 3, st: 555, du: 90, t: 'FB', c: 'Emma Stone', n: 'Cork footbed cast.', party: ['Emma Stone', 'Jack Turner'] },
-  { d: 1, s: 2, st: 810, du: 90, t: 'BF', c: 'The Doyle Family', n: 'Family fit — three sets of boots.', party: ['Chris Doyle', 'Cara Doyle', 'Owen Clarke'] },
+  // Three sets of boots in ninety minutes takes two fitters, so both are on it
+  // and it is drawn in both their columns.
+  { d: 1, s: 2, assist: [3], st: 810, du: 90, t: 'BF', c: 'The Doyle Family', n: 'Family fit — three sets of boots.', party: ['Chris Doyle', 'Cara Doyle', 'Owen Clarke'] },
   { d: 1, s: 3, st: 660, du: 90, t: 'FB', c: 'Jack Turner', n: '' },
-  { d: 1, s: 3, st: 810, du: 45, t: 'FB', c: 'Yuki Tanaka', n: 'Follow-up grind.' },
+  { d: 1, s: 3, st: 960, du: 45, t: 'FB', c: 'Yuki Tanaka', n: 'Follow-up grind.' },
   { d: 1, s: 3, st: 900, du: 60, t: 'FB', c: 'Chris Doyle', n: '' },
   // Monday
   { d: 0, s: 0, st: 600, du: 90, t: 'BF', c: 'Paul Adams', n: '' },

@@ -23,8 +23,14 @@ export interface Appointment {
   id: string;
   /** day index, Monday = 0 */
   d: number;
-  /** staff index */
+  /** staff index — the fitter whose column the booking sits in */
   s: number;
+  /**
+   * Other fitters working the same booking alongside `s`. A big fit or a
+   * multi-customer booking can need two pairs of hands, and each of them is
+   * genuinely busy for the duration.
+   */
+  assist?: number[];
   /** start, minutes from midnight */
   st: number;
   /** duration in minutes */
@@ -165,6 +171,12 @@ export interface ApptRecord {
   fittingByCustomer?: Record<number, Answers>;
   /** staff assessment answers, keyed by index in the party */
   staffByCustomer?: Record<number, Answers>;
+  /**
+   * Which fitter recorded the staff assessment, keyed by index in the party.
+   * Only meaningful when more than one fitter is on the booking; absent means
+   * the fitter whose column it sits in.
+   */
+  assessedBy?: Record<number, number>;
   /** required-at-booking answers for the primary customer */
   details?: Answers;
   seats?: { customer: string; details: Answers }[];

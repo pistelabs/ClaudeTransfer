@@ -101,6 +101,13 @@ the "now" line and the Today/Upcoming/Past pills meaningful whenever you open it
   clickable and is flagged amber — online bookings must respect it, in-store staff may not.
 - **Double-booking warns, it does not block.** The sheet shows the clashing appointment and
   the confirm button turns rose, but the booking can still be forced through.
+- **A booking can have more than one fitter.** Some work needs two pairs of hands, so the
+  Appointment tab's Bootfitter field is a team: the lead — whose column the booking sits in,
+  and who can still be swapped — plus anyone assisting, added and removed as chips. Everyone
+  attached is genuinely busy, so the block is drawn in each of their columns and counts
+  against their availability and conflicts. Only the lead's copy drags; the others move with
+  it. With more than one fitter on the booking, the staff assessment asks which of them
+  recorded it, per person, and the saved badge carries the name.
 - **Answers are per person, not per booking.** A multi-customer booking keeps its own
   required-at-booking answers, fitting questionnaire, staff assessment, check-in and
   equipment record for each person on it.

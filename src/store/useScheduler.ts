@@ -134,6 +134,7 @@ interface State {
   detailWho: FittingSide;
   detailCust: number;
   detailStaffOpen: boolean;
+  detailAddFitterOpen: boolean;
   apptMenu: boolean;
   checkins: Record<string, string>;
   saved: Record<string, string>;
@@ -221,6 +222,10 @@ interface Actions {
   setDetailCust: (i: number) => void;
   setDetailStaffOpen: (open: boolean) => void;
   reassignFitter: (staffIdx: number) => void;
+  addFitter: (staffIdx: number) => void;
+  removeFitter: (staffIdx: number) => void;
+  setDetailAddFitterOpen: (open: boolean) => void;
+  setAssessedBy: (ci: number, staffIdx: number) => void;
   toggleApptMenu: () => void;
   closeApptMenu: () => void;
   checkIn: (key: string) => void;
@@ -307,6 +312,7 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
   detailWho: 'customer',
   detailCust: 0,
   detailStaffOpen: false,
+  detailAddFitterOpen: false,
   apptMenu: false,
   checkins: {},
   saved: {},
@@ -840,17 +846,73 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
   // ---- detail sheet -----------------------------------------------------
 
   openDetail: (id) =>
-    set({ showDetail: true, detailId: id, detailTab: 0, detailWho: 'customer', detailCust: 0, apptMenu: false, detailStaffOpen: false }),
+    set({ showDetail: true, detailId: id, detailTab: 0, detailWho: 'customer', detailCust: 0, apptMenu: false, detailStaffOpen: false, detailAddFitterOpen: false }),
   closeDetail: () => set({ showDetail: false }),
   setDetailTab: (detailTab) => set({ detailTab }),
   setDetailWho: (detailWho) => set({ detailWho }),
   setDetailCust: (detailCust) => set({ detailCust }),
   setDetailStaffOpen: (detailStaffOpen) => set({ detailStaffOpen }),
+  /** Swaps the lead fitter. Anyone assisting stays, minus the new lead if they were on it. */
   reassignFitter: (staffIdx) =>
     set((s) => ({
       detailStaffOpen: false,
-      appts: s.appts.map((a) => (a.id === s.detailId ? { ...a, s: staffIdx } : a)),
+      appts: s.appts.map((a) =>
+        a.id === s.detailId ? { ...a, s: staffIdx, assist: (a.assist ?? []).filter((i) => i !== staffIdx) } : a,
+      ),
     })),
+
+  /** Attaches a second pair of hands. They are then busy for the booking too. */
+  addFitter: (staffIdx) =>
+    set((s) => ({
+      detailAddFitterOpen: false,
+      appts: s.appts.map((a) => {
+        if (a.id !== s.detailId || a.s === staffIdx || a.assist?.includes(staffIdx)) return a;
+        return { ...a, assist: [...(a.assist ?? []), staffIdx] };
+      }),
+    })),
+
+  /**
+   * Detaches an assisting fitter. Any assessment they were credited with falls
+   * back to the lead rather than pointing at somebody no longer on the booking.
+   */
+  removeFitter: (staffIdx) =>
+    set((s) => {
+      const id = s.detailId;
+      if (!id) return s;
+      const appt = s.appts.find((a) => a.id === id);
+      if (!appt || appt.s === staffIdx) return s;
+
+      const rec = s.records[id];
+      const assessedBy = rec?.assessedBy;
+      let records = s.records;
+      if (assessedBy && Object.values(assessedBy).includes(staffIdx)) {
+        const next = { ...assessedBy };
+        for (const [ci, who] of Object.entries(next)) {
+          if (who === staffIdx) next[Number(ci)] = appt.s;
+        }
+        records = { ...s.records, [id]: { ...rec, assessedBy: next } };
+      }
+
+      return {
+        records,
+        appts: s.appts.map((a) =>
+          a.id === id ? { ...a, assist: (a.assist ?? []).filter((i) => i !== staffIdx) } : a,
+        ),
+      };
+    }),
+
+  setDetailAddFitterOpen: (detailAddFitterOpen) => set({ detailAddFitterOpen }),
+
+  /** Credits the staff assessment for one person on the booking to a named fitter. */
+  setAssessedBy: (ci, staffIdx) =>
+    set((s) => {
+      const id = s.detailId;
+      if (!id) return s;
+      const rec = s.records[id] ?? {};
+      return {
+        records: { ...s.records, [id]: { ...rec, assessedBy: { ...(rec.assessedBy ?? {}), [ci]: staffIdx } } },
+      };
+    }),
   toggleApptMenu: () => set((s) => ({ apptMenu: !s.apptMenu })),
   closeApptMenu: () => set({ apptMenu: false }),
 

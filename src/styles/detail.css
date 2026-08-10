@@ -74,11 +74,81 @@
   white-space: nowrap;
 }
 
-/* ---- fitter reassignment, now a field inside the Appointment tab ---- */
+/* ---- the fitters on a booking, a field inside the Appointment tab ---- */
+
+/* The lead sits in the select; anyone assisting follows as a removable chip. */
+.fitter-team {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
 
 .fitter-select {
   position: relative;
   max-width: 340px;
+}
+
+.fitter-chip {
+  display: inline-flex;
+  gap: 7px;
+  align-items: center;
+  height: 34px;
+  padding: 0 5px 0 5px;
+  color: var(--n-800);
+  font-size: 12.5px;
+  font-weight: 500;
+  background: #fff;
+  border: 1px solid var(--n-150);
+  border-radius: var(--r-pill);
+}
+
+.fitter-chip__name {
+  white-space: nowrap;
+}
+
+.fitter-chip__remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  margin-right: 1px;
+  color: var(--n-450);
+  background: none;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.fitter-chip__remove:hover {
+  color: var(--danger);
+  background: var(--danger-tint);
+}
+
+.fitter-add {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  height: 34px;
+  padding: 0 12px;
+  color: var(--n-700);
+  font-size: 12.5px;
+  font-weight: 600;
+  background: #fff;
+  border: 1px dashed var(--n-200);
+  border-radius: var(--r-pill);
+  cursor: pointer;
+}
+
+.fitter-add:hover {
+  color: var(--primary-text);
+  background: var(--primary-tint);
+  border-color: var(--primary-border);
+}
+
+.fitter-select__menu--add {
+  min-width: 240px;
 }
 
 .fitter-select__trigger {
@@ -378,6 +448,47 @@
 /* The Fitting tab's question panel hangs directly off the Customer/Staff strip. */
 .detail__panel {
   margin-top: 14px;
+}
+
+/* Which fitter made the assessment — only asked when the booking has more than one. */
+.assessed-by {
+  margin-bottom: 16px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid var(--n-100);
+}
+
+.assessed-by__options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 7px;
+}
+
+.assessed-by__option {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  height: 34px;
+  padding: 0 12px 0 5px;
+  color: var(--n-700);
+  font-size: 12.5px;
+  font-weight: 500;
+  background: #fff;
+  border: 1px solid var(--n-150);
+  border-radius: var(--r-pill);
+  cursor: pointer;
+}
+
+.assessed-by__option:hover {
+  background: var(--n-30);
+}
+
+.assessed-by__option--on {
+  color: var(--primary-text);
+  font-weight: 600;
+  background: var(--primary-tint);
+  border-color: var(--primary);
+  box-shadow: inset 0 0 0 1px var(--primary);
 }
 
 .answer-grid {

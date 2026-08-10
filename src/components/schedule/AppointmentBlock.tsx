@@ -1,15 +1,18 @@
 import type { CSSProperties, MouseEvent } from 'react';
 import { TriangleAlert } from 'lucide-react';
-import { TYPES } from '../../data/catalogue';
+import { STAFF, TYPES } from '../../data/catalogue';
 import { durToPx, fmtTime, minsToPx, rangeLabel } from '../../lib/time';
-import { partyOf } from '../../lib/schedule';
+import { fittersOf, partyOf } from '../../lib/schedule';
 import type { LaidOutAppt } from '../../types';
+import { Avatar } from '../ui/Avatar';
 
 interface Props {
   appt: LaidOutAppt;
   conflict: boolean;
   dragging: boolean;
-  onMouseDown: (e: MouseEvent<HTMLDivElement>) => void;
+  /** drawn in a fitter's column who is assisting, not leading, this booking */
+  assisting?: boolean;
+  onMouseDown?: (e: MouseEvent<HTMLDivElement>) => void;
   onClick: (e: MouseEvent<HTMLDivElement>) => void;
 }
 
@@ -45,26 +48,33 @@ function BufferBand({ appt, side }: { appt: LaidOutAppt; side: 'before' | 'after
   );
 }
 
-export function AppointmentBlock({ appt, conflict, dragging, onMouseDown, onClick }: Props) {
+export function AppointmentBlock({ appt, conflict, dragging, assisting, onMouseDown, onClick }: Props) {
   const type = TYPES[appt.t];
   const height = durToPx(appt.du);
   const short = height < 34;
   const tall = height >= 56;
   const names = partyOf(appt);
   const customer = names.join(', ');
+  const team = fittersOf(appt);
+  const teamNames = team.map((i) => STAFF[i].name).join(' and ');
 
   const className = [
     'appt',
     short ? 'appt--short' : '',
     conflict ? 'appt--conflict' : '',
     dragging ? 'appt--dragging' : '',
+    assisting ? 'appt--assisting' : '',
   ]
     .filter(Boolean)
     .join(' ');
 
   const tip = conflict
     ? `⚠ Double-booked — ${appt.c} · ${rangeLabel(appt.st, appt.st + appt.du)}`
-    : `${appt.c} · ${type.label} · ${rangeLabel(appt.st, appt.st + appt.du)}  (drag to reschedule)`;
+    : assisting
+      ? `${appt.c} · ${type.label} · ${rangeLabel(appt.st, appt.st + appt.du)}  (with ${teamNames} — reschedule from ${STAFF[appt.s].name}'s column)`
+      : `${appt.c} · ${type.label} · ${rangeLabel(appt.st, appt.st + appt.du)}${
+          team.length > 1 ? `  (with ${teamNames})` : ''
+        }  (drag to reschedule)`;
 
   return (
     <>
@@ -106,6 +116,16 @@ export function AppointmentBlock({ appt, conflict, dragging, onMouseDown, onClic
             <div className="appt__time">{rangeLabel(appt.st, appt.st + appt.du)}</div>
             <div className="appt__customer">{customer}</div>
             {tall && <div className="appt__service">{type.label}</div>}
+            {/* Whose booking this also is — a fitter scanning their own column needs
+                to see they are sharing it, not just that they are busy. */}
+            {tall && team.length > 1 && (
+              <div className="appt__team">
+                {team.map((i) => (
+                  <Avatar key={i} initials={STAFF[i].initials} color={STAFF[i].dot} size={16} fontSize={7.5} />
+                ))}
+                <span className="appt__team-label">{team.length} fitters</span>
+              </div>
+            )}
           </>
         )}
       </div>
