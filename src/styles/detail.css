@@ -539,14 +539,29 @@
 
 /* ---- equipment tab ---- */
 
-.equip__row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: flex-end;
+/*
+ * Identifying the item, on an even four-track grid: what it is on the first row
+ * — type, brand, model — and how it measures on the second, so the two rows read
+ * as the two questions rather than one long queue of boxes.
+ */
+.equip__grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px 10px;
 }
 
-.equip__row .label,
+/* Model is free text and carries the longest values, so it takes two tracks. */
+.equip__field--wide {
+  grid-column: span 2;
+}
+
+@media (max-width: 620px) {
+  .equip__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.equip__grid .label,
 .equip-entry__fields .label {
   margin-bottom: 6px;
 }

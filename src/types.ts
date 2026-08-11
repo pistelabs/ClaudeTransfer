@@ -149,9 +149,13 @@ export interface EquipService {
 export interface EquipItem {
   uid: string;
   kind: string;
+  brand: string;
   model: string;
   size: string;
+  /** stiffness rating, boots only */
   flex: string;
+  /** profile, skis and boards only */
+  camber: string;
   services: EquipService[];
   /** active service-group tab; null falls back to the first group */
   tab: string | null;

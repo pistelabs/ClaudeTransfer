@@ -58,7 +58,8 @@ src/
 Everything is seeded in memory and meant to be replaced with real API calls. The backend
 needs to supply: staff with shifts and breaks, the service catalogue with
 durations/prices/buffers/seat counts, per-type required-at-booking field definitions,
-customer and staff question sets, equipment types with their applicable service groups,
+customer and staff question sets, equipment types with their brands, sizes and applicable
+service groups,
 customers, appointments, check-ins, captured records, the workshop queue and POS totals.
 
 `data/seed.ts` shifts the seeded week so the busy day always lands on today, which keeps
@@ -108,6 +109,12 @@ the "now" line and the Today/Upcoming/Past pills meaningful whenever you open it
   against their availability and conflicts. Only the lead's copy drags; the others move with
   it. With more than one fitter on the booking, the staff assessment asks which of them
   recorded it, per person, and the saved badge carries the name.
+- **Equipment is identified before it is worked on.** The entry grid asks type, brand and
+  model on one row, then how it measures on the next: size, and the one spec that matters for
+  that type — flex on a boot, profile on a ski or board, neither on a helmet. Brands and
+  sizes are per type, so changing the type clears the specs entered against the old one. The
+  services applied to the item, and their location, side, note and Included/+price pill, are
+  unchanged.
 - **Answers are per person, not per booking.** A multi-customer booking keeps its own
   required-at-booking answers, fitting questionnaire, staff assessment, check-in and
   equipment record for each person on it.

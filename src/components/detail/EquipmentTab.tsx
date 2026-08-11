@@ -3,6 +3,8 @@ import {
   EQUIP_KINDS,
   EQUIP_SIDES,
   REPEATABLE_SERVICES,
+  equipBrands,
+  equipCamber,
   equipFlex,
   equipServiceGroups,
   equipSizes,
@@ -12,6 +14,25 @@ import type { EquipItem } from '../../types';
 import { Badge, Button, Card, CardAction, CardContent, CardHeader, CardTitle, Label } from '../ui/primitives';
 import { PartyPills } from './PartyPills';
 import type { DetailInfo } from './useDetail';
+
+/** What "size" means for each type, since a mondopoint is not a length. */
+const SIZE_LABEL: Record<string, string> = {
+  Boots: 'Size (mondo)',
+  Skis: 'Length (cm)',
+  Snowboard: 'Length (cm)',
+  Poles: 'Length (cm)',
+};
+
+const MODEL_HINT: Record<string, string> = {
+  Boots: 'e.g. RX 120',
+  Skis: 'e.g. Enforcer 94',
+  Snowboard: 'e.g. Custom X',
+  Bindings: 'e.g. Griffon 13',
+  Footbeds: 'e.g. Winter 3Feet',
+  Liners: 'e.g. Pro Tour',
+  Poles: 'e.g. Spitfire',
+  Helmet: 'e.g. Range MIPS',
+};
 
 export function EquipmentTab({ detail }: { detail: DetailInfo }) {
   return (
@@ -44,6 +65,7 @@ function EquipmentEntry({ item }: { item: EquipItem }) {
   const groups = equipServiceGroups(item.kind);
   const group = groups.find((g) => g.key === item.tab) ?? groups[0];
   const flexOptions = equipFlex(item.kind);
+  const camberOptions = equipCamber(item.kind);
 
   return (
     <Card className="equip">
@@ -62,9 +84,12 @@ function EquipmentEntry({ item }: { item: EquipItem }) {
         </CardAction>
       </CardHeader>
       <CardContent>
-      <div className="equip__row">
-        <div style={{ flex: '0 0 130px' }}>
-          <Label htmlFor={`kind-${item.uid}`}>Type</Label>
+      {/* Identifying the item, in the order it is read off the gear: what it is,
+          whose it is, which model, what size, then the one spec that matters —
+          flex on a boot, profile on a ski or board. */}
+      <div className="equip__grid">
+        <div className="equip__field">
+          <Label htmlFor={`kind-${item.uid}`}>Equipment type</Label>
           <select
             className="equip__input"
             id={`kind-${item.uid}`}
@@ -78,25 +103,44 @@ function EquipmentEntry({ item }: { item: EquipItem }) {
             ))}
           </select>
         </div>
-        <div style={{ flex: '1 1 170px', minWidth: 150 }}>
-          <Label htmlFor={`model-${item.uid}`}>Make &amp; model</Label>
+
+        <div className="equip__field">
+          <Label htmlFor={`brand-${item.uid}`}>Brand</Label>
+          <select
+            className="equip__input"
+            id={`brand-${item.uid}`}
+            value={item.brand}
+            onChange={(e) => updateEquip(item.uid, 'brand', e.target.value)}
+          >
+            <option value="">Select…</option>
+            {equipBrands(item.kind).map((b) => (
+              <option value={b} key={b}>
+                {b}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="equip__field equip__field--wide">
+          <Label htmlFor={`model-${item.uid}`}>Model</Label>
           <input
             className="equip__input"
             id={`model-${item.uid}`}
             value={item.model}
-            placeholder="e.g. Lange RX 120"
+            placeholder={MODEL_HINT[item.kind] ?? 'Model name'}
             onChange={(e) => updateEquip(item.uid, 'model', e.target.value)}
           />
         </div>
-        <div style={{ flex: '0 0 96px' }}>
-          <Label htmlFor={`size-${item.uid}`}>Size</Label>
+
+        <div className="equip__field">
+          <Label htmlFor={`size-${item.uid}`}>{SIZE_LABEL[item.kind] ?? 'Size'}</Label>
           <select
             className="equip__input"
             id={`size-${item.uid}`}
             value={item.size}
             onChange={(e) => updateEquip(item.uid, 'size', e.target.value)}
           >
-            <option value="">Size…</option>
+            <option value="">Select…</option>
             {equipSizes(item.kind).map((s) => (
               <option value={s} key={s}>
                 {s}
@@ -104,8 +148,9 @@ function EquipmentEntry({ item }: { item: EquipItem }) {
             ))}
           </select>
         </div>
+
         {flexOptions.length > 0 && (
-          <div style={{ flex: '0 0 92px' }}>
+          <div className="equip__field">
             <Label htmlFor={`flex-${item.uid}`}>Flex</Label>
             <select
               className="equip__input"
@@ -113,10 +158,29 @@ function EquipmentEntry({ item }: { item: EquipItem }) {
               value={item.flex}
               onChange={(e) => updateEquip(item.uid, 'flex', e.target.value)}
             >
-              <option value="">Flex…</option>
+              <option value="">Select…</option>
               {flexOptions.map((f) => (
                 <option value={f} key={f}>
                   {f}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {camberOptions.length > 0 && (
+          <div className="equip__field">
+            <Label htmlFor={`camber-${item.uid}`}>Profile</Label>
+            <select
+              className="equip__input"
+              id={`camber-${item.uid}`}
+              value={item.camber}
+              onChange={(e) => updateEquip(item.uid, 'camber', e.target.value)}
+            >
+              <option value="">Select…</option>
+              {camberOptions.map((c) => (
+                <option value={c} key={c}>
+                  {c}
                 </option>
               ))}
             </select>

@@ -65,7 +65,17 @@ function freshForm(day: number): BookingForm {
 }
 
 function newEquipItem(): EquipItem {
-  return { uid: 'e' + Math.random().toString(36).slice(2), kind: 'Boots', model: '', size: '', flex: '', services: [], tab: null };
+  return {
+    uid: 'e' + Math.random().toString(36).slice(2),
+    kind: 'Boots',
+    brand: '',
+    model: '',
+    size: '',
+    flex: '',
+    camber: '',
+    services: [],
+    tab: null,
+  };
 }
 
 interface State {
@@ -235,7 +245,7 @@ interface Actions {
   rescheduleAppt: () => void;
   deleteAppt: () => void;
 
-  updateEquip: (uid: string, key: 'kind' | 'model' | 'size' | 'flex', val: string) => void;
+  updateEquip: (uid: string, key: 'kind' | 'brand' | 'model' | 'size' | 'flex' | 'camber', val: string) => void;
   removeEquip: (uid: string) => void;
   setEquipTab: (uid: string, key: string) => void;
   toggleEquipService: (uid: string, name: string, price: string) => void;
@@ -991,8 +1001,13 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
         if (e.uid !== uid) return e;
         const next = { ...e, [key]: val };
         if (key === 'kind') {
+          // every spec belongs to the type it was entered against — an RX 120 is
+          // not a ski — so changing what the item is clears the lot
+          next.brand = '';
+          next.model = '';
           next.size = '';
           next.flex = '';
+          next.camber = '';
           next.tab = null;
           // drop services that don't exist for the new equipment type
           const valid = equipServiceGroups(val).flatMap((g) => g.items.map((i) => i.name));
@@ -1100,7 +1115,8 @@ export function equipKeyOf(s: State): string {
 /** Always keeps one open entry row so equipment can be recorded without an extra click. */
 export function equipListOf(s: State): EquipItem[] {
   const list = s.equipment[equipKeyOf(s)];
-  return list && list.length ? list : [{ uid: 'e-first', kind: EQUIP_KINDS[0], model: '', size: '', flex: '', services: [], tab: null }];
+  if (list && list.length) return list;
+  return [{ uid: 'e-first', kind: EQUIP_KINDS[0], brand: '', model: '', size: '', flex: '', camber: '', services: [], tab: null }];
 }
 
 function setEquip(set: Setter, get: () => SchedulerStore, fn: (list: EquipItem[]) => EquipItem[]) {

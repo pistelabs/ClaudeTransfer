@@ -155,7 +155,26 @@ export function requiredFields(t: TypeCode): QuestionField[] {
 
 // ---- equipment -----------------------------------------------------------
 
-export const EQUIP_KINDS = ['Boots', 'Skis', 'Bindings', 'Footbeds', 'Liners', 'Poles', 'Helmet'];
+export const EQUIP_KINDS = ['Boots', 'Skis', 'Snowboard', 'Bindings', 'Footbeds', 'Liners', 'Poles', 'Helmet'];
+
+/**
+ * Brands the shop sees, per equipment type. `Other` is always last so a brand
+ * nobody stocks can still be recorded — the model field carries the rest.
+ */
+const EQUIP_BRANDS: Record<string, string[]> = {
+  Boots: ['Atomic', 'Dalbello', 'Fischer', 'Full Tilt', 'Head', 'K2', 'Lange', 'Nordica', 'Rossignol', 'Salomon', 'Scarpa', 'Tecnica'],
+  Skis: ['Armada', 'Atomic', 'Black Crows', 'Blizzard', 'Dynastar', 'Elan', 'Fischer', 'Head', 'K2', 'Line', 'Nordica', 'Rossignol', 'Salomon', 'Völkl'],
+  Snowboard: ['Burton', 'CAPiTA', 'GNU', 'Jones', 'Lib Tech', 'Never Summer', 'Nidecker', 'Ride', 'Salomon', 'YES'],
+  Bindings: ['ATK', 'Atomic', 'Dynafit', 'Fritschi', 'Look', 'Marker', 'Salomon', 'Tyrolia', 'Union'],
+  Footbeds: ["Conform'able", 'Sidas', 'Superfeet', 'Surefoot', 'Shop cast'],
+  Liners: ['Atomic', 'Intuition', 'Palau', 'Salomon', 'ZipFit'],
+  Poles: ['Black Diamond', 'Komperdell', 'Leki', 'Scott', 'Swix'],
+  Helmet: ['Atomic', 'Giro', 'POC', 'Salomon', 'Smith', 'Sweet Protection'],
+};
+
+export function equipBrands(kind: string): string[] {
+  return [...(EQUIP_BRANDS[kind] ?? []), 'Other'];
+}
 
 const EQUIP_SERVICES: Record<string, EquipServiceGroup[]> = {
   Boots: [
@@ -165,6 +184,11 @@ const EQUIP_SERVICES: Record<string, EquipServiceGroup[]> = {
     { key: 'align', label: 'Alignment', accent: '#7c3aed', items: [{ name: 'Canting Assessment', price: '€140.00' }, { name: 'Sole Planing', price: '€95.00' }] },
   ],
   Skis: [
+    { key: 'wax', label: 'Waxing', accent: '#0284c7', items: [{ name: 'Hot Wax', price: '€25.00' }, { name: 'Roll Wax', price: '€15.00' }] },
+    { key: 'tune', label: 'Tuning', accent: '#d97706', items: [{ name: 'Full Tune', price: '€55.00' }, { name: 'Edge Bevel', price: '€35.00' }, { name: 'Base Grind', price: '€60.00' }] },
+    { key: 'repair', label: 'Repairs', accent: '#e11d48', items: [{ name: 'Base Weld', price: '€30.00' }, { name: 'Core Shot Repair', price: '€45.00' }] },
+  ],
+  Snowboard: [
     { key: 'wax', label: 'Waxing', accent: '#0284c7', items: [{ name: 'Hot Wax', price: '€25.00' }, { name: 'Roll Wax', price: '€15.00' }] },
     { key: 'tune', label: 'Tuning', accent: '#d97706', items: [{ name: 'Full Tune', price: '€55.00' }, { name: 'Edge Bevel', price: '€35.00' }, { name: 'Base Grind', price: '€60.00' }] },
     { key: 'repair', label: 'Repairs', accent: '#e11d48', items: [{ name: 'Base Weld', price: '€30.00' }, { name: 'Core Shot Repair', price: '€45.00' }] },
@@ -193,6 +217,7 @@ export const EQUIP_SIDES = ['Left', 'Right', 'Both'] as const;
 
 export function equipSizes(kind: string): string[] {
   if (kind === 'Skis') return ['150', '156', '162', '168', '170', '172', '177', '180', '184', '188', '191'];
+  if (kind === 'Snowboard') return ['142', '146', '150', '154', '156', '158', '159W', '162', '163W', '165'];
   if (kind === 'Bindings') return ['S', 'M', 'L', 'XL'];
   if (kind === 'Helmet') return ['XS', 'S', 'M', 'L', 'XL'];
   if (kind === 'Poles') return ['105', '110', '115', '120', '125', '130'];
@@ -201,9 +226,20 @@ export function equipSizes(kind: string): string[] {
   return out;
 }
 
+/** The stiffness rating stamped on a boot cuff. Boots only. */
 export function equipFlex(kind: string): string[] {
   if (kind === 'Boots') return ['60', '70', '80', '90', '100', '110', '120', '130', '140', 'Race'];
-  if (kind === 'Skis') return ['Soft', 'Medium', 'Stiff'];
+  return [];
+}
+
+/**
+ * A ski or board's profile — the equivalent spec to a boot's flex, and what a
+ * tuner needs to know before touching the base.
+ */
+export function equipCamber(kind: string): string[] {
+  if (kind === 'Skis' || kind === 'Snowboard') {
+    return ['Camber', 'Rocker', 'Camber / Rocker', 'Flat', 'Full Rocker'];
+  }
   return [];
 }
 
