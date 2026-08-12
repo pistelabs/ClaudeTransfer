@@ -1,0 +1,150 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  justify-content: center;
+  padding: 24px 20px;
+  overflow-y: auto;
+  background: var(--overlay);
+  animation: ovin 0.15s ease;
+}
+
+.alignStart {
+  align-items: flex-start;
+  padding-top: 56px;
+}
+
+.alignCenter {
+  align-items: center;
+}
+
+.blurred {
+  background: var(--overlay-soft);
+  backdrop-filter: blur(2px);
+}
+
+.panel {
+  position: relative;
+  width: 100%;
+  background: var(--card);
+  border: 1px solid var(--border);
+  animation: dgin 0.2s ease;
+}
+
+/* Dialogs that own their padding (Add a customer, Sign off custom DIN). */
+.padded {
+  padding: 28px;
+  border-radius: var(--radius-dialog);
+  box-shadow: var(--shadow-dialog);
+}
+
+/* Dialogs built from stacked sections (Export, Stored signature). */
+.sectioned {
+  border-radius: 14px;
+  box-shadow: var(--shadow-dialog-soft);
+  overflow: hidden;
+}
+
+/* ---- header ---- */
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.sectioned .header {
+  padding: 22px 24px 6px;
+}
+
+.title {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--foreground);
+}
+
+.description {
+  margin: 6px 0 24px;
+  font-size: 14px;
+  color: var(--muted-foreground);
+}
+
+.md .title {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: normal;
+}
+
+.md .description {
+  margin: 5px 0 0;
+  font-size: 13.5px;
+}
+
+.sm .title {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: normal;
+}
+
+.sm .description {
+  margin: 4px 0 0;
+  font-size: 12.5px;
+}
+
+/* ---- close button ---- */
+
+.close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted-foreground-light);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: 0.15s;
+}
+
+.closeFloating {
+  position: absolute;
+  top: 22px;
+  right: 22px;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border-radius: var(--radius-chip);
+}
+
+.closeFloating:hover {
+  background: var(--muted-fill);
+  color: var(--secondary-foreground);
+}
+
+.closeInline {
+  padding: 4px;
+  border-radius: var(--radius-chip);
+  flex: none;
+}
+
+.closeInline:hover {
+  color: var(--secondary-foreground);
+}
+
+/* ---- footer ---- */
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 26px;
+}
+
+.sectioned .footer {
+  margin-top: 0;
+  gap: 10px;
+  padding: 16px 24px 22px;
+}

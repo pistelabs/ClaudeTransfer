@@ -1,0 +1,95 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  margin-top: 8px;
+}
+
+.record {
+  border-top: 1px solid var(--border-subtlest);
+}
+
+.summaryRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 2px;
+}
+
+.identity {
+  min-width: 0;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 3px;
+  flex-wrap: wrap;
+}
+
+.date {
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.time {
+  font-size: 12.5px;
+  color: var(--muted-foreground-light);
+}
+
+.service {
+  font-size: 12.5px;
+  color: var(--muted-foreground);
+}
+
+.toggle {
+  flex: none;
+  height: auto;
+  padding: 5px 11px;
+  gap: 5px;
+}
+
+.chevron {
+  transition: transform 0.15s;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+.detail {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  padding: 14px;
+  margin-bottom: 12px;
+  background: var(--surface-subtle);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  animation: exp 0.18s ease;
+}
+
+.detailLabel {
+  margin-bottom: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--muted-foreground-light);
+  text-transform: uppercase;
+}
+
+.detailValue {
+  font-size: 13px;
+}
+
+.notes {
+  composes: detailValue;
+  color: var(--secondary-foreground);
+}
+
+.empty {
+  margin-top: 14px;
+  font-size: 13px;
+  color: var(--muted-foreground-light);
+}

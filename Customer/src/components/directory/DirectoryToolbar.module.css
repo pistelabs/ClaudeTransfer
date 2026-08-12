@@ -1,0 +1,42 @@
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 260px;
+}
+
+.searchWrap {
+  position: relative;
+  flex: 1;
+  max-width: 340px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 11px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  color: var(--muted-foreground-light);
+  pointer-events: none;
+}
+
+.searchInput {
+  padding-left: 34px;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}

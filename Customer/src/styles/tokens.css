@@ -1,0 +1,86 @@
+/*
+ * Design tokens — derived from the shadcn/ui default (neutral) theme, as
+ * specified in the design handoff. Every literal colour in the UI comes from
+ * here; components never hard-code a hex value.
+ */
+
+:root {
+  /* Surfaces */
+  --background: #f7f7f8;
+  --card: #ffffff;
+  --surface-subtle: #fbfbfc;
+  --surface-muted: #fafafa;
+
+  /* Text */
+  --foreground: #09090b;
+  --foreground-strong: #18181b;
+  --foreground-hover: #27272a;
+  --muted-foreground: #71717a;
+  --muted-foreground-light: #a1a1aa;
+  --muted-foreground-lighter: #8a8a94;
+  --secondary-foreground: #52525b;
+
+  /* Lines */
+  --border: #e4e4e7;
+  --border-subtle: #f0f0f1;
+  --border-subtlest: #f4f4f5;
+  --border-strong: #d4d4d8;
+
+  /* Fills */
+  --muted-fill: #f4f4f5;
+  --disabled-text: #a1a1aa;
+  --chevron: #c4c4cc;
+
+  /* Accent */
+  --avatar-bg: #eef4ff;
+  --avatar-fg: #2563eb;
+
+  /* Dark panels (DIN card, toast, primary buttons) */
+  --stamp-bg: #27272a;
+  --stamp-border: #3f3f46;
+
+  --overlay: rgba(9, 9, 11, 0.5);
+  --overlay-soft: rgba(9, 9, 11, 0.45);
+  --overlay-strong: rgba(9, 9, 11, 0.55);
+
+  /* Status — confirmed / branch city */
+  --blue-bg: #eff6ff;
+  --blue-fg: #1d4ed8;
+  --blue-border: #bfdbfe;
+  /* Status — completed / branch mountain / signed */
+  --green-bg: #f0fdf4;
+  --green-fg: #15803d;
+  --green-border: #bbf7d0;
+  --green-meta: #3f6b4a;
+  /* Status — cancelled */
+  --red-bg: #fef2f2;
+  --red-fg: #b91c1c;
+  --red-border: #fecaca;
+  /* Status — pending */
+  --amber-bg: #fffbeb;
+  --amber-fg: #b45309;
+  --amber-border: #fde68a;
+
+  --toast-dot: #4ade80;
+
+  /* Radii */
+  --radius-card: 12px;
+  --radius-dialog: 16px;
+  --radius-input: 10px;
+  --radius-control: 8px;
+  --radius-chip: 6px;
+  --radius-pill: 999px;
+
+  /* Shadows */
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.04);
+  --shadow-control: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-primary: 0 1px 2px rgba(0, 0, 0, 0.12);
+  --shadow-dialog: 0 24px 48px -12px rgba(0, 0, 0, 0.25);
+  --shadow-dialog-soft: 0 20px 60px rgba(0, 0, 0, 0.25);
+  --shadow-toast: 0 10px 30px rgba(0, 0, 0, 0.3);
+
+  /* Type */
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+}

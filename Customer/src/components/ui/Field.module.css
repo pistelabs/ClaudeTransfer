@@ -1,0 +1,113 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.label {
+  color: var(--foreground-strong);
+}
+
+.dialog .label {
+  margin-bottom: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.compact .label {
+  margin-bottom: 5px;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--muted-foreground);
+}
+
+.tiny .label {
+  margin-bottom: 4px;
+  font-size: 10.5px;
+  font-weight: 400;
+  color: var(--muted-foreground);
+}
+
+.control {
+  width: 100%;
+  font-family: inherit;
+  color: var(--foreground);
+  background: var(--card);
+  border: 1px solid var(--border);
+  transition: border-color 0.12s;
+}
+
+.control::placeholder {
+  color: var(--muted-foreground-light);
+}
+
+.control:hover:not(:disabled) {
+  border-color: var(--border-strong);
+}
+
+select.control {
+  cursor: pointer;
+}
+
+/* ---- control sizes ---- */
+
+.xs {
+  height: 32px;
+  padding: 0 9px;
+  font-size: 13px;
+  border-radius: 7px;
+}
+
+.sm {
+  height: 34px;
+  padding: 0 10px;
+  font-size: 13px;
+  border-radius: 7px;
+}
+
+.md {
+  height: 38px;
+  padding: 0 12px;
+  font-size: 14px;
+  border-radius: var(--radius-control);
+  box-shadow: var(--shadow-control);
+}
+
+.lg {
+  height: 44px;
+  padding: 0 14px;
+  font-size: 14px;
+  border-radius: var(--radius-input);
+}
+
+/* The custom-DIN override input: a value, not a form field. */
+.value {
+  height: 44px;
+  padding: 0 12px;
+  font-size: 20px;
+  font-weight: 700;
+  border-radius: 9px;
+  border-color: var(--border-strong);
+}
+
+/* Select rendered with its own chevron (toolbar filter). */
+.customChevronWrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.customChevron {
+  appearance: none;
+  padding: 0 32px 0 12px;
+  font-weight: 500;
+}
+
+.chevron {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  color: var(--muted-foreground-light);
+  pointer-events: none;
+}
