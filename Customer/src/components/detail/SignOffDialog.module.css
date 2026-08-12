@@ -1,0 +1,72 @@
+.values {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.valueLabel {
+  margin-bottom: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--foreground-strong);
+}
+
+.valueBox {
+  display: flex;
+  align-items: center;
+  height: 48px;
+  padding: 0 14px;
+  border-radius: var(--radius-input);
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.custom {
+  composes: valueBox;
+  background: var(--foreground-strong);
+  border: 1px solid var(--foreground-strong);
+  color: #fafafa;
+}
+
+.calculated {
+  composes: valueBox;
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--muted-foreground-light);
+}
+
+.signature {
+  margin-top: 22px;
+}
+
+.signatureHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.signatureLabel {
+  margin-bottom: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--foreground-strong);
+}
+
+.clear {
+  margin-bottom: 8px;
+  height: 26px;
+  padding: 0 10px;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: normal;
+}
+
+.clear:hover {
+  background: var(--muted-fill);
+}
+
+.timestamp {
+  margin-top: 10px;
+  font-size: 12.5px;
+  color: var(--muted-foreground-light);
+}
