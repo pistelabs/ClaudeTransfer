@@ -20,9 +20,11 @@ export function CustomerDetailPage() {
   const navigate = useNavigate();
   const { showToast } = useToast();
   const {
+    status,
     getCustomer,
     updateCustomer,
     getDinRecord,
+    loadDinRecord,
     updateDinMeasurements,
     setDinCustom,
     signDin,
@@ -40,7 +42,20 @@ export function CustomerDetailPage() {
     window.scrollTo(0, 0);
   }, [customerId]);
 
+  // The DIN record is its own resource, fetched the first time it is needed.
+  const record = customerId ? getDinRecord(customerId) : undefined;
+  const needsDinRecord = Boolean(customerId && customer && !record);
+  useEffect(() => {
+    if (!customerId || !needsDinRecord) return;
+    loadDinRecord(customerId).catch((cause: unknown) => {
+      showToast(cause instanceof Error ? cause.message : 'Could not load the DIN record');
+    });
+  }, [customerId, needsDinRecord, loadDinRecord, showToast]);
+
   if (!customer || !customerId) {
+    if (status === 'loading') {
+      return <div className={styles.missing}>Loading customer…</div>;
+    }
     return (
       <div className={styles.missing}>
         <p>That customer no longer exists.</p>
@@ -49,9 +64,11 @@ export function CustomerDetailPage() {
     );
   }
 
-  const record = getDinRecord(customerId);
-  const calculated = computeDin(record.measurements);
-  const effective = record.custom !== null ? formatDin(record.custom) : calculated;
+  const calculated = record ? computeDin(record.measurements) : '—';
+  const effective = record && record.custom !== null ? formatDin(record.custom) : calculated;
+
+  const report = (cause: unknown, fallback: string) =>
+    showToast(cause instanceof Error ? cause.message : fallback);
 
   const startEditing = () => {
     setDraft({
@@ -64,11 +81,16 @@ export function CustomerDetailPage() {
     setEditing(true);
   };
 
-  const save = () => {
-    if (draft) updateCustomer(customerId, draft);
-    setEditing(false);
-    setDraft(null);
-    showToast('Customer details saved');
+  const save = async () => {
+    if (!draft) return;
+    try {
+      await updateCustomer(customerId, draft);
+      setEditing(false);
+      setDraft(null);
+      showToast('Customer details saved');
+    } catch (cause) {
+      report(cause, 'Could not save the customer');
+    }
   };
 
   const cancel = () => {
@@ -128,32 +150,48 @@ export function CustomerDetailPage() {
             onCancel={cancel}
           />
 
-          <DinCard
-            record={record}
-            calculated={calculated}
-            effective={effective}
-            onMeasurementsChange={(patch) => updateDinMeasurements(customerId, patch)}
-            onCustomChange={(value) => setDinCustom(customerId, value)}
-            onSignOff={() => setSignOpen(true)}
-            onViewSignature={() => setSignatureOpen(true)}
-          />
+          {record ? (
+            <DinCard
+              record={record}
+              calculated={calculated}
+              effective={effective}
+              onMeasurementsChange={(patch) =>
+                updateDinMeasurements(customerId, patch).catch((cause: unknown) =>
+                  report(cause, 'Could not save the measurements'),
+                )
+              }
+              onCustomChange={(value) =>
+                setDinCustom(customerId, value).catch((cause: unknown) =>
+                  report(cause, 'Could not save the custom DIN'),
+                )
+              }
+              onSignOff={() => setSignOpen(true)}
+              onViewSignature={() => setSignatureOpen(true)}
+            />
+          ) : (
+            <div className={styles.dinPlaceholder}>Loading DIN record…</div>
+          )}
         </div>
       </div>
 
-      {signOpen && record.custom !== null ? (
+      {signOpen && record && record.custom !== null ? (
         <SignOffDialog
           customValue={record.custom}
           calculated={calculated}
           onClose={() => setSignOpen(false)}
-          onConfirm={(signatureUrl, signedAt) => {
-            signDin(customerId, signedAt, signatureUrl);
-            setSignOpen(false);
-            showToast('Custom DIN signed off');
+          onConfirm={async (signaturePng) => {
+            try {
+              await signDin(customerId, signaturePng);
+              setSignOpen(false);
+              showToast('Custom DIN signed off');
+            } catch (cause) {
+              report(cause, 'Could not store the signature');
+            }
           }}
         />
       ) : null}
 
-      {signatureOpen ? (
+      {signatureOpen && record ? (
         <StoredSignatureDialog
           filename={`signature-${customerId}-din.png`}
           signatureUrl={record.signatureUrl}

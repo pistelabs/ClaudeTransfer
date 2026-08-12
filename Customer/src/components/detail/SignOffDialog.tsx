@@ -11,8 +11,8 @@ interface SignOffDialogProps {
   customValue: number | string;
   calculated: string;
   onClose: () => void;
-  /** Receives the signature PNG and the moment it was captured. */
-  onConfirm: (signatureUrl: string, signedAt: string) => void;
+  /** Receives the captured signature as a PNG data URL. */
+  onConfirm: (signaturePng: string) => void;
 }
 
 export function SignOffDialog({
@@ -24,12 +24,12 @@ export function SignOffDialog({
   const titleId = useDialogTitleId();
   const pad = useRef<SignaturePadHandle>(null);
   const [empty, setEmpty] = useState(true);
-  // Shown while signing; the stored timestamp is taken again on confirm.
+  // Preview only — the server stamps the signature when it is stored.
   const [openedAt] = useState(() => timestamp());
 
   const confirm = () => {
     if (empty) return;
-    onConfirm(pad.current?.toDataUrl() ?? '', timestamp());
+    onConfirm(pad.current?.toDataUrl() ?? '');
   };
 
   return (

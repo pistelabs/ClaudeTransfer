@@ -38,6 +38,11 @@ hard-codes a hex value.
 
 ```
 src/
+  api/           Django API boundary — see "Backend" below
+    dto.ts       Wire shapes (snake_case, ISO dates, choice slugs)
+    mappers.ts   DTO <-> UI type conversion
+    live.ts      fetch client for the real backend
+    mock/        In-memory stand-in serving the same shapes
   components/
     ui/          Design-system primitives
     directory/   Toolbar, table, Add-customer and Export dialogs
@@ -45,8 +50,9 @@ src/
   pages/         DirectoryPage, CustomerDetailPage
   store/         CustomerProvider (data + mutations), ToastProvider
   lib/           din, csv, filters, format, download, config
-  data/seed.ts   Seed customers and DIN measurements
   styles/        tokens.css, global.css
+docs/
+  api-contract.md  Endpoints and payloads the backend must serve
 ```
 
 ### Routes
@@ -60,12 +66,41 @@ src/
 
 ### State
 
-`CustomerProvider` holds the customer list and one DIN record per customer
-(measurements, override, signature, signed timestamp) and exposes the mutations
-the pages call. It is the single place to swap in a real API — nothing else
-knows where customers come from. View-local state (search, filter, row
-selection, expansion, dialog visibility, edit draft) lives in the component
-that owns it.
+`CustomerProvider` fetches the customer list on mount, caches one DIN record
+per customer, and exposes the async mutations the pages call — every one of
+them goes through `src/api`. View-local state (search, filter, row selection,
+expansion, dialog visibility, edit draft) lives in the component that owns it.
+
+## Backend
+
+The app talks to a Django REST API. That backend does not exist yet, so
+`src/api/mock/` serves the same endpoints from memory and the UI runs against
+it unchanged. Point at a real server by setting the base URL:
+
+```bash
+cp .env.example .env
+# VITE_API_BASE_URL=http://localhost:8000/api
+```
+
+`src/api/index.ts` picks the live client when that variable is set and the mock
+when it is not. Everything above the boundary — pages, store, components — is
+identical either way.
+
+**`docs/api-contract.md` is the specification to build the Django side
+against**: endpoints, JSON payloads, choice values, auth and error handling,
+plus a model sketch. `src/api/dto.ts` is the same contract in TypeScript.
+
+Two things the backend owns that the mock currently fakes:
+
+- **Signature storage.** The pad produces a PNG data URL; the client uploads it
+  as `multipart/form-data` and the server stores the file, stamps `signed_at`
+  and records who signed it. The mock keeps the data URL in memory.
+- **Clearing a signature when the override changes.** The frontend clears it
+  optimistically, but the server must enforce it — a signature authorises one
+  specific DIN value.
+
+Still stubbed: the equipment panel's **Open** button raises a toast instead of
+opening the job record. `GET /jobs/{id}/` is reserved for it in the contract.
 
 ## Domain rules worth knowing
 
@@ -110,7 +145,9 @@ Faithful to the spec, with these deliberate decisions:
   (email/phone columns drop out of the table); the design specified desktop
   only.
 
-## Replacing the seed data
+## Retiring the mock
 
-`src/data/seed.ts` is the only module with customer data in it. Point
-`CustomerProvider` at a real API and the rest of the app is unchanged.
+`src/api/mock/fixtures.ts` is the only module with customer data in it, and it
+is already in the backend's wire shape. Once the Django API is live: set
+`VITE_API_BASE_URL`, delete `src/api/mock/`, drop the `usingLiveApi` branch in
+`src/api/index.ts`, and repoint the three tests that read the fixtures.

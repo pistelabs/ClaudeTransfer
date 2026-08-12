@@ -4,6 +4,7 @@ import { AddCustomerDialog } from '../components/directory/AddCustomerDialog';
 import { CustomerTable } from '../components/directory/CustomerTable';
 import { DirectoryToolbar } from '../components/directory/DirectoryToolbar';
 import { ExportDialog } from '../components/directory/ExportDialog';
+import { Button } from '../components/ui/Button';
 import type { ExportScope } from '../components/directory/ExportDialog';
 import { buildCsv } from '../lib/csv';
 import type { ExportFieldKey } from '../lib/csv';
@@ -19,7 +20,7 @@ import styles from './DirectoryPage.module.css';
 export function DirectoryPage() {
   const navigate = useNavigate();
   const { showToast } = useToast();
-  const { customers, addCustomer } = useCustomers();
+  const { customers, status, error, reload, addCustomer } = useCustomers();
 
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<CustomerFilter>('All Customers');
@@ -41,10 +42,14 @@ export function DirectoryPage() {
       return next;
     });
 
-  const handleAdd = (input: NewCustomerInput) => {
-    const customer = addCustomer(input);
-    setAddOpen(false);
-    showToast(`${customer.name} added`);
+  const handleAdd = async (input: NewCustomerInput) => {
+    try {
+      const customer = await addCustomer(input);
+      setAddOpen(false);
+      showToast(`${customer.name} added`);
+    } catch (cause) {
+      showToast(cause instanceof Error ? cause.message : 'Could not add the customer');
+    }
   };
 
   const handleExport = (scope: ExportScope, fields: Record<ExportFieldKey, boolean>) => {
@@ -83,13 +88,22 @@ export function DirectoryPage() {
         onAdd={() => setAddOpen(true)}
       />
 
-      <CustomerTable
-        customers={visible}
-        selected={selected}
-        onToggleAll={toggleAll}
-        onToggleOne={(id, checked) => setSelected((prev) => ({ ...prev, [id]: checked }))}
-        onOpen={(id) => navigate(`/customers/${id}`)}
-      />
+      {status === 'loading' ? (
+        <div className={styles.state}>Loading customers…</div>
+      ) : status === 'error' ? (
+        <div className={styles.state}>
+          <p className={styles.stateText}>{error ?? 'Could not load customers.'}</p>
+          <Button onClick={reload}>Try again</Button>
+        </div>
+      ) : (
+        <CustomerTable
+          customers={visible}
+          selected={selected}
+          onToggleAll={toggleAll}
+          onToggleOne={(id, checked) => setSelected((prev) => ({ ...prev, [id]: checked }))}
+          onOpen={(id) => navigate(`/customers/${id}`)}
+        />
+      )}
 
       {addOpen ? (
         <AddCustomerDialog onClose={() => setAddOpen(false)} onSubmit={handleAdd} />

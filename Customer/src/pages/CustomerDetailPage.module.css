@@ -80,6 +80,19 @@
   min-width: 0;
 }
 
+.dinPlaceholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 248px;
+  font-size: 13px;
+  color: var(--muted-foreground-light);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+
 .missing {
   max-width: 1120px;
   margin: 0 auto;
