@@ -82,7 +82,7 @@ export function CheckedInEquipmentPanel() {
       {wide ? (
         <>
           <div className="flex flex-shrink-0 gap-3 border-b border-app-bg px-[14px] py-[9px] text-[10.5px] font-semibold uppercase tracking-wide text-zinc-400">
-            <span className="w-[104px] flex-shrink-0">Job</span>
+            <span className="w-[90px] flex-shrink-0">Job</span>
             <span className="min-w-0 flex-[1.2]">Equipment</span>
             <span className="min-w-0 flex-1">Services</span>
             <span className="w-[110px] flex-shrink-0">Customer</span>

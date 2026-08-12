@@ -32,58 +32,58 @@ export interface RawJob {
 }
 
 export const SEED_JOBS: RawJob[] = [
-  { id: "PL-CS-0114", type: "SKI", brand: "Salomon", model: "QST", size: "180", customer: "Vest Customer", status: "", stage: "in_progress", due: "02/09", pickup: "2:30 PM", services: ["Race Tune"] },
-  { id: "PL-CS-0139", type: "SKI", brand: "Head", model: "E-SXR", size: "168", customer: "Vest Customer", status: "", stage: "in_progress", due: "08/09", pickup: "10:00 AM", services: ["Roll Wax"] },
+  { id: "PLCS0114", type: "SKI", brand: "Salomon", model: "QST", size: "180", customer: "Vest Customer", status: "", stage: "in_progress", due: "02/09", pickup: "2:30 PM", services: ["Race Tune"] },
+  { id: "PLCS0139", type: "SKI", brand: "Head", model: "E-SXR", size: "168", customer: "Vest Customer", status: "", stage: "in_progress", due: "08/09", pickup: "10:00 AM", services: ["Roll Wax"] },
   {
-    id: "PL-CS-0099", customer: "Vest Customer", status: "", stage: "in_progress", due: "20/09", pickup: "12:00 PM",
+    id: "PLCS0099", customer: "Vest Customer", status: "", stage: "in_progress", due: "20/09", pickup: "12:00 PM",
     equipment: [
       { type: "BOARD", brand: "Jones", model: "Frontier 2.0", size: "156", services: ["Premium Service", "Hot Wax"] },
       { type: "SKI", brand: "Salomon", model: "QST", size: "180", services: ["Race Tune"] },
     ],
   },
-  { id: "PL-CS-0220", type: "SKI", brand: "Blizzard", model: "Black Pearl 88", size: "165", customer: "Olivia Murphy", status: "late", stage: "in_progress", due: "02/07", pickup: "1:00 AM", services: ["Hot Wax"] },
+  { id: "PLCS0220", type: "SKI", brand: "Blizzard", model: "Black Pearl 88", size: "165", customer: "Olivia Murphy", status: "late", stage: "in_progress", due: "02/07", pickup: "1:00 AM", services: ["Hot Wax"] },
 
-  { id: "PL-CS-0082", type: "SKI", brand: "Dynastar", model: "Mfree", size: "170", customer: "dean mcDean", status: "", stage: "checked_in", due: "04/09", pickup: "1:00 AM", services: ["Premium Service"] },
+  { id: "PLCS0082", type: "SKI", brand: "Dynastar", model: "Mfree", size: "170", customer: "dean mcDean", status: "", stage: "checked_in", due: "04/09", pickup: "1:00 AM", services: ["Premium Service"] },
   {
-    id: "PL-CS-0089", customer: "Forrest Gump", status: "", stage: "checked_in", due: "07/09", pickup: "5:00 PM",
+    id: "PLCS0089", customer: "Forrest Gump", status: "", stage: "checked_in", due: "07/09", pickup: "5:00 PM",
     equipment: [
       { type: "BOARD", brand: "Bataleon", model: "Feelgood", size: "146", services: ["Full Tune"] },
       { type: "BOARD", brand: "Burton", model: "Custom X", size: "158", services: ["Hot Wax", "Binding Check"] },
     ],
   },
-  { id: "PL-CS-0091", type: "SKI", brand: "Salomon", model: "QST", size: "180", customer: "Vest Customer", status: "", stage: "checked_in", due: "11/09", pickup: "11:00 AM", services: ["Race Tune"] },
+  { id: "PLCS0091", type: "SKI", brand: "Salomon", model: "QST", size: "180", customer: "Vest Customer", status: "", stage: "checked_in", due: "11/09", pickup: "11:00 AM", services: ["Race Tune"] },
 
-  { id: "PL-CS-0130", type: "SKI", brand: "Volkl", model: "Mantra", size: "177", customer: "Vest Customer", status: "", stage: "awaiting", due: "01/09", pickup: "10:00 AM", services: ["Binding Check"] },
-  { id: "PL-CS-0123", type: "SKI", brand: "K2", model: "Mindbender", size: "170", customer: "John Cena", status: "", stage: "awaiting", due: "01/09", pickup: "1:00 AM", services: ["Full Tune"] },
-  { id: "PL-CS-0046", type: "SKI", brand: "Fischer", model: "Nightstick", size: "180", customer: "Bilbo Baggins", status: "complete", stage: "awaiting", due: "02/09", pickup: "1:00 AM", services: ["Roll Wax"] },
-  { id: "PL-CS-0102", type: "SKI", brand: "Armada", model: "Declivity", size: "188", customer: "John Smith", status: "complete", stage: "awaiting", due: "06/09", pickup: "1:00 AM", services: ["Race Tune"] },
-  { id: "PL-CS-0053", type: "SKI", brand: "Salomon", model: "QST", size: "180", customer: "Bilbo Baggins", status: "", stage: "awaiting", due: "03/09", pickup: "10:00 AM", services: ["Edge and Wax"] },
-  { id: "PL-CS-0047", type: "SKI", brand: "Blizzard", model: "Anomaly", size: "170", customer: "Harry Potter", status: "", stage: "awaiting", due: "16/09", pickup: "8:00 AM", services: ["Premium Service"] },
-  { id: "PL-CS-0084", type: "SKI", brand: "Volkl", model: "Deacon", size: "170", customer: "dean mcDean", status: "complete", stage: "awaiting", due: "01/09", pickup: "1:00 AM", services: ["Free Binding Mount (with purchase)"] },
-  { id: "PL-CS-0085", type: "SKI", brand: "Salomon", model: "QST", size: "180", customer: "Walter White", status: "complete", stage: "awaiting", due: "02/09", pickup: "2:00 PM", services: ["Roll Wax"] },
+  { id: "PLCS0130", type: "SKI", brand: "Volkl", model: "Mantra", size: "177", customer: "Vest Customer", status: "", stage: "awaiting", due: "01/09", pickup: "10:00 AM", services: ["Binding Check"] },
+  { id: "PLCS0123", type: "SKI", brand: "K2", model: "Mindbender", size: "170", customer: "John Cena", status: "", stage: "awaiting", due: "01/09", pickup: "1:00 AM", services: ["Full Tune"] },
+  { id: "PLCS0046", type: "SKI", brand: "Fischer", model: "Nightstick", size: "180", customer: "Bilbo Baggins", status: "complete", stage: "awaiting", due: "02/09", pickup: "1:00 AM", services: ["Roll Wax"] },
+  { id: "PLCS0102", type: "SKI", brand: "Armada", model: "Declivity", size: "188", customer: "John Smith", status: "complete", stage: "awaiting", due: "06/09", pickup: "1:00 AM", services: ["Race Tune"] },
+  { id: "PLCS0053", type: "SKI", brand: "Salomon", model: "QST", size: "180", customer: "Bilbo Baggins", status: "", stage: "awaiting", due: "03/09", pickup: "10:00 AM", services: ["Edge and Wax"] },
+  { id: "PLCS0047", type: "SKI", brand: "Blizzard", model: "Anomaly", size: "170", customer: "Harry Potter", status: "", stage: "awaiting", due: "16/09", pickup: "8:00 AM", services: ["Premium Service"] },
+  { id: "PLCS0084", type: "SKI", brand: "Volkl", model: "Deacon", size: "170", customer: "dean mcDean", status: "complete", stage: "awaiting", due: "01/09", pickup: "1:00 AM", services: ["Free Binding Mount (with purchase)"] },
+  { id: "PLCS0085", type: "SKI", brand: "Salomon", model: "QST", size: "180", customer: "Walter White", status: "complete", stage: "awaiting", due: "02/09", pickup: "2:00 PM", services: ["Roll Wax"] },
 
-  { id: "PL-CS-0050", type: "SKI", brand: "Volkl", model: "Mantra", size: "177", customer: "Bilbo Baggins", status: "", stage: "archive", due: "15/07", pickup: "1:00 AM", services: ["Race Tune"] },
+  { id: "PLCS0050", type: "SKI", brand: "Volkl", model: "Mantra", size: "177", customer: "Bilbo Baggins", status: "", stage: "archive", due: "15/07", pickup: "1:00 AM", services: ["Race Tune"] },
   {
-    id: "PL-CS-0042", customer: "Walter White", status: "complete", stage: "archive", due: "15/07", pickup: "1:00 AM",
+    id: "PLCS0042", customer: "Walter White", status: "complete", stage: "archive", due: "15/07", pickup: "1:00 AM",
     equipment: [
       { type: "SKI", brand: "K2", model: "Omen", size: "168", services: ["Roll Wax"] },
       { type: "SKI", brand: "Atomic", model: "Maven", size: "150", services: ["Full Tune"] },
       { type: "BOARD", brand: "Jones", model: "Mountain Twin", size: "154", services: ["Race Tune", "Hot Wax"] },
     ],
   },
-  { id: "PL-CS-0086", type: "SKI", brand: "Atomic", model: "maven", size: "150", customer: "Vest Customer", status: "complete", stage: "archive", due: "30/07", pickup: "1:00 AM", services: ["Full Tune"] },
-  { id: "PL-CS-0055", type: "SKI", brand: "Dynastar", model: "Mfree", size: "180", customer: "Bilbo Baggins", status: "", stage: "archive", due: "12/08", pickup: "1:00 AM", services: ["Full Tune"] },
-  { id: "PL-CS-0059", type: "BOARD", brand: "Burton", model: "Custom X", size: "156", customer: "Forrest Gump", status: "", stage: "archive", due: "30/08", pickup: "1:00 AM", services: ["Hot Wax"] },
-  { id: "PL-CS-0097", type: "BOARD", brand: "Bataleon", model: "Ride", size: "150", customer: "Vest Customer", status: "complete", stage: "archive", due: "27/08", pickup: "1:00 AM", services: ["Binding Mount"] },
+  { id: "PLCS0086", type: "SKI", brand: "Atomic", model: "maven", size: "150", customer: "Vest Customer", status: "complete", stage: "archive", due: "30/07", pickup: "1:00 AM", services: ["Full Tune"] },
+  { id: "PLCS0055", type: "SKI", brand: "Dynastar", model: "Mfree", size: "180", customer: "Bilbo Baggins", status: "", stage: "archive", due: "12/08", pickup: "1:00 AM", services: ["Full Tune"] },
+  { id: "PLCS0059", type: "BOARD", brand: "Burton", model: "Custom X", size: "156", customer: "Forrest Gump", status: "", stage: "archive", due: "30/08", pickup: "1:00 AM", services: ["Hot Wax"] },
+  { id: "PLCS0097", type: "BOARD", brand: "Bataleon", model: "Ride", size: "150", customer: "Vest Customer", status: "complete", stage: "archive", due: "27/08", pickup: "1:00 AM", services: ["Binding Mount"] },
 
-  { id: "PL-CS-0208", type: "SKI", brand: "Salomon", model: "QST", size: "180", customer: "Vest Customer", status: "", stage: "kiosk", due: "30/07", pickup: "1:00 AM", dropoff: "24/07 9:30 AM", services: ["Race Tune"] },
-  { id: "PL-CS-0175", type: "SKI", brand: "Volkl", model: "Mantra", size: "177", customer: "Vest Customer", status: "", stage: "kiosk", due: "07/07", pickup: "9:00 AM", dropoff: "23/07 2:00 PM", services: ["Roll Wax", "Edge and Wax"] },
+  { id: "PLCS0208", type: "SKI", brand: "Salomon", model: "QST", size: "180", customer: "Vest Customer", status: "", stage: "kiosk", due: "30/07", pickup: "1:00 AM", dropoff: "24/07 9:30 AM", services: ["Race Tune"] },
+  { id: "PLCS0175", type: "SKI", brand: "Volkl", model: "Mantra", size: "177", customer: "Vest Customer", status: "", stage: "kiosk", due: "07/07", pickup: "9:00 AM", dropoff: "23/07 2:00 PM", services: ["Roll Wax", "Edge and Wax"] },
   {
-    id: "PL-CS-0233", customer: "Marcus Reid", stage: "kiosk", due: "—", pickup: "—", dropoff: "23/07 11:00 AM", status: "",
+    id: "PLCS0233", customer: "Marcus Reid", stage: "kiosk", due: "—", pickup: "—", dropoff: "23/07 11:00 AM", status: "",
     equipment: [{ type: "SKI", brand: "Atomic", model: "Bent 100", size: "172", colour: "Orange", category: "Alpine Ski", services: [] }],
   },
   {
-    id: "PL-CS-0221", customer: "Sarah Whitfield", stage: "in_progress", due: "05/08", pickup: "4:00 PM", status: "",
+    id: "PLCS0221", customer: "Sarah Whitfield", stage: "in_progress", due: "05/08", pickup: "4:00 PM", status: "",
     notes: "Customer flagged a base gouge underfoot — photo taken at check-in.",
     equipment: [
       {

@@ -35,7 +35,7 @@ export function JobEntry({ row, variant }: Props) {
         className="flex cursor-pointer items-center gap-3 border-b border-app-bg px-[14px] py-[9px] transition-colors hover:bg-surface-50"
         style={{ background: late ? "#fef2f2" : "#ffffff" }}
       >
-        <div className="flex w-[104px] flex-shrink-0 flex-col items-start gap-[3px]">
+        <div className="flex w-[90px] flex-shrink-0 flex-col items-start gap-[3px]">
           <span className="text-xs font-semibold text-zinc-900">{row.rowId}</span>
           <StatusPill status={row.status} />
         </div>
