@@ -91,8 +91,11 @@ Faithful to the spec, with these deliberate decisions:
 - **DIN records are per customer and survive navigation.** The prototype reset
   the DIN state whenever a customer was opened; the handoff calls for a stored
   per-customer DIN record, so that is what the store models.
-- **`equipment[].notes` and `rating` were dropped**, as the handoff instructs —
-  neither is displayed.
+- **`rating` was dropped**, as the handoff instructs — it is not displayed.
+- **`equipment[].notes` is displayed** in the expanded equipment panel, above
+  the job list, with a "No notes recorded." empty state, and each job row names
+  its technician. The hifi handoff dropped both, but the original flow diagram
+  requires the equipment detail to show its notes and the services completed.
 - **`memberSince` is a field on the customer**, not derived from a lookup list.
 - **The sidebar edit form follows the read view's field order** (Name, Phone,
   Email, Preferred, Branch), so fields don't move when you switch into edit

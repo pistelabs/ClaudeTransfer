@@ -21,6 +21,7 @@ export const seedCustomers: Customer[] = [
         status: 'ACTIVE',
         name: 'Nordica Enforcer 100',
         size: '186cm',
+        notes: 'Prefers a hot wax before every trip. Detune tips slightly.',
         jobs: [
           { sequence: '0042', date: 'Jun 24, 2026', tech: 'Tommy', service: 'Full Tune' },
           { sequence: '0031', date: 'Mar 12, 2026', tech: 'Sam', service: 'Edge Sharpen' },
@@ -30,6 +31,7 @@ export const seedCustomers: Customer[] = [
         status: 'ACTIVE',
         name: 'Salomon S/Pro 120',
         size: '27.5',
+        notes: 'Custom footbed fitted. Punch on right instep.',
         jobs: [{ sequence: '0038', date: 'May 2, 2026', tech: 'Jordan', service: 'Boot Fit' }],
       },
     ],
@@ -78,9 +80,16 @@ export const seedCustomers: Customer[] = [
         status: 'ACTIVE',
         name: 'Dynastar M-Pro 99',
         size: '188cm',
+        notes: '',
         jobs: [{ sequence: '0001', date: 'May 12, 2026', tech: 'Tommy', service: 'Full Tune' }],
       },
-      { status: 'RETIRED', name: 'Faction Prodigy 2', size: '172cm', jobs: [] },
+      {
+        status: 'RETIRED',
+        name: 'Faction Prodigy 2',
+        size: '172cm',
+        notes: 'Delaminated at tip — retired.',
+        jobs: [],
+      },
     ],
     appointments: [
       {
@@ -136,6 +145,7 @@ export const seedCustomers: Customer[] = [
         status: 'ACTIVE',
         name: 'Blizzard Rustler 10',
         size: '180cm',
+        notes: 'Loves an aggressive detune. Sends it.',
         jobs: [
           { sequence: '0044', date: 'Jun 22, 2026', tech: 'Priya', service: 'Full Tune' },
           { sequence: '0029', date: 'Feb 1, 2026', tech: 'Sam', service: 'Base Repair' },
@@ -178,6 +188,7 @@ export const seedCustomers: Customer[] = [
         status: 'ACTIVE',
         name: 'Völkl Mantra M6',
         size: '177cm',
+        notes: '',
         jobs: [{ sequence: '0040', date: 'Jun 18, 2026', tech: 'Alex', service: 'Hot Wax' }],
       },
     ],
@@ -217,12 +228,14 @@ export const seedCustomers: Customer[] = [
         status: 'ACTIVE',
         name: 'K2 Mindbender 99Ti',
         size: '184cm',
+        notes: '',
         jobs: [{ sequence: '0037', date: 'Apr 30, 2026', tech: 'Tommy', service: 'Stone Grind' }],
       },
       {
         status: 'ACTIVE',
         name: 'Atomic Hawx Ultra 130',
         size: '28.0',
+        notes: 'Heat-molded liners.',
         jobs: [{ sequence: '0033', date: 'Mar 5, 2026', tech: 'Jordan', service: 'Boot Fit' }],
       },
     ],
@@ -262,6 +275,7 @@ export const seedCustomers: Customer[] = [
         status: 'ACTIVE',
         name: 'Atomic Bent 110',
         size: '180cm',
+        notes: 'Park skier — flat file, no bevel.',
         jobs: [{ sequence: '0036', date: 'Apr 12, 2026', tech: 'Sam', service: 'Edge Sharpen' }],
       },
     ],
@@ -292,6 +306,7 @@ export const seedCustomers: Customer[] = [
         status: 'ACTIVE',
         name: 'Burton Custom 158',
         size: '158cm',
+        notes: 'Snowboard — full wrap edge tune.',
         jobs: [
           { sequence: '0035', date: 'Apr 2, 2026', tech: 'Priya', service: 'Full Tune' },
           { sequence: '0022', date: 'Jan 15, 2026', tech: 'Priya', service: 'Hot Wax' },
@@ -357,6 +372,7 @@ export const seedCustomers: Customer[] = [
         status: 'ACTIVE',
         name: 'Rossignol Experience 86 Ti',
         size: '176cm',
+        notes: '',
         jobs: [{ sequence: '0032', date: 'Feb 20, 2026', tech: 'Alex', service: 'Full Tune' }],
       },
     ],
@@ -391,7 +407,15 @@ export const seedCustomers: Customer[] = [
     memberSince: 'April 2, 2021',
     preferred: 'SMS',
     prefs: { emailEquip: false, smsEquip: true, emailPromo: false, smsPromo: true },
-    equipment: [{ status: 'ACTIVE', name: 'Jones Flagship 161', size: '161cm', jobs: [] }],
+    equipment: [
+      {
+        status: 'ACTIVE',
+        name: 'Jones Flagship 161',
+        size: '161cm',
+        notes: 'Splitboard — check tips seasonally.',
+        jobs: [],
+      },
+    ],
     appointments: [
       {
         date: 'May 30, 2026',
@@ -419,6 +443,7 @@ export const seedCustomers: Customer[] = [
         status: 'ACTIVE',
         name: 'DPS Pagoda 100',
         size: '179cm',
+        notes: 'Hand wax only — no machine.',
         jobs: [{ sequence: '0028', date: 'Feb 8, 2026', tech: 'Tommy', service: 'Hot Wax' }],
       },
     ],

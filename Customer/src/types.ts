@@ -29,6 +29,8 @@ export interface Equipment {
   status: EquipmentStatus;
   name: string;
   size: string;
+  /** Free-text notes left by the shop, shown when the item is expanded. */
+  notes: string;
   jobs: Job[];
 }
 

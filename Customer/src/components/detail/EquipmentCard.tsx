@@ -64,6 +64,9 @@ export function EquipmentCard({ equipment, branch, onOpenJob }: EquipmentCardPro
 
                 {isOpen ? (
                   <div className={styles.panel}>
+                    <div className={styles.panelLabel}>Notes</div>
+                    <div className={styles.notes}>{item.notes || 'No notes recorded.'}</div>
+
                     <div className={styles.panelLabel}>Jobs completed</div>
                     {item.jobs.length === 0 ? (
                       <div className={styles.emptyLine}>No completed jobs yet.</div>
@@ -79,6 +82,7 @@ export function EquipmentCard({ equipment, branch, onOpenJob }: EquipmentCardPro
                                   {job.service}
                                 </Badge>
                                 <span className={styles.jobDate}>{job.date}</span>
+                                <span className={styles.jobTech}>by {job.tech}</span>
                               </div>
                               <Button size="xs" onClick={() => onOpenJob(jobId, job.service)}>
                                 Open

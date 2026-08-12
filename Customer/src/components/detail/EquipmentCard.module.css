@@ -74,6 +74,12 @@
   text-transform: uppercase;
 }
 
+.notes {
+  margin-bottom: 14px;
+  font-size: 13px;
+  color: var(--secondary-foreground);
+}
+
 .jobs {
   display: flex;
   flex-direction: column;
@@ -106,6 +112,11 @@
 }
 
 .jobDate {
+  font-size: 12px;
+  color: var(--muted-foreground-light);
+}
+
+.jobTech {
   font-size: 12px;
   color: var(--muted-foreground-light);
 }
