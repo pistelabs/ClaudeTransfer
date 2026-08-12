@@ -16,13 +16,10 @@ export function ServicePill({ name, size = "sm" }: { name: string; size?: "sm" |
   );
 }
 
-/** `code` is the equipment's record-keeping id (e.g. "CAS0") — shown only where staff need to
- * tell otherwise-identical items apart. */
-export function TypeBadge({ type, code }: { type: EquipmentType; code?: string }) {
+export function TypeBadge({ type }: { type: EquipmentType }) {
   return (
-    <span className="inline-flex items-center gap-[5px] whitespace-nowrap rounded-[5px] border border-border bg-app-bg px-[6px] py-px text-[9px] font-semibold leading-[1.5] tracking-wide text-zinc-500">
+    <span className="inline-flex items-center whitespace-nowrap rounded-[5px] border border-border bg-app-bg px-[6px] py-px text-[9px] font-semibold leading-[1.5] tracking-wide text-zinc-500">
       {type}
-      {code && <span className="font-bold text-zinc-400">{code}</span>}
     </span>
   );
 }

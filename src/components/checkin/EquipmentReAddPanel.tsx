@@ -34,7 +34,7 @@ export function EquipmentReAddPanel() {
                 className="flex cursor-pointer items-center gap-[9px] rounded-[9px] border p-[9px_11px]"
                 style={{ background: on ? "#f0fdf4" : "#ffffff", borderColor: on ? "#86efac" : "#e4e4e7", boxShadow: on ? "0 0 0 1px #86efac" : "none" }}
               >
-                <TypeBadge type={eq.type} code={eq.code} />
+                <TypeBadge type={eq.type} />
                 {/* Long names truncate rather than shoving the "Added" tag past the border. */}
                 <div className="flex min-w-0 flex-1 items-center gap-[9px]">
                   <span className="truncate text-[13px] font-semibold text-zinc-900">{eq.brand}</span>
@@ -47,6 +47,13 @@ export function EquipmentReAddPanel() {
                   <span className="hidden items-center gap-1 whitespace-nowrap rounded-full border border-[#86efac] bg-[#dcfce7] px-2 py-0.5 text-[10.5px] font-bold tracking-wide text-[#15803d] @min-[290px]:inline-flex">
                     <Check size={11} strokeWidth={3} />
                     Added
+                  </span>
+                )}
+                {/* Tracking code, pinned to the right edge as plain text. Dropped once the
+                    panel is too narrow to carry it. */}
+                {eq.code && (
+                  <span className="hidden flex-shrink-0 text-[10px] font-semibold tracking-wide text-zinc-400 @min-[240px]:inline">
+                    {eq.code}
                   </span>
                 )}
               </div>
