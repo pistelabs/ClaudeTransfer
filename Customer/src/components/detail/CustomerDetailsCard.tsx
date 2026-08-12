@@ -41,16 +41,6 @@ export function CustomerDetailsCard({
               />
             )}
           </Field>
-          <Field label="Branch" labelStyle="compact">
-            {(id) => (
-              <Select
-                id={id}
-                options={BRANCHES}
-                value={draft.branch}
-                onChange={(event) => onDraftChange({ branch: event.target.value as Branch })}
-              />
-            )}
-          </Field>
           <Field label="Phone" labelStyle="compact">
             {(id) => (
               <Input
@@ -80,6 +70,16 @@ export function CustomerDetailsCard({
                 onChange={(event) =>
                   onDraftChange({ preferred: event.target.value as PreferredContact })
                 }
+              />
+            )}
+          </Field>
+          <Field label="Branch" labelStyle="compact">
+            {(id) => (
+              <Select
+                id={id}
+                options={BRANCHES}
+                value={draft.branch}
+                onChange={(event) => onDraftChange({ branch: event.target.value as Branch })}
               />
             )}
           </Field>

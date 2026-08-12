@@ -94,6 +94,9 @@ Faithful to the spec, with these deliberate decisions:
 - **`equipment[].notes` and `rating` were dropped**, as the handoff instructs —
   neither is displayed.
 - **`memberSince` is a field on the customer**, not derived from a lookup list.
+- **The sidebar edit form follows the read view's field order** (Name, Phone,
+  Email, Preferred, Branch), so fields don't move when you switch into edit
+  mode. The handoff put Branch second.
 - **The "Open" job action toasts** `Opening service {jobId} — {service}` as a
   stub for navigating to the job record.
 - **Accessibility additions** not in the prototype: labelled controls, dialogs
