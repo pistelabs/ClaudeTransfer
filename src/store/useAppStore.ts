@@ -14,7 +14,7 @@ import type {
 } from "../types";
 import { SEED_CUSTOMERS, SEED_JOBS, STAFF_LIST } from "../data/seedRaw";
 import { buildEquip, equipmentFullyComplete, hashCategory, jobBalance, jobTotal, normalizeJob } from "../data/build";
-import { nextEquipmentCode } from "../lib/equipmentCode";
+import { formatJobId, nextEquipmentCode } from "../lib/equipmentCode";
 import { blankDin, categoryToType, defaultCategoryForType, SERVICE_DEFS } from "../lib/serviceCatalog";
 import { canPickStatus, isEquipmentLocked, STAGE_WORK_STATUS } from "../lib/statusFlow";
 import { stampNow } from "../lib/format";
@@ -98,7 +98,7 @@ const SEED = buildSeed();
 function nextJobIdStr(jobs: Job[]): string {
   const nums = jobs.map((j) => parseInt((j.id || "").replace(/[^0-9]/g, ""), 10)).filter((n) => !isNaN(n));
   const next = (nums.length ? Math.max(...nums) : 0) + 1;
-  return "#" + String(next).padStart(4, "0");
+  return formatJobId(next);
 }
 
 interface AppState {

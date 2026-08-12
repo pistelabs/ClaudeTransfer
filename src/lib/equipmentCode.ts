@@ -8,7 +8,16 @@ import type { EquipmentCategory } from "../types";
  * Format: branch letter + equipment-type letters + a per-type counter from 0, e.g. `CAS0`
  * is the first Alpine Ski checked in at City Skis.
  */
-export const BRANCH_CODE = "C"; // City Skis
+export const COMPANY_INITIALS = "PL"; // PisteLabs
+export const BRANCH_INITIALS = "CS"; // City Skis
+export const BRANCH_CODE = BRANCH_INITIALS[0]; // single letter, used by equipment codes
+
+/** Job numbers are scoped to the company and branch that raised them: `PL-CS-0221`. */
+export const JOB_ID_PREFIX = `${COMPANY_INITIALS}-${BRANCH_INITIALS}-`;
+
+export function formatJobId(n: number): string {
+  return JOB_ID_PREFIX + String(n).padStart(4, "0");
+}
 
 export const CATEGORY_CODE: Record<EquipmentCategory, string> = {
   "Alpine Ski": "AS",
