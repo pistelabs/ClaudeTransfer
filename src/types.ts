@@ -57,6 +57,9 @@ export interface Equipment {
   stage: Stage;
   /** Job Details status-bar label for this specific piece of equipment */
   workStatus: string;
+  /** short per-branch identifier for this physical item (e.g. "CAS0"), so two otherwise
+   * identical items stay distinguishable. Record-keeping only — no UI logic reads it. */
+  code?: string;
   /** epoch ms when this item was marked Collected. After COLLECTED_LOCK_MS it is archived
    * for good and can no longer be edited or moved; null whenever it isn't collected. */
   collectedAt?: number | null;
@@ -114,6 +117,8 @@ export interface CustomerEquipmentRef {
   model: string;
   size: string;
   category?: EquipmentCategory;
+  /** the physical item's code — re-adding this equipment carries it onto the new job */
+  code?: string;
 }
 
 export type ContactChannel = "Email" | "SMS";
@@ -149,6 +154,8 @@ export interface FormItem {
   services: string[];
   serviceData: Record<string, ServiceData>;
   priceOverride?: number | string | null;
+  /** carried through when re-adding a customer's existing equipment, so the job keeps its code */
+  code?: string;
 }
 
 export interface NewJobForm {
@@ -168,6 +175,8 @@ export interface NewJobForm {
   services: string[];
   serviceData: Record<string, ServiceData>;
   priceOverride?: number | string | null;
+  /** code of the on-file equipment currently loaded into the editor, if any */
+  code?: string;
   items: FormItem[];
   din: DinState;
 }

@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import type {
   Customer,
+  CustomerEquipmentRef,
   EquipmentCategory,
   FormItem,
   Job,
@@ -12,7 +13,8 @@ import type {
   Stage,
 } from "../types";
 import { SEED_CUSTOMERS, SEED_JOBS, STAFF_LIST } from "../data/seedRaw";
-import { buildEquip, equipmentFullyComplete, jobBalance, jobTotal, normalizeJob } from "../data/build";
+import { buildEquip, equipmentFullyComplete, hashCategory, jobBalance, jobTotal, normalizeJob } from "../data/build";
+import { nextEquipmentCode } from "../lib/equipmentCode";
 import { blankDin, categoryToType, defaultCategoryForType, SERVICE_DEFS } from "../lib/serviceCatalog";
 import { canPickStatus, isEquipmentLocked, STAGE_WORK_STATUS } from "../lib/statusFlow";
 import { stampNow } from "../lib/format";
@@ -57,6 +59,41 @@ function blankForm(): NewJobForm {
 function blankCust(): NewCustomerForm {
   return { first: "", last: "", email: "", phone: "", channel: "Email" };
 }
+
+/** Every equipment code currently in play, so a new one never collides. */
+function issuedCodes(jobs: Job[], customers: Customer[]): string[] {
+  const out: string[] = [];
+  for (const j of jobs) for (const eq of j.equipment) if (eq.code) out.push(eq.code);
+  for (const c of customers) for (const e of c.equipment) if (e.code) out.push(e.code);
+  return out;
+}
+
+/** Stamps codes onto the seed data. A customer's on-file item and the same item sitting on
+ * one of their jobs are the same physical thing, so they share a code. */
+function buildSeed(): { jobs: Job[]; customers: Customer[] } {
+  const customers: Customer[] = SEED_CUSTOMERS.map((c) => ({ ...c, equipment: c.equipment.map((e) => ({ ...e })) }));
+  const issued: string[] = [];
+  for (const c of customers) {
+    for (const e of c.equipment) {
+      const category = e.category || hashCategory(e.type, e.brand, e.model);
+      e.category = category;
+      e.code = nextEquipmentCode(category, issued);
+      issued.push(e.code);
+    }
+  }
+  const jobs = SEED_JOBS.map(normalizeJob);
+  for (const j of jobs) {
+    const owner = customers.find((c) => c.first + " " + c.last === j.customer);
+    for (const eq of j.equipment) {
+      const onFile = owner?.equipment.find((e) => e.type === eq.type && e.brand === eq.brand && e.model === eq.model && e.size === eq.size);
+      eq.code = onFile?.code ?? nextEquipmentCode(eq.category, issued);
+      issued.push(eq.code);
+    }
+  }
+  return { jobs, customers };
+}
+
+const SEED = buildSeed();
 
 function nextJobIdStr(jobs: Job[]): string {
   const nums = jobs.map((j) => parseInt((j.id || "").replace(/[^0-9]/g, ""), 10)).filter((n) => !isNaN(n));
@@ -195,7 +232,7 @@ interface AppState {
   setCustQuery: (q: string) => void;
   selectCustomer: (c: Customer) => void;
   clearCustomer: () => void;
-  toggleCustEquip: (eq: { type: NewJobForm["type"]; brand: string; model: string; size: string }) => void;
+  toggleCustEquip: (eq: CustomerEquipmentRef) => void;
 
   openAddCust: (prefill?: Partial<NewCustomerForm>) => void;
   editCustomerByName: (name: string, email: string, phone: string) => void;
@@ -205,8 +242,8 @@ interface AppState {
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
-  jobs: SEED_JOBS.map(normalizeJob),
-  customers: SEED_CUSTOMERS.map((c) => ({ ...c })),
+  jobs: SEED.jobs,
+  customers: SEED.customers,
   staffList: STAFF_LIST,
   activeStaff: (typeof localStorage !== "undefined" && localStorage.getItem("wsb_staff")) || "",
 
@@ -747,8 +784,9 @@ export const useAppStore = create<AppState>((set, get) => ({
           ...f,
           items: [
             ...f.items,
-            { type: f.type, category: f.category, brand: f.brand.trim(), model: f.model.trim(), size: f.size.trim() || "—", colour: f.colour.trim(), services: f.services.slice(), serviceData: { ...f.serviceData } },
+            { type: f.type, category: f.category, brand: f.brand.trim(), model: f.model.trim(), size: f.size.trim() || "—", colour: f.colour.trim(), services: f.services.slice(), serviceData: { ...f.serviceData }, code: f.code },
           ],
+          code: undefined,
           brand: "",
           model: "",
           size: "",
@@ -795,7 +833,8 @@ export const useAppStore = create<AppState>((set, get) => ({
     const s = get();
     const f = s.nf;
     const items = f.items.slice();
-    if (f.brand.trim()) items.push({ type: f.type, category: f.category, brand: f.brand.trim(), model: f.model.trim(), size: f.size.trim() || "—", colour: f.colour.trim(), services: f.services.slice(), serviceData: { ...f.serviceData } });
+    if (f.brand.trim())
+      items.push({ type: f.type, category: f.category, brand: f.brand.trim(), model: f.model.trim(), size: f.size.trim() || "—", colour: f.colour.trim(), services: f.services.slice(), serviceData: { ...f.serviceData }, code: f.code });
     if (!f.customer.trim() || items.length === 0) return;
     // Newly checked-in equipment starts life in the Checked in Equipment panel — this sheet is staff
     // physically checking equipment in at the counter right now, not booking a future
@@ -803,6 +842,13 @@ export const useAppStore = create<AppState>((set, get) => ({
     const equipment = items.map((it) =>
       buildEquip({ type: it.type, category: it.category, brand: it.brand, model: it.model, size: it.size, colour: it.colour, services: it.services, serviceData: it.serviceData }, "", "checked_in"),
     );
+    // Re-added equipment keeps the code it already had; anything new gets the next free one.
+    const issued = issuedCodes(s.jobs, s.customers);
+    equipment.forEach((eq, i) => {
+      const existing = items[i].code;
+      eq.code = existing || nextEquipmentCode(eq.category, issued);
+      issued.push(eq.code);
+    });
     // apply price overrides from parked items
     items.forEach((it, i) => {
       if (it.priceOverride != null && it.priceOverride !== "") equipment[i].priceOverride = Number(it.priceOverride);
@@ -878,8 +924,10 @@ export const useAppStore = create<AppState>((set, get) => ({
   toggleCustEquip: (eq) =>
     set((s) => {
       const on = s.nf.brand === eq.brand && s.nf.model === eq.model && s.nf.size === eq.size && s.nf.type === eq.type;
-      if (on) return { nf: { ...s.nf, type: "SKI", category: "Alpine Ski", brand: "", model: "", size: "" } };
-      return { nf: { ...s.nf, type: eq.type, category: defaultCategoryForType(eq.type), brand: eq.brand, model: eq.model, size: eq.size } };
+      if (on) return { nf: { ...s.nf, type: "SKI", category: "Alpine Ski", brand: "", model: "", size: "", code: undefined } };
+      return {
+        nf: { ...s.nf, type: eq.type, category: eq.category || defaultCategoryForType(eq.type), brand: eq.brand, model: eq.model, size: eq.size, code: eq.code },
+      };
     }),
 
   // ---- add/edit customer ----

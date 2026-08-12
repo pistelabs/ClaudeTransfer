@@ -34,7 +34,7 @@ export function EquipmentReAddPanel() {
                 className="flex cursor-pointer items-center gap-[9px] rounded-[9px] border p-[9px_11px]"
                 style={{ background: on ? "#f0fdf4" : "#ffffff", borderColor: on ? "#86efac" : "#e4e4e7", boxShadow: on ? "0 0 0 1px #86efac" : "none" }}
               >
-                <TypeBadge type={eq.type} />
+                <TypeBadge type={eq.type} code={eq.code} />
                 {/* Long names truncate rather than shoving the "Added" tag past the border. */}
                 <div className="flex min-w-0 flex-1 items-center gap-[9px]">
                   <span className="truncate text-[13px] font-semibold text-zinc-900">{eq.brand}</span>

@@ -4,7 +4,7 @@ import { STAGE_WORK_STATUS } from "../lib/statusFlow";
 import type { RawEquip, RawJob } from "./seedRaw";
 
 /** Deterministic pseudo-random category assignment, mirroring the design source's hash-based fallback. */
-function hashCategory(type: EquipmentType, brand: string, model: string): EquipmentCategory {
+export function hashCategory(type: EquipmentType, brand: string, model: string): EquipmentCategory {
   const cats: EquipmentCategory[] =
     type === "BOARD" ? ["Powder Board", "Split Board", "Snowboard"] : ["Alpine Ski", "Touring Ski", "Race Ski"];
   const key = (brand || "") + (model || "");
