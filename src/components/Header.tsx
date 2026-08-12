@@ -15,7 +15,6 @@ export function Header() {
   const toggleFilterCat = useAppStore((s) => s.toggleFilterCat);
   const clearFilter = useAppStore((s) => s.clearFilter);
   const openNew = useAppStore((s) => s.openNew);
-  const [segment, setSegment] = useState<"services" | "all">("all");
   const searchRef = useRef<HTMLInputElement>(null);
 
   // A scanned barcode drops straight into the job search — no need to click the field first.
@@ -58,23 +57,6 @@ export function Header() {
       </div>
 
       <div className="flex-1" />
-
-      <div className="flex h-9 items-center gap-[2px] rounded-lg border border-border bg-app-bg p-[3px]">
-        {(["services", "all"] as const).map((seg) => (
-          <button
-            key={seg}
-            onClick={() => setSegment(seg)}
-            className="h-full rounded-[6px] px-3 text-[12.5px] font-semibold transition-colors"
-            style={
-              segment === seg
-                ? { background: "#ffffff", color: "#18181b", boxShadow: "0 1px 2px rgba(0,0,0,.09)" }
-                : { background: "transparent", color: "#71717a" }
-            }
-          >
-            {seg === "services" ? "Services" : "All Tunes"}
-          </button>
-        ))}
-      </div>
 
       <div className="relative">
         {filterOpen && <div className="fixed inset-0 z-20" onClick={closeFilter} />}
