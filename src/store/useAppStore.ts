@@ -2,6 +2,7 @@ import { create } from "zustand";
 import type {
   Customer,
   CustomerEquipmentRef,
+  DinRecord,
   EquipmentCategory,
   FormItem,
   Job,
@@ -15,7 +16,7 @@ import type {
 import { SEED_CUSTOMERS, SEED_JOBS, STAFF_LIST } from "../data/seedRaw";
 import { buildEquip, equipmentFullyComplete, hashCategory, jobBalance, jobTotal, normalizeJob } from "../data/build";
 import { formatJobId, nextEquipmentCode } from "../lib/equipmentCode";
-import { blankDin, categoryToType, defaultCategoryForType, SERVICE_DEFS } from "../lib/serviceCatalog";
+import { blankDin, categoryToType, computeDin, defaultCategoryForType, SERVICE_DEFS } from "../lib/serviceCatalog";
 import { canPickStatus, isEquipmentLocked, STAGE_WORK_STATUS } from "../lib/statusFlow";
 import { hasWaiver, makeWaiver, requiresWaiver } from "../lib/waivers";
 import { stampNow } from "../lib/format";
@@ -103,6 +104,16 @@ function syncWaivers(job: Job, staff: string): Job {
   const allCollected = job.equipment.length > 0 && job.equipment.every((eq) => eq.stage === "archive");
   if (!allCollected || hasWaiver(job, "release")) return job;
   return { ...job, waivers: [...job.waivers, makeWaiver(job.id, "release", staff || job.tech, stampNow())] };
+}
+
+/** The DIN entered for the item in the editor, kept only when its services actually call for
+ * one — otherwise the calculator's leftovers would follow unrelated equipment around. */
+function editorDin(f: NewJobForm): DinRecord | undefined {
+  const needsDin = f.services.some((n) => SERVICE_DEFS.find((d) => d.name === n)?.group === "Bindings");
+  if (!needsDin) return undefined;
+  const result = f.din.mode === "custom" ? f.din.custom.trim() : computeDin(f.din) || "";
+  if (!result) return undefined;
+  return { ...f.din, result };
 }
 
 function nextJobIdStr(jobs: Job[]): string {
@@ -822,9 +833,10 @@ export const useAppStore = create<AppState>((set, get) => ({
           ...f,
           items: [
             ...f.items,
-            { type: f.type, category: f.category, brand: f.brand.trim(), model: f.model.trim(), size: f.size.trim() || "—", colour: f.colour.trim(), services: f.services.slice(), serviceData: { ...f.serviceData }, code: f.code },
+            { type: f.type, category: f.category, brand: f.brand.trim(), model: f.model.trim(), size: f.size.trim() || "—", colour: f.colour.trim(), services: f.services.slice(), serviceData: { ...f.serviceData }, code: f.code, din: editorDin(f) },
           ],
           code: undefined,
+          din: blankDin(),
           brand: "",
           model: "",
           size: "",
@@ -872,7 +884,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     const f = s.nf;
     const items = f.items.slice();
     if (f.brand.trim())
-      items.push({ type: f.type, category: f.category, brand: f.brand.trim(), model: f.model.trim(), size: f.size.trim() || "—", colour: f.colour.trim(), services: f.services.slice(), serviceData: { ...f.serviceData }, code: f.code });
+      items.push({ type: f.type, category: f.category, brand: f.brand.trim(), model: f.model.trim(), size: f.size.trim() || "—", colour: f.colour.trim(), services: f.services.slice(), serviceData: { ...f.serviceData }, code: f.code, din: editorDin(f) });
     if (!f.customer.trim() || items.length === 0) return;
     // Newly checked-in equipment starts life in the Checked in Equipment panel — this sheet is staff
     // physically checking equipment in at the counter right now, not booking a future
@@ -880,6 +892,9 @@ export const useAppStore = create<AppState>((set, get) => ({
     const equipment = items.map((it) =>
       buildEquip({ type: it.type, category: it.category, brand: it.brand, model: it.model, size: it.size, colour: it.colour, services: it.services, serviceData: it.serviceData }, "", "checked_in"),
     );
+    items.forEach((it, i) => {
+      if (it.din) equipment[i].din = it.din;
+    });
     // Re-added equipment keeps the code it already had; anything new gets the next free one.
     const issued = issuedCodes(s.jobs, s.customers);
     equipment.forEach((eq, i) => {

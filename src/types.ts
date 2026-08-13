@@ -60,6 +60,8 @@ export interface Equipment {
   /** short per-branch identifier for this physical item (e.g. "CAS0"), so two otherwise
    * identical items stay distinguishable. Record-keeping only — no UI logic reads it. */
   code?: string;
+  /** DIN captured at check-in for this item, if its services called for one */
+  din?: DinRecord;
   /** epoch ms when this item was marked Collected. After COLLECTED_LOCK_MS it is archived
    * for good and can no longer be edited or moved; null whenever it isn't collected. */
   collectedAt?: number | null;
@@ -160,6 +162,12 @@ export interface DinState {
   custom: string;
 }
 
+/** DIN as recorded against a specific piece of equipment: the inputs it was derived from
+ * (or the custom value entered) plus the resulting setting. */
+export interface DinRecord extends DinState {
+  result: string;
+}
+
 /** One equipment item as it is being built in the check-in / edit form, before commit. */
 export interface FormItem {
   type: EquipmentType;
@@ -173,6 +181,8 @@ export interface FormItem {
   priceOverride?: number | string | null;
   /** carried through when re-adding a customer's existing equipment, so the job keeps its code */
   code?: string;
+  /** DIN captured for this item, if its services called for one */
+  din?: DinRecord;
 }
 
 export interface NewJobForm {

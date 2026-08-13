@@ -2,10 +2,19 @@ import { useMemo, useState } from "react";
 import { ArrowLeft, Check, FileText, Lock, PenLine } from "lucide-react";
 import { useAppStore } from "../../store/useAppStore";
 import { WAIVER_TERMS } from "../../lib/waivers";
-import { svcPrice } from "../../lib/serviceCatalog";
+import { computeDin as computeDinFn, groupFields, SERVICE_DEFS, svcPrice } from "../../lib/serviceCatalog";
 import { money } from "../../lib/format";
 import { Avatar, ServicePill, TypeBadge } from "../Pills";
 import { SignaturePad } from "./SignaturePad";
+
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-baseline gap-2">
+      <span className="w-[86px] flex-shrink-0 text-[11px] text-zinc-400">{label}</span>
+      <span className="min-w-0 flex-1 text-[11.5px] font-medium text-zinc-800">{value}</span>
+    </div>
+  );
+}
 
 /** Check-in waiver. Step 1 reviews what is being signed for and captures agreement to the
  * terms; step 2 takes the staff signature that completes the check-in. */
@@ -28,6 +37,14 @@ export function WaiverModal() {
   const [staffClear, setStaffClear] = useState(0);
 
   // Everything entered in the sheet so far — parked items plus whatever is still in the editor.
+  // DIN as it stands in the editor right now, so the summary reflects unparked equipment too.
+  const editorDin = useMemo(() => {
+    const needsDin = nf.services.some((n) => SERVICE_DEFS.find((d) => d.name === n)?.group === "Bindings");
+    if (!needsDin) return undefined;
+    const result = nf.din.mode === "custom" ? nf.din.custom.trim() : computeDinFn(nf.din) || "";
+    return result ? { ...nf.din, result } : undefined;
+  }, [nf]);
+
   const items = useMemo(() => {
     const list = nf.items.slice();
     if (nf.brand.trim())
@@ -40,6 +57,7 @@ export function WaiverModal() {
         colour: nf.colour.trim(),
         services: nf.services.slice(),
         serviceData: { ...nf.serviceData },
+        din: editorDin,
       });
     return list;
   }, [nf]);
@@ -90,31 +108,83 @@ export function WaiverModal() {
                 </div>
                 <div className="flex flex-col gap-2">
                   {items.map((it, i) => (
-                    <div key={i} className="flex flex-col gap-1.5 rounded-[9px] border border-border bg-surface-50 p-2.5">
-                      <div className="flex items-center gap-2">
+                    <div key={i} className="flex flex-col gap-2 rounded-[9px] border border-border bg-surface-50 p-3">
+                      {/* identity */}
+                      <div className="flex flex-wrap items-center gap-2">
                         <TypeBadge type={it.type} />
-                        <span className="text-[12.5px] font-semibold text-zinc-900">{it.brand}</span>
-                        <span className="text-xs text-zinc-500">{it.model}</span>
-                        <span className="text-xs text-zinc-400">{it.size}</span>
-                        {it.colour && <span className="text-xs text-zinc-400">· {it.colour}</span>}
+                        <span className="text-[13px] font-semibold text-zinc-900">{it.brand}</span>
+                        <span className="text-[12.5px] text-zinc-500">{it.model}</span>
+                        <div className="flex-1" />
+                        <span className="text-[10.5px] font-semibold text-zinc-400">
+                          {items.length > 1 ? `${jobId}-${i + 1}` : jobId}
+                        </span>
                       </div>
-                      <div className="flex flex-wrap gap-1">
+                      <Row label="Type" value={it.category} />
+                      <Row label="Size" value={it.size || "—"} />
+                      {it.colour && <Row label="Colour" value={it.colour} />}
+
+                      {/* services, each with whatever was entered against it */}
+                      <div className="flex flex-col gap-1.5 border-t border-app-bg pt-2">
+                        <span className="text-[10px] font-bold uppercase tracking-wide text-zinc-400">Services</span>
                         {it.services.length === 0 ? (
-                          <span className="text-[11px] italic text-zinc-400">No services</span>
+                          <span className="text-[11.5px] italic text-zinc-400">No services</span>
                         ) : (
-                          it.services.map((sv) => <ServicePill key={sv} name={sv} />)
+                          it.services.map((sv) => {
+                            const def = SERVICE_DEFS.find((d) => d.name === sv);
+                            const sd = it.serviceData[sv] || {};
+                            const entered = def
+                              ? groupFields(def.group)
+                                  .map((f) => ({ label: f.label, value: (sd as Record<string, string | undefined>)[f.key] }))
+                                  .filter((f) => f.value && f.value.trim())
+                              : [];
+                            return (
+                              <div key={sv} className="flex flex-col gap-1 rounded-[7px] border border-border bg-white p-2">
+                                <div className="flex items-center gap-2">
+                                  <ServicePill name={sv} />
+                                  <div className="flex-1" />
+                                  <span className="text-[11.5px] font-semibold text-zinc-700">
+                                    {sd.quote ? money(Number(sd.quote) || 0) : money(svcPrice(sv, it.serviceData))}
+                                  </span>
+                                </div>
+                                {entered.map((f) => (
+                                  <Row key={f.label} label={f.label} value={f.value as string} />
+                                ))}
+                              </div>
+                            );
+                          })
                         )}
                       </div>
+
+                      {/* DIN — the values it was worked out from, and the setting itself */}
+                      {it.din && (
+                        <div className="flex flex-col gap-1.5 rounded-[8px] border border-[#bae6fd] bg-[#f0f9ff] p-2.5">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-bold uppercase tracking-wide" style={{ color: "#0c4a6e" }}>
+                              DIN · {it.din.mode === "custom" ? "Custom" : "Calculated"}
+                            </span>
+                            <div className="flex-1" />
+                            <span className="text-[15px] font-extrabold tracking-tight" style={{ color: "#0c4a6e" }}>
+                              {it.din.result}
+                            </span>
+                          </div>
+                          {it.din.mode === "calculate" && (
+                            <div className="flex flex-col gap-1 border-t border-[#bae6fd] pt-1.5">
+                              <Row label="Weight" value={it.din.weight || "—"} />
+                              <Row label="Height" value={it.din.height || "—"} />
+                              <Row label="Age" value={it.din.age || "—"} />
+                              <Row label="Skier type" value={it.din.skier || "—"} />
+                              <Row label="Boot sole" value={it.din.sole || "—"} />
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
-                <div className="flex gap-5 border-t border-app-bg pt-2.5 text-xs">
-                  <span className="text-zinc-500">
-                    Due <span className="font-semibold text-zinc-900">{nf.due || "—"}</span>
-                  </span>
-                  <span className="text-zinc-500">
-                    Pickup <span className="font-semibold text-zinc-900">{nf.pickup || "—"}</span>
-                  </span>
+                <div className="flex flex-col gap-1.5 border-t border-app-bg pt-2.5">
+                  <Row label="Due date" value={nf.due || "—"} />
+                  <Row label="Pickup time" value={nf.pickup || "—"} />
+                  <Row label="Checked in by" value={activeStaff || "Staff"} />
                 </div>
                 {nf.notes.trim() && <p className="m-0 text-xs leading-relaxed text-zinc-600">{nf.notes}</p>}
               </section>
