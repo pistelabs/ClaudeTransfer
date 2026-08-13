@@ -24,9 +24,17 @@ export function waiverUrl(jobId: string, kind: WaiverKind): string {
   return `/waivers/${waiverFileName(jobId, kind)}`;
 }
 
-export function makeWaiver(jobId: string, kind: WaiverKind, signedBy: string, signedAt: string): JobWaiver {
-  return { kind, url: waiverUrl(jobId, kind), fileName: waiverFileName(jobId, kind), signedBy, signedAt };
+export function makeWaiver(jobId: string, kind: WaiverKind, signedBy: string, signedAt: string, signature?: string): JobWaiver {
+  return { kind, url: waiverUrl(jobId, kind), fileName: waiverFileName(jobId, kind), signedBy, signedAt, signature };
 }
+
+/** Placeholder wording — replace with the shop's actual policy text before going live. */
+export const WAIVER_TERMS = [
+  "The customer confirms that the height, weight, age and skier-type details supplied are accurate, and understands that binding release settings are calculated from them in line with the applicable industry standard.",
+  "The customer understands that a binding system cannot release under all circumstances, and is not a guarantee of safety. Skiing and snowboarding carry an inherent risk of injury that no equipment or adjustment can remove.",
+  "The customer accepts that any equipment presented for service may be found unserviceable on inspection, and that the shop may decline to work on equipment it judges unsafe or outside manufacturer specification.",
+  "The customer authorises the shop to carry out the services listed above at the prices shown, and to test and adjust the equipment as needed to complete that work.",
+];
 
 export function hasWaiver(job: Pick<Job, "waivers">, kind: WaiverKind): boolean {
   return (job.waivers || []).some((w) => w.kind === kind);

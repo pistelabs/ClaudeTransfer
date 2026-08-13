@@ -9,6 +9,7 @@ import { ServicesSection } from "./ServicesSection";
 import { DueDatePicker } from "./DueDatePicker";
 import { CheckoutColumn } from "./CheckoutColumn";
 import { StaffSelectorModal } from "./StaffSelectorModal";
+import { WaiverModal } from "./WaiverModal";
 import { pickupSlots } from "../../lib/serviceCatalog";
 
 export function CheckInSheet() {
@@ -37,6 +38,7 @@ export function CheckInSheet() {
         style={{ boxShadow: "-12px 0 40px rgba(0,0,0,0.18)" }}
       >
         <StaffSelectorModal />
+        <WaiverModal />
 
         {/* Header */}
         <div className="flex flex-shrink-0 items-center gap-3 border-b border-app-bg px-5 py-[18px]">

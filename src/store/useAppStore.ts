@@ -161,6 +161,12 @@ interface AppState {
   itemMenuIdx: number | null;
   priceEditIdx: number | null;
 
+  // check-in waiver signing flow
+  waiverOpen: boolean;
+  waiverStep: 1 | 2;
+  waiverAgreed: boolean;
+  waiverSignature: string | null;
+
   // customer add/edit dialog
   addCustOpen: boolean;
   editCustId: string | null;
@@ -238,6 +244,11 @@ interface AppState {
   setItemMenuIdx: (i: number | null) => void;
   setPriceEditIdx: (i: number | null) => void;
   createJob: () => void;
+  closeWaiver: () => void;
+  setWaiverAgreed: (v: boolean) => void;
+  waiverNext: () => void;
+  waiverBack: () => void;
+  signWaiver: (signature: string) => void;
 
   setCustQuery: (q: string) => void;
   selectCustomer: (c: Customer) => void;
@@ -292,6 +303,11 @@ export const useAppStore = create<AppState>((set, get) => ({
   custQuery: "",
   itemMenuIdx: null,
   priceEditIdx: null,
+
+  waiverOpen: false,
+  waiverStep: 1,
+  waiverAgreed: false,
+  waiverSignature: null,
 
   addCustOpen: false,
   editCustId: null,
@@ -725,8 +741,9 @@ export const useAppStore = create<AppState>((set, get) => ({
   openStaffPrompt: () => set({ staffPrompt: true }),
 
   // ---- check-in / edit sheet ----
-  openNew: () => set({ newOpen: true, editId: null, nf: blankForm(), custQuery: "", staffPrompt: true }),
-  closeNew: () => set({ newOpen: false, editId: null }),
+  openNew: () =>
+    set({ newOpen: true, editId: null, nf: blankForm(), custQuery: "", staffPrompt: true, waiverOpen: false, waiverStep: 1, waiverAgreed: false, waiverSignature: null }),
+  closeNew: () => set({ newOpen: false, editId: null, waiverOpen: false, waiverStep: 1, waiverAgreed: false, waiverSignature: null }),
   openEditJob: (id) => {
     if (get().isJobLocked(id)) return;
     const s = get();
@@ -873,6 +890,13 @@ export const useAppStore = create<AppState>((set, get) => ({
       if (it.priceOverride != null && it.priceOverride !== "") equipment[i].priceOverride = Number(it.priceOverride);
     });
 
+    // Services needing a waiver can't be checked in until it's signed — pause here, then
+    // createJob is re-run once the signature is captured.
+    if (!s.editId && requiresWaiver({ equipment }) && !s.waiverSignature) {
+      set({ waiverOpen: true, waiverStep: 1, waiverAgreed: false });
+      return;
+    }
+
     if (s.editId) {
       const editId = s.editId;
       set((st) => ({
@@ -930,14 +954,25 @@ export const useAppStore = create<AppState>((set, get) => ({
         tech: st.activeStaff || "Staff",
         updatedAt: stampNow(),
         updates: [],
-        waivers: requiresWaiver({ equipment }) ? [makeWaiver(id, "check_in", st.activeStaff || "Staff", stampNow())] : [],
+        waivers: requiresWaiver({ equipment })
+          ? [makeWaiver(id, "check_in", st.activeStaff || "Staff", stampNow(), st.waiverSignature || undefined)]
+          : [],
         equipment,
       };
-      return { jobs: [job, ...st.jobs], newOpen: false, nf: blankForm(), custQuery: "", selectedId: id, activeTab: 0 };
+      return { jobs: [job, ...st.jobs], newOpen: false, nf: blankForm(), custQuery: "", selectedId: id, activeTab: 0, waiverSignature: null };
     });
   },
 
   // ---- customer search / select ----
+  closeWaiver: () => set({ waiverOpen: false, waiverStep: 1, waiverAgreed: false }),
+  setWaiverAgreed: (v) => set({ waiverAgreed: v }),
+  waiverNext: () => set((s) => (s.waiverAgreed ? { waiverStep: 2 } : {})),
+  waiverBack: () => set({ waiverStep: 1 }),
+  signWaiver: (signature) => {
+    set({ waiverSignature: signature, waiverOpen: false, waiverStep: 1, waiverAgreed: false });
+    get().createJob();
+  },
+
   setCustQuery: (q) => set({ custQuery: q }),
   selectCustomer: (c) => set((s) => ({ nf: { ...s.nf, customerId: c.id, customer: c.first + " " + c.last, email: c.email, phone: c.phone }, custQuery: "" })),
   clearCustomer: () => set((s) => ({ nf: { ...s.nf, customerId: null, customer: "", email: "", phone: "", brand: "", model: "", size: "" }, custQuery: "" })),
