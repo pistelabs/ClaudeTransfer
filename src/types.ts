@@ -91,6 +91,18 @@ export interface JobUpdate {
   eqIdx?: number;
 }
 
+/** Liability paperwork attached to a job — signed at check-in, and again on release. */
+export type WaiverKind = "check_in" | "release";
+
+export interface JobWaiver {
+  kind: WaiverKind;
+  /** where the backend serves the signed PDF from */
+  url: string;
+  fileName: string;
+  signedBy: string;
+  signedAt: string;
+}
+
 export interface Job {
   id: string;
   customer: string;
@@ -108,6 +120,8 @@ export interface Job {
    * per job, so it lives here rather than on individual equipment items. */
   paid: number;
   updates: JobUpdate[];
+  /** signed waiver documents; empty until one is captured */
+  waivers: JobWaiver[];
   equipment: Equipment[];
 }
 

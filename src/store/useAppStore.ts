@@ -17,6 +17,7 @@ import { buildEquip, equipmentFullyComplete, hashCategory, jobBalance, jobTotal,
 import { formatJobId, nextEquipmentCode } from "../lib/equipmentCode";
 import { blankDin, categoryToType, defaultCategoryForType, SERVICE_DEFS } from "../lib/serviceCatalog";
 import { canPickStatus, isEquipmentLocked, STAGE_WORK_STATUS } from "../lib/statusFlow";
+import { hasWaiver, makeWaiver, requiresWaiver } from "../lib/waivers";
 import { stampNow } from "../lib/format";
 
 export const STAGE_DEFS: { key: Stage; label: string; dot: string }[] = [
@@ -94,6 +95,15 @@ function buildSeed(): { jobs: Job[]; customers: Customer[] } {
 }
 
 const SEED = buildSeed();
+
+/** Adds the release waiver once every item on a waiver-bearing job has been collected. The
+ * check-in waiver is captured when the job is raised, so it is already present by then. */
+function syncWaivers(job: Job, staff: string): Job {
+  if (!requiresWaiver(job)) return job;
+  const allCollected = job.equipment.length > 0 && job.equipment.every((eq) => eq.stage === "archive");
+  if (!allCollected || hasWaiver(job, "release")) return job;
+  return { ...job, waivers: [...job.waivers, makeWaiver(job.id, "release", staff || job.tech, stampNow())] };
+}
 
 function nextJobIdStr(jobs: Job[]): string {
   const nums = jobs.map((j) => parseInt((j.id || "").replace(/[^0-9]/g, ""), 10)).filter((n) => !isNaN(n));
@@ -394,14 +404,17 @@ export const useAppStore = create<AppState>((set, get) => ({
     set((s) => ({
       jobs: s.jobs.map((j) =>
         j.id === id
-          ? {
-              ...j,
-              equipment: j.equipment.map((eq, i) =>
-                i === eqIdx
-                  ? { ...eq, stage, workStatus: STAGE_WORK_STATUS[stage] ?? eq.workStatus, collectedAt: stage === "archive" ? Date.now() : null }
-                  : eq,
-              ),
-            }
+          ? syncWaivers(
+              {
+                ...j,
+                equipment: j.equipment.map((eq, i) =>
+                  i === eqIdx
+                    ? { ...eq, stage, workStatus: STAGE_WORK_STATUS[stage] ?? eq.workStatus, collectedAt: stage === "archive" ? Date.now() : null }
+                    : eq,
+                ),
+              },
+              s.activeStaff,
+            )
           : j,
       ),
       dragEq: null,
@@ -562,11 +575,14 @@ export const useAppStore = create<AppState>((set, get) => ({
     set((st) => ({
       jobs: st.jobs.map((j) =>
         j.id === sel.id
-          ? {
-              ...j,
-              equipment: j.equipment.map((eq) => ({ ...eq, stage: "archive" as Stage, workStatus: "Collected", collectedAt: eq.collectedAt ?? Date.now() })),
-              updates: [{ text: "Payment taken · marked collected", at: (st.activeStaff || j.tech) + " · " + stamp }, ...j.updates],
-            }
+          ? syncWaivers(
+              {
+                ...j,
+                equipment: j.equipment.map((eq) => ({ ...eq, stage: "archive" as Stage, workStatus: "Collected", collectedAt: eq.collectedAt ?? Date.now() })),
+                updates: [{ text: "Payment taken · marked collected", at: (st.activeStaff || j.tech) + " · " + stamp }, ...j.updates],
+              },
+              st.activeStaff,
+            )
           : j,
       ),
       payPrompt: null,
@@ -629,7 +645,10 @@ export const useAppStore = create<AppState>((set, get) => ({
       set((st) => ({
         jobs: st.jobs.map((j) =>
           j.id === sel.id
-            ? { ...j, equipment: j.equipment.map((e, i) => (i === eqIdx ? { ...e, workStatus: "Collected", stage: "archive", collectedAt: Date.now() } : e)) }
+            ? syncWaivers(
+                { ...j, equipment: j.equipment.map((e, i) => (i === eqIdx ? { ...e, workStatus: "Collected", stage: "archive", collectedAt: Date.now() } : e)) },
+                st.activeStaff,
+              )
             : j,
         ),
       }));
@@ -911,6 +930,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         tech: st.activeStaff || "Staff",
         updatedAt: stampNow(),
         updates: [],
+        waivers: requiresWaiver({ equipment }) ? [makeWaiver(id, "check_in", st.activeStaff || "Staff", stampNow())] : [],
         equipment,
       };
       return { jobs: [job, ...st.jobs], newOpen: false, nf: blankForm(), custQuery: "", selectedId: id, activeTab: 0 };

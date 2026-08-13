@@ -1,6 +1,7 @@
 import type { Equipment, EquipmentCategory, EquipmentType, Job, LineItem, ServiceData, Stage } from "../types";
 import { isQuoted, svcPrice, TUNING_LIKE } from "../lib/serviceCatalog";
 import { STAGE_WORK_STATUS } from "../lib/statusFlow";
+import { makeWaiver, requiresWaiver } from "../lib/waivers";
 import type { RawEquip, RawJob } from "./seedRaw";
 
 /** Deterministic pseudo-random category assignment, mirroring the design source's hash-based fallback. */
@@ -52,6 +53,10 @@ export function normalizeJob(j: RawJob): Job {
     j.equipment ||
     [{ type: j.type || "SKI", brand: j.brand || "New", model: j.model || "Equipment", size: j.size || "—", services: j.services || [] }];
   const equipment = equipSrc.map((e) => buildEquip(e, j.status, j.stage));
+  const stamp = "29/06/26 2:32 PM";
+  const waivers = requiresWaiver({ equipment })
+    ? [makeWaiver(j.id, "check_in", "Dan Sweetnam", stamp), ...(j.stage === "archive" ? [makeWaiver(j.id, "release", "Dan Sweetnam", stamp)] : [])]
+    : [];
   return {
     id: j.id,
     customer: j.customer,
@@ -65,6 +70,7 @@ export function normalizeJob(j: RawJob): Job {
     tech: "Dan Sweetnam",
     updatedAt: "29/06/26 2:32 PM",
     updates: [],
+    waivers,
     // Seeded archive rows were collected and paid for historically.
     paid: j.stage === "archive" ? equipment.reduce((a, eq) => a + equipmentPrice(eq), 0) : 0,
     equipment,

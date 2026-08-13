@@ -4,6 +4,7 @@ import { Avatar } from "../Pills";
 import { EquipmentTabs } from "./EquipmentTabs";
 import { LineItemsCard } from "./LineItemsCard";
 import { UpdatesPanel } from "./UpdatesPanel";
+import { WaiversPanel } from "./WaiversPanel";
 import { PaymentBar } from "./PaymentBar";
 import { HoldPromptModal, PayModals, ReadyPromptModal, ResolvePendingModal } from "./DetailModals";
 
@@ -71,6 +72,7 @@ export function JobDetailsSheet() {
             <LineItemsCard job={job} activeTab={activeTabIdx} />
           </div>
           <UpdatesPanel job={job} />
+          <WaiversPanel job={job} />
         </div>
 
         <PaymentBar job={job} />
