@@ -32,7 +32,9 @@ export function JobDetailsSheet() {
         {/* Header */}
         <div className="flex flex-shrink-0 flex-wrap items-center gap-2.5 border-b border-app-bg px-[18px] py-4">
           <div className="flex min-w-0 flex-col gap-1">
-            <span className="whitespace-nowrap text-base font-bold tracking-tight">Job ID {job.id}</span>
+            {/* Stacked so the label doesn't crowd the id, which is long now. */}
+            <span className="text-[10.5px] font-semibold uppercase tracking-wide text-zinc-400">Job ID</span>
+            <span className="-mt-0.5 whitespace-nowrap text-base font-bold tracking-tight">{job.id}</span>
             {isOverdue && (
               <span className="inline-flex w-fit items-center gap-[5px] whitespace-nowrap rounded-full border border-[#fecaca] bg-[#fef2f2] px-[9px] py-[3px] text-[10.5px] font-bold tracking-wide text-red">
                 OVERDUE
