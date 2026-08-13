@@ -101,8 +101,9 @@ export interface JobWaiver {
   fileName: string;
   signedBy: string;
   signedAt: string;
-  /** staff signature captured at signing, as a data URL */
+  /** signatures captured at signing, as data URLs */
   signature?: string;
+  customerSignature?: string;
 }
 
 export interface Job {

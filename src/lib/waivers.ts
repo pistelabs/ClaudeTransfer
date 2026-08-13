@@ -24,8 +24,22 @@ export function waiverUrl(jobId: string, kind: WaiverKind): string {
   return `/waivers/${waiverFileName(jobId, kind)}`;
 }
 
-export function makeWaiver(jobId: string, kind: WaiverKind, signedBy: string, signedAt: string, signature?: string): JobWaiver {
-  return { kind, url: waiverUrl(jobId, kind), fileName: waiverFileName(jobId, kind), signedBy, signedAt, signature };
+export function makeWaiver(
+  jobId: string,
+  kind: WaiverKind,
+  signedBy: string,
+  signedAt: string,
+  sigs?: { staff?: string; customer?: string },
+): JobWaiver {
+  return {
+    kind,
+    url: waiverUrl(jobId, kind),
+    fileName: waiverFileName(jobId, kind),
+    signedBy,
+    signedAt,
+    signature: sigs?.staff,
+    customerSignature: sigs?.customer,
+  };
 }
 
 /** Placeholder wording — replace with the shop's actual policy text before going live. */

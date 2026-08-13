@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ArrowLeft, Check, FileText, PenLine } from "lucide-react";
+import { ArrowLeft, Check, FileText, Lock, PenLine } from "lucide-react";
 import { useAppStore } from "../../store/useAppStore";
 import { WAIVER_TERMS } from "../../lib/waivers";
 import { svcPrice } from "../../lib/serviceCatalog";
@@ -22,8 +22,10 @@ export function WaiverModal() {
   const jobs = useAppStore((s) => s.jobs);
   const activeStaff = useAppStore((s) => s.activeStaff);
 
-  const [signature, setSignature] = useState<string | null>(null);
-  const [clearSignal, setClearSignal] = useState(0);
+  const [custSignature, setCustSignature] = useState<string | null>(null);
+  const [custClear, setCustClear] = useState(0);
+  const [staffSignature, setStaffSignature] = useState<string | null>(null);
+  const [staffClear, setStaffClear] = useState(0);
 
   // Everything entered in the sheet so far — parked items plus whatever is still in the editor.
   const items = useMemo(() => {
@@ -48,6 +50,8 @@ export function WaiverModal() {
     return "PLCS" + String((nums.length ? Math.max(...nums) : 0) + 1).padStart(4, "0");
   }, [jobs]);
 
+  const canContinue = agreed && !!custSignature;
+
   if (!waiverOpen) return null;
 
   return (
@@ -67,7 +71,7 @@ export function WaiverModal() {
           <div className="flex min-w-0 flex-col">
             <span className="text-[15px] font-bold tracking-tight">{step === 1 ? "Check-in waiver" : "Staff signature"}</span>
             <span className="text-xs text-zinc-500">
-              {step === 1 ? `Review and confirm before checking in ${jobId}` : `Sign to complete check-in of ${jobId}`}
+              {step === 1 ? `Customer to review and sign for ${jobId}` : `Staff to countersign ${jobId}`}
             </span>
           </div>
           <div className="flex-1" />
@@ -150,18 +154,40 @@ export function WaiverModal() {
                     </span>
                   </div>
                 </div>
+
+                <div className="flex items-center justify-between border-t border-app-bg pt-2.5">
+                  <span className="text-[10.5px] font-bold uppercase tracking-wide text-zinc-400">Customer signature</span>
+                  <button onClick={() => setCustClear((n) => n + 1)} className="text-[11.5px] font-semibold text-sky-hover hover:underline">
+                    Clear
+                  </button>
+                </div>
+                <SignaturePad onChange={setCustSignature} clearSignal={custClear} />
+                <span className="text-[11px] text-zinc-400">Signed by {nf.customer || "the customer"}</span>
               </section>
             </div>
           ) : (
             <div className="flex flex-col gap-4">
+              <div className="flex items-start gap-2.5 rounded-[11px] border p-3.5" style={{ background: "#fffbeb", borderColor: "#fde68a" }}>
+                <Lock size={17} className="mt-px flex-shrink-0" color="#d97706" />
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[13px] font-bold" style={{ color: "#92400e" }}>
+                    Staff only — not for the customer
+                  </span>
+                  <span className="text-[12.5px] leading-relaxed" style={{ color: "#b45309" }}>
+                    The customer's signature has been captured. Please hand the device back to a member of staff to
+                    countersign and complete the check-in.
+                  </span>
+                </div>
+              </div>
+
               <section className="flex flex-col gap-2.5 rounded-[11px] border border-border bg-white p-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10.5px] font-bold uppercase tracking-wide text-zinc-400">Sign below</span>
-                  <button onClick={() => setClearSignal((n) => n + 1)} className="text-[11.5px] font-semibold text-sky-hover hover:underline">
+                  <span className="text-[10.5px] font-bold uppercase tracking-wide text-zinc-400">Staff signature</span>
+                  <button onClick={() => setStaffClear((n) => n + 1)} className="text-[11.5px] font-semibold text-sky-hover hover:underline">
                     Clear
                   </button>
                 </div>
-                <SignaturePad onChange={setSignature} clearSignal={clearSignal} />
+                <SignaturePad onChange={setStaffSignature} clearSignal={staffClear} />
                 <div className="flex items-center gap-2 border-t border-app-bg pt-2.5">
                   <Avatar name={activeStaff || "?"} size={28} />
                   <div className="flex flex-col leading-tight">
@@ -195,27 +221,28 @@ export function WaiverModal() {
           {step === 1 ? (
             <button
               onClick={next}
-              disabled={!agreed}
+              disabled={!canContinue}
+              title={!agreed ? "Confirm the terms have been read" : !custSignature ? "The customer needs to sign" : undefined}
               className="h-10 rounded-[9px] px-5 text-[13px] font-semibold"
               style={{
-                color: agreed ? "#ffffff" : "#c4c4c8",
-                background: agreed ? "#0284c7" : "#f4f4f5",
-                border: agreed ? "1px solid #0284c7" : "1px solid #e4e4e7",
-                cursor: agreed ? "pointer" : "not-allowed",
+                color: canContinue ? "#ffffff" : "#c4c4c8",
+                background: canContinue ? "#0284c7" : "#f4f4f5",
+                border: canContinue ? "1px solid #0284c7" : "1px solid #e4e4e7",
+                cursor: canContinue ? "pointer" : "not-allowed",
               }}
             >
               Continue
             </button>
           ) : (
             <button
-              onClick={() => signature && sign(signature)}
-              disabled={!signature}
+              onClick={() => staffSignature && custSignature && sign(staffSignature, custSignature)}
+              disabled={!staffSignature}
               className="flex h-10 items-center gap-2 rounded-[9px] px-5 text-[13px] font-semibold"
               style={{
-                color: signature ? "#ffffff" : "#c4c4c8",
-                background: signature ? "#16a34a" : "#f4f4f5",
-                border: signature ? "1px solid #16a34a" : "1px solid #e4e4e7",
-                cursor: signature ? "pointer" : "not-allowed",
+                color: staffSignature ? "#ffffff" : "#c4c4c8",
+                background: staffSignature ? "#16a34a" : "#f4f4f5",
+                border: staffSignature ? "1px solid #16a34a" : "1px solid #e4e4e7",
+                cursor: staffSignature ? "pointer" : "not-allowed",
               }}
             >
               <Check size={15} strokeWidth={3} />
