@@ -60,7 +60,7 @@ export function WaiverModal() {
         din: editorDin,
       });
     return list;
-  }, [nf]);
+  }, [nf, editorDin]);
 
   const total = items.reduce((sum, it) => sum + it.services.reduce((a, n) => a + svcPrice(n, it.serviceData), 0), 0);
   const jobId = useMemo(() => {
