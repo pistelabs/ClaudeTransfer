@@ -35,12 +35,60 @@
   border-right: 1px solid var(--n-70);
 }
 
-.col-head--today {
+/* ---- week view: a day, divided into the fitters filtered on ---- */
+
+.day-group {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--n-150);
+}
+
+.day-group--today {
   background: var(--primary-tint);
 }
 
-.col-head--past {
+.day-group--past {
   background: var(--n-15);
+}
+
+.day-group__head {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  padding: 6px 9px;
+}
+
+/* One row of fitters under the day they belong to. */
+.day-group__fitters {
+  display: flex;
+  border-top: 1px solid var(--n-100);
+}
+
+.fitter-head {
+  position: relative;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  min-width: 0;
+  padding: 4px 8px 5px;
+  border-right: 1px solid var(--n-70);
+}
+
+.fitter-head:last-child {
+  border-right: none;
+}
+
+.fitter-head__name {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--n-700);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .col-head__title {
@@ -128,6 +176,10 @@
   position: relative;
   display: flex;
   flex: 1;
+}
+
+.sched-col--day-end {
+  border-right-color: var(--n-150);
 }
 
 .sched-col {

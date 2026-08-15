@@ -1,7 +1,8 @@
-import { ChevronDown, ChevronLeft, ChevronRight, MapPin, Plus, TriangleAlert, UserCheck, Users } from 'lucide-react';
+import { ChevronDown, MapPin, Plus, TriangleAlert, UserCheck, Users } from 'lucide-react';
 import { STAFF, STORE } from '../../data/catalogue';
 import { conflictIds } from '../../lib/schedule';
-import { DAY_INFO, useScheduler } from '../../store/useScheduler';
+import { useScheduler } from '../../store/useScheduler';
+import { DateNav } from './DateNav';
 import { GlobalSearch } from './GlobalSearch';
 import { StaffFilter } from './StaffFilter';
 import { useOutsideClick } from '../ui/hooks';
@@ -13,8 +14,6 @@ export function HeaderBar() {
   const staffFilter = useScheduler((s) => s.staffFilter);
   const addMenu = useScheduler((s) => s.addMenu);
   const setView = useScheduler((s) => s.setView);
-  const shiftDate = useScheduler((s) => s.shiftDate);
-  const goToday = useScheduler((s) => s.goToday);
   const openAdd = useScheduler((s) => s.openAdd);
   const toggleAddMenu = useScheduler((s) => s.toggleAddMenu);
   const closeAddMenu = useScheduler((s) => s.closeAddMenu);
@@ -23,10 +22,6 @@ export function HeaderBar() {
 
   const isWeek = view === 'week';
   const addRef = useOutsideClick<HTMLDivElement>(addMenu, closeAddMenu);
-
-  const dateLabel = isWeek
-    ? `${DAY_INFO[0].date} – ${DAY_INFO[6].date}, ${DAY_INFO[6].year}`
-    : `${DAY_INFO[selDay].long}, ${DAY_INFO[selDay].date}`;
 
   // Only conflicts inside the current view are worth badging.
   const visible = staffFilter.length > 0 ? appts.filter((a) => staffFilter.includes(a.s)) : appts;
@@ -47,32 +42,7 @@ export function HeaderBar() {
 
       <GlobalSearch />
 
-      <div className="header__nav">
-        <div className="segmented">
-          <button
-            className="segmented__btn segmented__btn--icon"
-            type="button"
-            title="Previous"
-            aria-label="Previous day"
-            onClick={() => shiftDate(-1)}
-          >
-            <ChevronLeft size={16} strokeWidth={2} />
-          </button>
-          <button className="segmented__btn segmented__btn--text" type="button" onClick={goToday}>
-            Today
-          </button>
-          <button
-            className="segmented__btn segmented__btn--icon"
-            type="button"
-            title="Next"
-            aria-label="Next day"
-            onClick={() => shiftDate(1)}
-          >
-            <ChevronRight size={16} strokeWidth={2} />
-          </button>
-        </div>
-        <div className="header__date">{dateLabel}</div>
-      </div>
+      <DateNav />
 
       <div className="header__controls">
         {pairs > 0 && (

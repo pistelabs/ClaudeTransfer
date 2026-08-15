@@ -273,7 +273,11 @@ export interface WalkInDrag {
 
 /** In-flight sweep over empty grid space. */
 export interface SelectionState {
-  col: number;
+  /** key of the column the sweep started in */
+  col: string;
+  d: number;
+  /** the fitter that column belongs to, or null when it pools every fitter */
+  s: number | null;
   anchor: number;
   from: number;
   to: number;

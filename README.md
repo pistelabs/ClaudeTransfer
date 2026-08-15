@@ -127,6 +127,15 @@ the "now" line and the Today/Upcoming/Past pills meaningful whenever you open it
 - **Both sides of the Fitting tab are the same form.** Customer questions and the staff
   assessment share a card, a labelled field grid and a completion action, and either can be
   filled at any point. Check-in timestamps the arrival but no longer gates the assessment.
+- **A filtered week divides by fitter.** Week view shows a column per day; filter to
+  particular fitters and each day divides into a column for each of them, so a person's week
+  can be read down the page. Unfiltered it stays one column per day — twenty-eight columns
+  of an empty shop helps nobody. A fitter keeps one width across every day, so the days stay
+  aligned.
+- **The date is the middle of the three nav buttons**, with an arrow either side. Clicking it
+  opens a month calendar with Today and Tomorrow beneath it. The months page freely, but only
+  the loaded week's dates can be selected: the schedule holds one Mon–Sun week, and a further
+  date would land on its weekday in this week and quietly show the wrong day.
 - **Column widths persist per column** and per view; the shift-hours label drops out below
   190px so name and role keep priority. Columns share any spare width so a wide window
   fills edge to edge, and scroll horizontally when it is narrow.

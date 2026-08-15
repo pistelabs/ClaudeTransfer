@@ -98,6 +98,10 @@ interface State {
   walkInDrag: WalkInDrag | null;
 
   // ---- chrome ----
+  /** the date picker hanging off the date button in the header */
+  datePicker: boolean;
+  /** month offset the picker is showing, 0 being the current month */
+  navMonth: number;
   searchQ: string;
   searchOpen: boolean;
   filterMenu: boolean;
@@ -168,6 +172,10 @@ interface Actions {
   setSelDay: (d: number) => void;
   shiftDate: (dir: number) => void;
   goToday: () => void;
+  toggleDatePicker: () => void;
+  closeDatePicker: () => void;
+  setNavMonth: (fn: (n: number) => number) => void;
+  pickDay: (dayIdx: number) => void;
 
   setSearch: (q: string) => void;
   setSearchOpen: (open: boolean) => void;
@@ -194,7 +202,7 @@ interface Actions {
   openQueueAdd: () => void;
   setQueueAdd: (on: boolean) => void;
   closeAdd: () => void;
-  startBooking: (colIdx: number, mins: number, dur: number | null) => void;
+  startBooking: (day: number, staffIdx: number | null, mins: number, dur: number | null) => void;
   setBookedBy: (idx: number) => void;
   showWhoGate: () => void;
   setSheetPage: (p: SheetPage) => void;
@@ -289,6 +297,8 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
   walkInsOpen: true,
   walkInDrag: null,
 
+  datePicker: false,
+  navMonth: 0,
   searchQ: '',
   searchOpen: false,
   filterMenu: false,
@@ -351,7 +361,17 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
   setSelDay: (selDay) => set({ selDay }),
   shiftDate: (dir) =>
     set((s) => (s.view === 'week' ? s : { selDay: Math.max(0, Math.min(6, s.selDay + dir)) })),
-  goToday: () => set({ view: 'day', selDay: TODAY }),
+  goToday: () => set({ view: 'day', selDay: TODAY, datePicker: false }),
+
+  toggleDatePicker: () => set((s) => ({ datePicker: !s.datePicker, navMonth: 0, filterMenu: false, addMenu: false })),
+  closeDatePicker: () => set({ datePicker: false }),
+  setNavMonth: (fn) => set((s) => ({ navMonth: fn(s.navMonth) })),
+
+  /**
+   * Picking a date from the header goes to that day. The schedule models one
+   * Mon–Sun week, so a date further out lands on its weekday in that week.
+   */
+  pickDay: (dayIdx) => set({ view: 'day', selDay: dayIdx, datePicker: false }),
 
   setSearch: (searchQ) => set({ searchQ, searchOpen: true }),
   setSearchOpen: (searchOpen) => set({ searchOpen }),
@@ -545,11 +565,8 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
       rescheduleId: null,
     }),
 
-  startBooking: (colIdx, mins, dur) =>
+  startBooking: (day, staffIdx, mins, dur) =>
     set((s) => {
-      const isWeek = s.view === 'week';
-      const day = isWeek ? colIdx : s.selDay;
-      const staffIdx = isWeek ? null : colIdx;
       return {
         prefilledDur: dur,
         showAdd: true,
