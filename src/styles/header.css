@@ -238,13 +238,6 @@
   box-shadow: none;
 }
 
-.date-pop__note {
-  padding: 8px 2px 0;
-  color: var(--n-450);
-  font-size: 11px;
-  text-align: center;
-}
-
 /* Today and tomorrow, under the month — the two dates anybody asks for. */
 .date-pop__shortcuts {
   display: flex;

@@ -1,4 +1,4 @@
-import { Check, CreditCard, Link2, Store, Wallet, X } from 'lucide-react';
+import { Banknote, Check, Clock, CreditCard, Link2, Store, Wallet, X } from 'lucide-react';
 import { PAYMENT_METHODS, STAFF, paymentMethod } from '../../data/catalogue';
 import { formatMoney } from '../../lib/schedule';
 import { useScheduler } from '../../store/useScheduler';
@@ -13,6 +13,7 @@ const METHOD_ICON: Record<PaymentMethod, typeof CreditCard> = {
   'shopify-link': Link2,
   square: CreditCard,
   stripe: Wallet,
+  external: Banknote,
 };
 
 /**
@@ -36,18 +37,31 @@ export function PaymentControl({ totals }: { totals: DetailInfo['totals'] }) {
   return (
     <div className="popover-anchor" ref={ref}>
       <button
-        className={`pay-btn${payment ? ' pay-btn--paid' : ''}`}
+        className={`pay-btn${payment ? (payment.pending ? ' pay-btn--pending' : ' pay-btn--paid') : ''}`}
         type="button"
         aria-haspopup="dialog"
         aria-expanded={open}
-        title={payment ? `Paid by ${method!.label} at ${payment.at}` : 'Record how this was paid'}
+        title={
+          payment
+            ? payment.pending
+              ? `Payment link sent at ${payment.at}`
+              : `Paid by ${payment.source ?? method!.label} at ${payment.at}`
+            : 'Record how this was paid'
+        }
         onClick={toggle}
       >
         {payment ? (
-          <>
-            <Check size={15} strokeWidth={2.6} />
-            Paid · {method!.label}
-          </>
+          payment.pending ? (
+            <>
+              <Clock size={15} strokeWidth={2.4} />
+              Link sent
+            </>
+          ) : (
+            <>
+              <Check size={15} strokeWidth={2.6} />
+              Paid · {payment.source ?? method!.label}
+            </>
+          )
         ) : (
           <>
             <Icon size={15} strokeWidth={2} />
@@ -59,7 +73,7 @@ export function PaymentControl({ totals }: { totals: DetailInfo['totals'] }) {
       {open && (
         <div className="pay-menu" role="dialog" aria-label="Payment">
           <div className="pay-menu__head">
-            <span className="pay-menu__title">{payment ? 'Payment' : 'Take payment'}</span>
+            <span className="pay-menu__title">{payment ? (payment.pending ? 'Awaiting payment' : 'Payment') : 'Take payment'}</span>
             <span className="pay-menu__amount">{payment ? formatMoney(payment.amount) : formatMoney(due)}</span>
           </div>
 
@@ -70,24 +84,26 @@ export function PaymentControl({ totals }: { totals: DetailInfo['totals'] }) {
                   <Icon size={16} strokeWidth={2} />
                 </span>
                 <span>
-                  <span className="pay-menu__recorded-name">{method!.label}</span>
-                  <span className="pay-menu__recorded-sub">{method!.sub}</span>
+                  <span className="pay-menu__recorded-name">{payment.source ?? method!.label}</span>
+                  <span className="pay-menu__recorded-sub">{payment.source ? method!.label : method!.sub}</span>
                 </span>
-                <Badge variant="success">Online</Badge>
+                <Badge variant={payment.pending ? 'warning' : 'success'}>
+                  {payment.pending ? 'Sent' : payment.method === 'external' ? 'External' : 'Online'}
+                </Badge>
               </div>
               <div className="pay-menu__stamp">
-                Recorded at {payment.at}
+                {payment.pending ? 'Sent at' : 'Recorded at'} {payment.at}
                 {taker ? ` by ${taker.name}` : ''}
               </div>
               <button className="pay-menu__clear" type="button" onClick={clear}>
                 <X size={13} strokeWidth={2.4} />
-                Remove this payment
+                {payment.pending ? 'Cancel this link' : 'Remove this payment'}
               </button>
             </div>
           ) : (
             <div className="pay-menu__body">
               <div className="pay-menu__label">Paid online with</div>
-              {PAYMENT_METHODS.map((m) => {
+              {PAYMENT_METHODS.filter((m) => m.key !== 'external').map((m) => {
                 const MIcon = METHOD_ICON[m.key];
                 return (
                   <button

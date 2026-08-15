@@ -101,19 +101,31 @@ export function serviceFor(appt: { svc?: string; t: TypeCode }): Service | null 
 }
 
 /**
- * How the shop takes money. All four are card routes — the shop has no cash
- * drawer — so the dialog groups them under one heading.
+ * How the shop takes money. The first four are its own card routes, grouped
+ * under one heading in the payment popover; `external` is only ever recorded
+ * after the fact, from the complete dialog.
  */
 export const PAYMENT_METHODS: { key: PaymentMethod; label: string; sub: string }[] = [
   { key: 'shopify', label: 'Shopify', sub: 'Charged on the shop till' },
   { key: 'shopify-link', label: 'Shopify link', sub: 'Payment link sent to the customer' },
   { key: 'square', label: 'Square', sub: 'Card terminal at the bench' },
   { key: 'stripe', label: 'Stripe', sub: 'Card or wallet' },
+  { key: 'external', label: 'External payment', sub: 'Taken outside the shop’s own tills' },
 ];
 
 export function paymentMethod(key: PaymentMethod) {
   return PAYMENT_METHODS.find((m) => m.key === key) ?? PAYMENT_METHODS[0];
 }
+
+/** Money that arrived some other way and is only being recorded against the booking. */
+export const EXTERNAL_SOURCES = [
+  'Bank transfer',
+  'Cash',
+  'Card terminal — other',
+  'Gift card',
+  'Insurance / warranty',
+  'Account — settled later',
+];
 
 /** Customer fitting questionnaire — asked at booking, emailed, or captured at the bench. */
 export const FITTING_QUESTIONS: QuestionField[] = [

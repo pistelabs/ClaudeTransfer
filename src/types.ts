@@ -21,8 +21,10 @@ export interface Staff {
 
 export interface Appointment {
   id: string;
-  /** day index, Monday = 0 */
+  /** day index within its week, Monday = 0 */
   d: number;
+  /** weeks from the one containing today; absent means this week */
+  w?: number;
   /** staff index — the fitter whose column the booking sits in */
   s: number;
   /**
@@ -190,8 +192,12 @@ export interface ApptRecord {
   seats?: { customer: string; details: Answers }[];
 }
 
-/** How the shop took the money. Every route is a card payment of some kind. */
-export type PaymentMethod = 'shopify' | 'shopify-link' | 'square' | 'stripe';
+/**
+ * How the shop took the money. The first four are the card routes it runs
+ * itself; `external` covers money that arrived some other way and is only being
+ * recorded here.
+ */
+export type PaymentMethod = 'shopify' | 'shopify-link' | 'square' | 'stripe' | 'external';
 
 export interface Payment {
   method: PaymentMethod;
@@ -201,6 +207,10 @@ export interface Payment {
   at: string;
   /** the staff member who took it */
   by: number | null;
+  /** where an external payment came from */
+  source?: string;
+  /** a link has been sent but nothing has arrived yet */
+  pending?: boolean;
 }
 
 export type QuestionnaireMode = 'now' | 'email' | 'onsite';
@@ -287,6 +297,8 @@ export interface SelectionState {
 export interface MeetingDraft {
   title: string;
   day: number;
+  /** weeks from the one containing today */
+  week: number;
   time: string;
   dur: number;
   who: number[];
@@ -300,6 +312,8 @@ export interface BookingForm {
   /** staff index, or null for unassigned */
   staff: number | null;
   day: number;
+  /** weeks from the one containing today */
+  week: number;
   /** `HH:MM` */
   time: string;
   dur: number;

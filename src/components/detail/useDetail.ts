@@ -70,7 +70,8 @@ export function totalsFor(
 
   const subtotal = servicePrice + extras;
   const payment = store.payments[id] ?? null;
-  const paid = payment ? payment.amount : 0;
+  // A link that has gone out is not money in, so it leaves the balance owing.
+  const paid = payment && !payment.pending ? payment.amount : 0;
 
   return {
     balance: formatMoney(Math.max(0, subtotal - paid)),
@@ -138,11 +139,14 @@ export function useDetail(): DetailInfo | null {
     : '';
 
   // A walk-in is here now and waiting, which says more than Today/Upcoming/Past.
+  // Everything else is placed against today, week included.
+  const week = appt.w ?? 0;
+  const past = week < 0 || (week === 0 && appt.d < TODAY_IDX);
   const status = walkIn
     ? { label: 'Waiting', modifier: 'waiting' as const }
-    : appt.d < TODAY_IDX
+    : past
       ? { label: 'Completed', modifier: 'past' as const }
-      : appt.d === TODAY_IDX
+      : week === 0 && appt.d === TODAY_IDX
         ? { label: 'Today', modifier: 'today' as const }
         : { label: 'Upcoming', modifier: 'upcoming' as const };
 

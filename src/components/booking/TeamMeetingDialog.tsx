@@ -1,6 +1,7 @@
 import { Check, X } from 'lucide-react';
 import { STAFF } from '../../data/catalogue';
-import { DAY_INFO, useScheduler } from '../../store/useScheduler';
+import { weekAt } from '../../lib/dates';
+import { useScheduler } from '../../store/useScheduler';
 import { Avatar } from '../ui/Avatar';
 import { Badge, Button, Label } from '../ui/primitives';
 import { useEscape } from '../ui/hooks';
@@ -71,7 +72,7 @@ export function TeamMeetingDialog() {
               value={meeting.day}
               onChange={(e) => setMeeting({ day: Number(e.target.value) })}
             >
-              {DAY_INFO.map((d, i) => (
+              {weekAt(meeting.week).map((d, i) => (
                 <option value={i} key={d.short}>
                   {d.long} · {d.date}
                 </option>

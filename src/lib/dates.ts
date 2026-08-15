@@ -21,21 +21,39 @@ export function todayIndex(now = new Date()): number {
   return mondayIndex(now);
 }
 
-/** The real Mon–Sun week containing `now`. */
-export function weekDays(now = new Date()): DayInfo[] {
+/**
+ * A real Mon–Sun week: the one containing `now`, or `offsetWeeks` away from it.
+ * `past` is measured against today, not against the start of the week, so a
+ * whole week in the past reads as past.
+ */
+export function weekDays(now = new Date(), offsetWeeks = 0): DayInfo[] {
   const ti = mondayIndex(now);
-  const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ti);
+  const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ti + offsetWeeks * 7);
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   return SHORT.map((s, i) => {
     const d = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + i);
     return {
       short: s,
       long: LONG[i],
       date: `${MONTHS[d.getMonth()]} ${d.getDate()}`,
-      past: i < ti,
+      past: d < today,
       year: d.getFullYear(),
       iso: d,
     };
   });
+}
+
+/** Cached weeks, so every render of a column header is not a fresh date walk. */
+const WEEK_CACHE = new Map<number, DayInfo[]>();
+
+/** The week `offset` weeks from the one containing today. */
+export function weekAt(offset: number): DayInfo[] {
+  let week = WEEK_CACHE.get(offset);
+  if (!week) {
+    week = weekDays(new Date(), offset);
+    WEEK_CACHE.set(offset, week);
+  }
+  return week;
 }
 
 export function dateKeyOf(d: Date): string {
@@ -45,10 +63,12 @@ export function dateKeyOf(d: Date): string {
 export interface MonthCell {
   blank: boolean;
   date?: number;
-  /** Monday-indexed weekday column this date maps onto, or null when unbookable */
+  /** Monday-indexed weekday of this date */
   dayIdx: number | null;
+  /** weeks from the one containing today; negative in the past */
+  weekOffset: number;
   past: boolean;
-  /** falls beyond the currently scheduled week */
+  /** falls beyond the current week */
   next: boolean;
   key: string;
   isToday: boolean;
@@ -69,7 +89,7 @@ export function monthCells(monthOffset: number, now = new Date()): MonthCell[] {
 
   const cells: MonthCell[] = [];
   for (let i = 0; i < lead; i++) {
-    cells.push({ blank: true, dayIdx: null, past: false, next: false, key: `blank-${i}`, isToday: false });
+    cells.push({ blank: true, dayIdx: null, weekOffset: 0, past: false, next: false, key: `blank-${i}`, isToday: false });
   }
   for (let d = 1; d <= dayCount; d++) {
     const dt = new Date(y, m, d);
@@ -78,7 +98,8 @@ export function monthCells(monthOffset: number, now = new Date()): MonthCell[] {
     cells.push({
       blank: false,
       date: d,
-      dayIdx: past ? null : mondayIndex(dt),
+      dayIdx: mondayIndex(dt),
+      weekOffset: Math.floor(diff / 7),
       past,
       next: diff > 6,
       key: `${y}-${m}-${d}`,

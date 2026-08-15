@@ -1,10 +1,10 @@
 import { useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight, Info, Minus, Plus, RotateCcw, UserCheck } from 'lucide-react';
 import { STAFF, serviceById } from '../../data/catalogue';
-import { monthCells, monthLabel } from '../../lib/dates';
+import { monthCells, monthLabel, weekAt } from '../../lib/dates';
 import { bufferClashesFor, slotsFor } from '../../lib/schedule';
 import { durationLabel, fmtTime, parseTime } from '../../lib/time';
-import { DAY_INFO, MAX_DURATION, MIN_DURATION, useScheduler } from '../../store/useScheduler';
+import { MAX_DURATION, MIN_DURATION, useScheduler } from '../../store/useScheduler';
 import { Button, Label } from '../ui/primitives';
 import { FitterPicker } from './FitterPicker';
 
@@ -102,7 +102,7 @@ export function DateTimeStep() {
                   key={c.key}
                   disabled={!bookable}
                   aria-pressed={isSel}
-                  onClick={() => bookable && pickDate(c.dayIdx!, c.key)}
+                  onClick={() => bookable && pickDate(c.dayIdx!, c.key, c.weekOffset)}
                 >
                   {c.date}
                 </button>
@@ -127,11 +127,11 @@ function TimeSlots() {
   const dur = form.dur;
   const current = parseTime(form.time);
   const svc = serviceById(form.service);
-  const cand = { id: null, d: form.day, s: staffSel ?? 0, st: current, du: dur, bb: svc?.bb ?? 0, ba: svc?.ba ?? 0 };
+  const cand = { id: null, d: form.day, w: form.week, s: staffSel ?? 0, st: current, du: dur, bb: svc?.bb ?? 0, ba: svc?.ba ?? 0 };
 
-  const slots = slotsFor(appts, staffSel, form.day, dur, rescheduleId);
+  const slots = slotsFor(appts, staffSel, form.day, dur, rescheduleId, form.week);
   const openCount = slots.filter((s) => s.ok).length;
-  const day = DAY_INFO[form.day];
+  const day = weekAt(form.week)[form.day];
   const who = staffSel === null ? 'any fitter' : STAFF[staffSel].name.split(' ')[0];
 
   const bufferHit = staffSel === null ? [] : bufferClashesFor(appts, cand);

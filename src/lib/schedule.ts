@@ -59,7 +59,7 @@ export function conflictIds(list: Appointment[]): Set<string> {
     for (let j = i + 1; j < list.length; j++) {
       const a = list[i];
       const b = list[j];
-      if (a.d !== b.d || !sharesFitter(a, b)) continue;
+      if (a.d !== b.d || (a.w ?? 0) !== (b.w ?? 0) || !sharesFitter(a, b)) continue;
       if (a.st < b.st + b.du && b.st < a.st + a.du) {
         bad.add(a.id);
         bad.add(b.id);
@@ -72,6 +72,8 @@ export function conflictIds(list: Appointment[]): Set<string> {
 export interface Candidate {
   id?: string | null;
   d: number;
+  /** the week the candidate sits in; absent means this week */
+  w?: number;
   s: number;
   /** other fitters the candidate would also occupy */
   assist?: number[];
@@ -87,6 +89,7 @@ export function collisionsFor(appts: Appointment[], cand: Candidate): Appointmen
     (a) =>
       a.id !== cand.id &&
       a.d === cand.d &&
+      (a.w ?? 0) === (cand.w ?? 0) &&
       sharesFitter(a, cand) &&
       a.st < cand.st + cand.du &&
       cand.st < a.st + a.du,
@@ -98,7 +101,7 @@ export function bufferClashesFor(appts: Appointment[], cand: Candidate): Appoint
   const cb = cand.bb ?? 0;
   const ca = cand.ba ?? 0;
   return appts.filter((a) => {
-    if (a.id === cand.id || a.d !== cand.d || !sharesFitter(a, cand)) return false;
+    if (a.id === cand.id || a.d !== cand.d || (a.w ?? 0) !== (cand.w ?? 0) || !sharesFitter(a, cand)) return false;
     const aFrom = a.st - (a.bb || 0);
     const aTo = a.st + a.du + (a.ba || 0);
     const cFrom = cand.st - cb;
@@ -120,13 +123,14 @@ export function slotOpen(
   start: number,
   dur: number,
   excludeId?: string | null,
+  weekOffset = 0,
 ): boolean {
   const list = staffIdx === null ? STAFF.map((_, i) => i) : [staffIdx];
   return list.some((si) => {
     const s = STAFF[si];
     if (start < s.shift[0] || start + dur > s.shift[1]) return false;
     if (start < s.brk[1] && s.brk[0] < start + dur) return false;
-    return collisionsFor(appts, { id: excludeId ?? null, d: dayIdx, s: si, st: start, du: dur }).length === 0;
+    return collisionsFor(appts, { id: excludeId ?? null, d: dayIdx, w: weekOffset, s: si, st: start, du: dur }).length === 0;
   });
 }
 
@@ -142,13 +146,14 @@ export function slotsFor(
   dayIdx: number,
   dur: number,
   excludeId?: string | null,
+  weekOffset = 0,
 ): Slot[] {
   const shifts = STAFF.map((s) => s.shift);
   const from = staffIdx === null ? Math.min(...shifts.map((s) => s[0])) : shifts[staffIdx][0];
   const to = staffIdx === null ? Math.max(...shifts.map((s) => s[1])) : shifts[staffIdx][1];
   const out: Slot[] = [];
   for (let t = from; t + dur <= to; t += 15) {
-    out.push({ min: t, ok: slotOpen(appts, staffIdx, dayIdx, t, dur, excludeId) });
+    out.push({ min: t, ok: slotOpen(appts, staffIdx, dayIdx, t, dur, excludeId, weekOffset) });
   }
   return out;
 }

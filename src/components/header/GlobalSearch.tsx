@@ -1,7 +1,7 @@
 import { Search, X } from 'lucide-react';
 import { STAFF, TYPES } from '../../data/catalogue';
-import { DAY_INFO, useScheduler } from '../../store/useScheduler';
-import { initialsOf } from '../../lib/dates';
+import { initialsOf, weekAt } from '../../lib/dates';
+import { useScheduler } from '../../store/useScheduler';
 import { partyOf } from '../../lib/schedule';
 import { rangeLabel } from '../../lib/time';
 import type { Appointment } from '../../types';
@@ -75,7 +75,7 @@ export function GlobalSearch() {
                 <span style={{ flex: 1, minWidth: 0 }}>
                   <span className="search__name">{names.join(', ')}</span>
                   <span className="search__meta">
-                    {type.label}&nbsp; · &nbsp;{DAY_INFO[a.d].long} {DAY_INFO[a.d].date}&nbsp; · &nbsp;
+                    {type.label}&nbsp; · &nbsp;{weekAt(a.w ?? 0)[a.d].long} {weekAt(a.w ?? 0)[a.d].date}&nbsp; · &nbsp;
                     {rangeLabel(a.st, a.st + a.du)}&nbsp; · &nbsp;{STAFF[a.s].name}
                   </span>
                 </span>

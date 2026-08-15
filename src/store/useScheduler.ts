@@ -10,7 +10,7 @@ import {
   serviceById,
 } from '../data/catalogue';
 import { SEED_CUSTOMERS, SEED_RECORDS, seedAppointments, seedWalkIns } from '../data/seed';
-import { dateKeyOf, todayIndex, weekDays } from '../lib/dates';
+import { dateKeyOf, todayIndex, weekAt } from '../lib/dates';
 import { collisionsFor, partyOf, slotOpen } from '../lib/schedule';
 import { parseTime, rangeLabel, stampNow, toTimeValue } from '../lib/time';
 import type {
@@ -42,7 +42,6 @@ import type {
 } from '../types';
 
 const TODAY = todayIndex();
-const DAYS = weekDays();
 
 /** A booking can be trimmed to one grid step, or stretched to the longest shift. */
 export const MIN_DURATION = 15;
@@ -52,13 +51,14 @@ function emptySeat(): Seat {
   return { customer: '', custQuery: '', custPicked: null, details: {} };
 }
 
-function freshForm(day: number): BookingForm {
+function freshForm(day: number, week = 0): BookingForm {
   return {
-    dateKey: dateKeyOf(new Date()),
+    dateKey: dateKeyOf(weekAt(week)[day].iso),
     customer: '',
     type: 'BF',
     staff: null,
     day,
+    week,
     time: '09:00',
     dur: 90,
     note: '',
@@ -84,6 +84,8 @@ interface State {
   // ---- schedule ----
   view: View;
   selDay: number;
+  /** weeks from the one containing today; 0 is this week, negative is the past */
+  weekOffset: number;
   appts: Appointment[];
   staffFilter: number[];
   colW: Record<string, number>;
@@ -163,6 +165,8 @@ interface State {
   // ---- complete dialog ----
   showComplete: boolean;
   completeStep: CompleteStep;
+  /** the other-payment menu beside Send to POS */
+  posMenu: boolean;
   svcDone: Record<string, boolean>;
   pdfReport: boolean;
 }
@@ -175,7 +179,7 @@ interface Actions {
   toggleDatePicker: () => void;
   closeDatePicker: () => void;
   setNavMonth: (fn: (n: number) => number) => void;
-  pickDay: (dayIdx: number) => void;
+  pickDay: (dayIdx: number, weekOffset: number) => void;
 
   setSearch: (q: string) => void;
   setSearchOpen: (open: boolean) => void;
@@ -208,7 +212,7 @@ interface Actions {
   setSheetPage: (p: SheetPage) => void;
   setSvcTab: (key: string) => void;
   pickService: (sv: Service) => void;
-  pickDate: (dayIdx: number, key: string) => void;
+  pickDate: (dayIdx: number, key: string, week: number) => void;
   pickTime: (mins: number) => void;
   setDuration: (mins: number) => void;
   setFormStaff: (idx: number | null) => void;
@@ -278,6 +282,10 @@ interface Actions {
   toggleSvcDone: (key: string) => void;
   togglePdf: () => void;
   finishComplete: () => void;
+  togglePosMenu: () => void;
+  closePosMenu: () => void;
+  sendPaymentLink: (amount: number) => void;
+  recordExternalPayment: (source: string, amount: number) => void;
 
   closeAllMenus: () => void;
 }
@@ -287,6 +295,7 @@ export type SchedulerStore = State & Actions;
 export const useScheduler = create<SchedulerStore>((set, get) => ({
   view: 'day',
   selDay: TODAY,
+  weekOffset: 0,
   appts: seedAppointments(TODAY),
   staffFilter: [],
   colW: {},
@@ -333,7 +342,7 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
   newCust: { first: '', last: '', email: '', phone: '', channel: 'Email' },
 
   showMeeting: false,
-  meeting: { title: 'Team meeting', day: TODAY, time: '08:30', dur: 30, who: [0, 1, 2, 3] },
+  meeting: { title: 'Team meeting', day: TODAY, week: 0, time: '08:30', dur: 30, who: [0, 1, 2, 3] },
 
   showDetail: false,
   detailId: null,
@@ -352,6 +361,7 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
 
   showComplete: false,
   completeStep: 'review',
+  posMenu: false,
   svcDone: {},
   pdfReport: false,
 
@@ -359,19 +369,23 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
 
   setView: (view) => set({ view }),
   setSelDay: (selDay) => set({ selDay }),
+  /** Steps a day, or a week in week view, rolling over the week boundary. */
   shiftDate: (dir) =>
-    set((s) => (s.view === 'week' ? s : { selDay: Math.max(0, Math.min(6, s.selDay + dir)) })),
-  goToday: () => set({ view: 'day', selDay: TODAY, datePicker: false }),
+    set((s) => {
+      if (s.view === 'week') return { weekOffset: s.weekOffset + dir };
+      const next = s.selDay + dir;
+      if (next < 0) return { selDay: 6, weekOffset: s.weekOffset - 1 };
+      if (next > 6) return { selDay: 0, weekOffset: s.weekOffset + 1 };
+      return { selDay: next };
+    }),
+  goToday: () => set({ view: 'day', selDay: TODAY, weekOffset: 0, datePicker: false }),
 
   toggleDatePicker: () => set((s) => ({ datePicker: !s.datePicker, navMonth: 0, filterMenu: false, addMenu: false })),
   closeDatePicker: () => set({ datePicker: false }),
   setNavMonth: (fn) => set((s) => ({ navMonth: fn(s.navMonth) })),
 
-  /**
-   * Picking a date from the header goes to that day. The schedule models one
-   * Mon–Sun week, so a date further out lands on its weekday in that week.
-   */
-  pickDay: (dayIdx) => set({ view: 'day', selDay: dayIdx, datePicker: false }),
+  /** Picking a date from the header goes to that day, in whichever week it falls. */
+  pickDay: (dayIdx, weekOffset) => set({ view: 'day', selDay: dayIdx, weekOffset, datePicker: false }),
 
   setSearch: (searchQ) => set({ searchQ, searchOpen: true }),
   setSearchOpen: (searchOpen) => set({ searchOpen }),
@@ -399,7 +413,7 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
       if (!d || !d.moved) return { drag: null };
 
       const moved = s.appts.find((a) => a.id === d.id);
-      const clashes = collisionsFor(s.appts, { id: d.id, d: d.d, s: d.s, st: d.st, du: d.du });
+      const clashes = collisionsFor(s.appts, { id: d.id, d: d.d, w: s.weekOffset, s: d.s, st: d.st, du: d.du });
       const entry = (a: Appointment, st = a.st, du = a.du): OverlapEntry => ({
         id: a.id,
         customer: a.c,
@@ -408,14 +422,14 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
 
       return {
         drag: null,
-        appts: s.appts.map((a) => (a.id === d.id ? { ...a, d: d.d, s: d.s, st: d.st } : a)),
+        appts: s.appts.map((a) => (a.id === d.id ? { ...a, d: d.d, w: s.weekOffset, s: d.s, st: d.st } : a)),
         overlapNotice:
           moved && clashes.length > 0
             ? {
                 moved: entry(moved, d.st, d.du),
                 clashes: clashes.map((a) => entry(a)),
                 fitter: STAFF[d.s]?.name ?? '',
-                day: `${DAYS[d.d].long}, ${DAYS[d.d].date}`,
+                day: `${weekAt(s.weekOffset)[d.d].long}, ${weekAt(s.weekOffset)[d.d].date}`,
               }
             : s.overlapNotice,
       };
@@ -450,6 +464,7 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
       const appt: Appointment = {
         id: 'u' + Date.now(),
         d,
+        w: s.weekOffset,
         s: staffIdx,
         st,
         du: w.du,
@@ -464,7 +479,7 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
         bookedVia: 'walkin',
       };
 
-      const clashes = collisionsFor(s.appts, { id: appt.id, d, s: staffIdx, st, du: w.du });
+      const clashes = collisionsFor(s.appts, { id: appt.id, d, w: s.weekOffset, s: staffIdx, st, du: w.du });
       return {
         walkInDrag: null,
         walkIns: s.walkIns.filter((x) => x.id !== w.id),
@@ -476,7 +491,7 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
                 moved: { id: appt.id, customer: appt.c, time: rangeLabel(st, st + w.du) },
                 clashes: clashes.map((a) => ({ id: a.id, customer: a.c, time: rangeLabel(a.st, a.st + a.du) })),
                 fitter: STAFF[staffIdx]?.name ?? '',
-                day: `${DAYS[d].long}, ${DAYS[d].date}`,
+                day: `${weekAt(s.weekOffset)[d].long}, ${weekAt(s.weekOffset)[d].date}`,
               }
             : s.overlapNotice,
       };
@@ -508,7 +523,7 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
       custPicked: null,
       seatIdx: 0,
       seatData: {},
-      form: { ...freshForm(s.selDay), day: s.selDay },
+      form: freshForm(s.selDay, s.weekOffset),
     })),
 
   /**
@@ -539,7 +554,7 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
       custPicked: null,
       seatIdx: 0,
       seatData: {},
-      form: { ...freshForm(s.selDay), day: s.selDay },
+      form: freshForm(s.selDay, s.weekOffset),
     })),
 
   /**
@@ -594,8 +609,9 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
           note: '',
           dur: dur || s.form.dur,
           day,
+          week: s.weekOffset,
           staff: staffIdx,
-          dateKey: dateKeyOf(DAYS[day].iso),
+          dateKey: dateKeyOf(weekAt(s.weekOffset)[day].iso),
           time: toTimeValue(mins),
         },
       };
@@ -620,8 +636,8 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
           },
     ),
 
-  pickDate: (dayIdx, key) =>
-    set((s) => ({ form: { ...s.form, day: dayIdx, dateKey: key }, svcStep: 'time', timePicked: false })),
+  pickDate: (dayIdx, key, week) =>
+    set((s) => ({ form: { ...s.form, day: dayIdx, week, dateKey: key }, svcStep: 'time', timePicked: false })),
   /**
    * Picks a start time and, when exactly one fitter is free for it, assigns them
    * — with no choice to make, leaving it on Unassigned is just an extra click.
@@ -710,6 +726,7 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
     const appt: Appointment = {
       id: 'u' + Date.now(),
       d: f.day,
+      w: f.week,
       s: si,
       st: mins,
       du: f.dur,
@@ -745,7 +762,7 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
       details: {},
       custQuery: '',
       custPicked: null,
-      form: freshForm(f.day),
+      form: freshForm(f.day, f.week),
     }));
   },
 
@@ -797,7 +814,7 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
       details: {},
       custQuery: '',
       custPicked: null,
-      form: freshForm(f.day),
+      form: freshForm(f.day, f.week),
     }));
   },
 
@@ -847,7 +864,8 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
 
   // ---- team meeting -----------------------------------------------------
 
-  openMeeting: () => set((s) => ({ addMenu: false, showMeeting: true, meeting: { ...s.meeting, day: s.selDay } })),
+  openMeeting: () =>
+    set((s) => ({ addMenu: false, showMeeting: true, meeting: { ...s.meeting, day: s.selDay, week: s.weekOffset } })),
   closeMeeting: () => set({ showMeeting: false }),
   setMeeting: (patch) => set((s) => ({ meeting: { ...s.meeting, ...patch } })),
   toggleMeetingWho: (idx) =>
@@ -870,6 +888,7 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
     const blocks: Appointment[] = m.who.map((si) => ({
       id: `m${stamp}-${si}`,
       d: m.day,
+      w: m.week,
       s: si,
       st: start,
       du: m.dur,
@@ -1008,11 +1027,12 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
       custQuery: a.c,
       custPicked: null,
       form: {
-        dateKey: dateKeyOf(DAYS[a.d].iso),
+        dateKey: dateKeyOf(weekAt(a.w ?? 0)[a.d].iso),
         customer: a.c,
         type: a.t,
         staff: a.s,
         day: a.d,
+        week: a.w ?? 0,
         note: a.n || '',
         time: toTimeValue(a.st),
         dur: a.du,
@@ -1156,7 +1176,37 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
   setCompleteStep: (completeStep) => set({ completeStep }),
   toggleSvcDone: (key) => set((s) => ({ svcDone: { ...s.svcDone, [key]: !s.svcDone[key] } })),
   togglePdf: () => set((s) => ({ pdfReport: !s.pdfReport })),
-  finishComplete: () => set({ showComplete: false, showDetail: false, completeStep: 'review' }),
+  finishComplete: () => set({ showComplete: false, showDetail: false, completeStep: 'review', posMenu: false }),
+
+  togglePosMenu: () => set((s) => ({ posMenu: !s.posMenu })),
+  closePosMenu: () => set({ posMenu: false }),
+
+  /**
+   * Sends the customer a link and closes the appointment out. Nothing has been
+   * taken yet, so the booking is marked as awaiting payment rather than paid.
+   */
+  sendPaymentLink: (amount) =>
+    set((s) => ({
+      showComplete: false,
+      showDetail: false,
+      completeStep: 'review',
+      posMenu: false,
+      payments: s.detailId
+        ? { ...s.payments, [s.detailId]: { method: 'shopify-link', amount, at: stampNow(), by: s.bookedBy, pending: true } }
+        : s.payments,
+    })),
+
+  /** Records money that arrived some other way — it is not passing through a till here. */
+  recordExternalPayment: (source, amount) =>
+    set((s) => ({
+      showComplete: false,
+      showDetail: false,
+      completeStep: 'review',
+      posMenu: false,
+      payments: s.detailId
+        ? { ...s.payments, [s.detailId]: { method: 'external', source, amount, at: stampNow(), by: s.bookedBy } }
+        : s.payments,
+    })),
 
   closeAllMenus: () => set({ addMenu: false, filterMenu: false, apptMenu: false }),
 }));
@@ -1212,5 +1262,4 @@ export function seatMissingTotal(s: State): number {
 }
 
 export { REPEATABLE_SERVICES };
-export const DAY_INFO = DAYS;
 export const TODAY_IDX = TODAY;

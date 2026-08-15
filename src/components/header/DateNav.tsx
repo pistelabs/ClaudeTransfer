@@ -1,6 +1,6 @@
 import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
-import { dateKeyOf, monthCells, monthLabel } from '../../lib/dates';
-import { DAY_INFO, TODAY_IDX, useScheduler } from '../../store/useScheduler';
+import { dateKeyOf, monthCells, monthLabel, weekAt } from '../../lib/dates';
+import { TODAY_IDX, useScheduler } from '../../store/useScheduler';
 import { Button } from '../ui/primitives';
 import { useEscape, useOutsideClick } from '../ui/hooks';
 
@@ -8,10 +8,8 @@ const WEEKDAYS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
 
 /**
  * Date navigation: an arrow either side of the date itself, which opens a
- * calendar. The schedule holds one Mon–Sun week, so only that week's dates can
- * be navigated to — a further-out date would jump to its weekday in this week
- * and quietly show the wrong day. The months still page, so the calendar reads
- * as a calendar.
+ * calendar. Any date can be picked, forwards or back; the arrows step a day, or
+ * a week in week view, rolling over the week boundary.
  */
 export function DateNav() {
   const view = useScheduler((s) => s.view);
@@ -23,19 +21,22 @@ export function DateNav() {
   const close = useScheduler((s) => s.closeDatePicker);
   const setNavMonth = useScheduler((s) => s.setNavMonth);
   const pickDay = useScheduler((s) => s.pickDay);
+  const weekOffset = useScheduler((s) => s.weekOffset);
   const goToday = useScheduler((s) => s.goToday);
 
   const ref = useOutsideClick<HTMLDivElement>(open, close);
   useEscape(open, close);
 
   const isWeek = view === 'week';
+  const week = weekAt(weekOffset);
   const label = isWeek
-    ? `${DAY_INFO[0].date} – ${DAY_INFO[6].date}, ${DAY_INFO[6].year}`
-    : `${DAY_INFO[selDay].long}, ${DAY_INFO[selDay].date}`;
+    ? `${week[0].date} – ${week[6].date}, ${week[6].year}`
+    : `${week[selDay].long}, ${week[selDay].date}, ${week[selDay].year}`;
 
   const cells = monthCells(navMonth);
-  const selectedKey = dateKeyOf(DAY_INFO[selDay].iso);
-  const tomorrowIdx = (TODAY_IDX + 1) % 7;
+  const selectedKey = dateKeyOf(week[selDay].iso);
+  // tomorrow rolls into next week when today is a Sunday
+  const tomorrow = TODAY_IDX === 6 ? { d: 0, w: 1 } : { d: TODAY_IDX + 1, w: 0 };
 
   return (
     <div className="date-nav popover-anchor" ref={ref}>
@@ -108,8 +109,7 @@ export function DateNav() {
                 if (c.blank) return <span className="calendar__cell calendar__cell--blank" key={c.key} />;
                 // Selection is tracked by exact date, so paging months keeps the right cell lit.
                 const isSel = !isWeek && c.key === selectedKey;
-                // only the week the schedule has loaded can actually be shown
-                const bookable = c.dayIdx !== null && !c.past && !c.next;
+                const bookable = !c.blank;
                 const className = [
                   'calendar__cell',
                   c.past ? 'calendar__cell--past' : '',
@@ -126,7 +126,7 @@ export function DateNav() {
                     key={c.key}
                     disabled={!bookable}
                     aria-pressed={isSel}
-                    onClick={() => bookable && pickDay(c.dayIdx!)}
+                    onClick={() => bookable && pickDay(c.dayIdx!, c.weekOffset)}
                   >
                     {c.date}
                   </button>
@@ -135,14 +135,12 @@ export function DateNav() {
             </div>
           </div>
 
-          <div className="date-pop__note">Bookings load a week at a time</div>
-
           {/* The two dates anybody actually asks for, under the month. */}
           <div className="date-pop__shortcuts">
             <Button variant="outline" size="sm" onClick={goToday}>
               Today
             </Button>
-            <Button variant="outline" size="sm" onClick={() => pickDay(tomorrowIdx)}>
+            <Button variant="outline" size="sm" onClick={() => pickDay(tomorrow.d, tomorrow.w)}>
               Tomorrow
             </Button>
           </div>

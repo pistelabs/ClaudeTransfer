@@ -115,6 +115,11 @@ the "now" line and the Today/Upcoming/Past pills meaningful whenever you open it
   Square or Stripe — records the whole outstanding balance against one of them, and stamps
   the time and who took it. Reopening shows what was recorded, and it can be removed if it
   went against the wrong booking.
+- **Closing out has three endings.** Send to POS keeps the button in the complete dialog; the
+  chevron beside it offers the other two. A payment link is sent and the booking is marked
+  awaiting payment — the balance stays owing, because a link is not money. An external
+  payment records what arrived some other way — bank transfer, cash, another terminal — and
+  clears the balance like any other.
 - **Equipment is identified before it is worked on.** The entry grid asks type, brand and
   model on one row, then how it measures on the next: size, and the one spec that matters for
   that type — flex on a boot, profile on a ski or board, neither on a helmet. Brands and
@@ -133,9 +138,10 @@ the "now" line and the Today/Upcoming/Past pills meaningful whenever you open it
   of an empty shop helps nobody. A fitter keeps one width across every day, so the days stay
   aligned.
 - **The date is the middle of the three nav buttons**, with an arrow either side. Clicking it
-  opens a month calendar with Today and Tomorrow beneath it. The months page freely, but only
-  the loaded week's dates can be selected: the schedule holds one Mon–Sun week, and a further
-  date would land on its weekday in this week and quietly show the wrong day.
+  opens a month calendar with Today and Tomorrow beneath it. Any date can be opened, forwards
+  or back; the arrows step a day, or a week in week view, rolling over the week boundary. A
+  booking carries the week it belongs to, so other weeks open empty until something is booked
+  into them — the seed only fills the current one.
 - **Column widths persist per column** and per view; the shift-hours label drops out below
   190px so name and role keep priority. Columns share any spare width so a wide window
   fills edge to edge, and scroll horizontally when it is narrow.

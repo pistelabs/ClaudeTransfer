@@ -1,10 +1,10 @@
 import { useLayoutEffect, useRef } from 'react';
 import { CalendarDays, ChevronLeft, Mountain, TriangleAlert, UserCheck, X } from 'lucide-react';
 import { STAFF, STORE, serviceById } from '../../data/catalogue';
+import { weekAt } from '../../lib/dates';
 import { collisionsFor, slotsFor } from '../../lib/schedule';
 import { durationLabel, parseTime, rangeLabel } from '../../lib/time';
 import {
-  DAY_INFO,
   seatMissingTotal,
   useScheduler,
   type SchedulerStore,
@@ -56,14 +56,14 @@ export function NewAppointmentSheet() {
 
   const onBook = sheetPage === 'book';
   const startMin = parseTime(form.time);
-  const slots = slotsFor(appts, form.staff, form.day, form.dur, rescheduleId);
+  const slots = slotsFor(appts, form.staff, form.day, form.dur, rescheduleId, form.week);
   const slotValid = svcStep === 'time' && slots.some((s) => s.min === startMin && s.ok);
 
   // A clash warns rather than blocks — in-store staff may double-book deliberately.
   // A queue entry has no time, so it can't clash with anything.
   const clashes =
     !queueAdd && svcStep === 'time' && form.staff !== null
-      ? collisionsFor(appts, { id: rescheduleId, d: form.day, s: form.staff, st: startMin, du: form.dur })
+      ? collisionsFor(appts, { id: rescheduleId, d: form.day, w: form.week, s: form.staff, st: startMin, du: form.dur })
       : [];
   const clash = clashes.length > 0;
   const clashMsg = clash
@@ -199,7 +199,7 @@ export function NewAppointmentSheet() {
                       <div>
                         <span className="summary__label">Date</span>
                         <span className="summary__value">
-                          {DAY_INFO[form.day].short} {DAY_INFO[form.day].date}
+                          {weekAt(form.week)[form.day].short} {weekAt(form.week)[form.day].date}
                         </span>
                       </div>
                       <div className="summary__divider" />

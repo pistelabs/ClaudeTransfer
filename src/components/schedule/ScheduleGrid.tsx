@@ -12,7 +12,8 @@ import {
   minutesSinceMidnight,
   rangeLabel,
 } from '../../lib/time';
-import { DAY_INFO, TODAY_IDX, useScheduler } from '../../store/useScheduler';
+import { weekAt } from '../../lib/dates';
+import { TODAY_IDX, useScheduler } from '../../store/useScheduler';
 import type { Appointment, LaidOutAppt } from '../../types';
 import { Avatar } from '../ui/Avatar';
 import { AppointmentBlock } from './AppointmentBlock';
@@ -64,6 +65,7 @@ function bandStyle(from: number, to: number): CSSProperties {
 export function ScheduleGrid() {
   const view = useScheduler((s) => s.view);
   const selDay = useScheduler((s) => s.selDay);
+  const weekOffset = useScheduler((s) => s.weekOffset);
   const appts = useScheduler((s) => s.appts);
   const staffFilter = useScheduler((s) => s.staffFilter);
   const colW = useScheduler((s) => s.colW);
@@ -115,23 +117,29 @@ export function ScheduleGrid() {
    */
   const splitWeek = isWeek && !showAllStaff;
 
+  const days = weekAt(weekOffset);
+  // Only this week's bookings; a booking carries the week it belongs to.
   const apptsIn = (d: number, s: number | null) =>
-    layout(effAppts.filter((a) => a.d === d && (s === null ? true : fittersOf(a).includes(s))));
+    layout(
+      effAppts.filter(
+        (a) => a.d === d && (a.w ?? 0) === weekOffset && (s === null ? true : fittersOf(a).includes(s)),
+      ),
+    );
 
   const dayGroups: DayGroup[] = isWeek
-    ? DAY_INFO.map((info, d) => ({
+    ? days.map((info, d) => ({
         d,
         title: info.short,
         sub: info.date,
         fullSub: `${info.long}, ${info.date}`,
-        today: d === TODAY_IDX,
+        today: weekOffset === 0 && d === TODAY_IDX,
         past: info.past,
         leaves: splitWeek
           ? visibleStaff.map((si) => ({
               key: `w:${d}:${si}`,
               d,
               s: si,
-              today: d === TODAY_IDX,
+              today: weekOffset === 0 && d === TODAY_IDX,
               past: info.past,
               shift: STAFF[si].shift,
               brk: STAFF[si].brk,
@@ -142,7 +150,7 @@ export function ScheduleGrid() {
                 key: `w:${d}`,
                 d,
                 s: null,
-                today: d === TODAY_IDX,
+                today: weekOffset === 0 && d === TODAY_IDX,
                 past: info.past,
                 shift: SHOP_HOURS,
                 brk: null,
@@ -315,7 +323,8 @@ export function ScheduleGrid() {
   }, []);
 
   const nowMin = minutesSinceMidnight();
-  const showNow = !isWeek && selDay === TODAY_IDX && nowMin >= GRID_START_MIN && nowMin <= GRID_END_MIN;
+  const showNow =
+    !isWeek && weekOffset === 0 && selDay === TODAY_IDX && nowMin >= GRID_START_MIN && nowMin <= GRID_END_MIN;
 
   return (
     <div className="grid" ref={scrollerRef}>

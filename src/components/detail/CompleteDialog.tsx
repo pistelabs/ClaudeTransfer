@@ -1,8 +1,9 @@
-import { Check, ChevronLeft, CreditCard, FileText, Minus, Wrench, X } from 'lucide-react';
+import { Check, ChevronLeft, FileText, Minus, Wrench, X } from 'lucide-react';
 import { useScheduler, type SchedulerStore } from '../../store/useScheduler';
 import { Avatar } from '../ui/Avatar';
 import { Badge, Button } from '../ui/primitives';
 import { useEscape } from '../ui/hooks';
+import { PosActions } from './PosActions';
 import type { DetailInfo } from './useDetail';
 
 interface WorkshopRow {
@@ -131,10 +132,7 @@ export function CompleteDialog({ detail }: { detail: DetailInfo }) {
                 <Wrench size={16} strokeWidth={2} />
                 Add to Workshop
               </Button>
-              <Button size="lg" className="complete__action" onClick={finishComplete}>
-                <CreditCard size={16} strokeWidth={2} />
-                Send to POS
-              </Button>
+              <PosActions detail={detail} />
             </div>
           </>
         ) : (

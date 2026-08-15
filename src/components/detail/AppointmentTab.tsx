@@ -1,8 +1,8 @@
 import { Activity, Calendar, Check, Clock, Hourglass, Mail, Phone, UserCheck, UserCog, Users } from 'lucide-react';
-import { formatBookedAt } from '../../lib/dates';
+import { formatBookedAt, weekAt } from '../../lib/dates';
 import { checkInLabel } from '../../lib/schedule';
 import { durationLabel, rangeLabel } from '../../lib/time';
-import { DAY_INFO, useScheduler } from '../../store/useScheduler';
+import { useScheduler } from '../../store/useScheduler';
 import { Avatar } from '../ui/Avatar';
 import { Badge, Button, Card, CardContent, CardHeader, CardTitle, DataRow } from '../ui/primitives';
 import { FitterTeam } from './FitterTeam';
@@ -15,7 +15,7 @@ export function AppointmentTab({ detail }: { detail: DetailInfo }) {
   const checkins = useScheduler((s) => s.checkins);
   const checkIn = useScheduler((s) => s.checkIn);
 
-  const day = DAY_INFO[appt.d];
+  const day = weekAt(appt.w ?? 0)[appt.d];
   const buffer = [appt.bb ? `${appt.bb} min before` : '', appt.ba ? `${appt.ba} min after` : '']
     .filter(Boolean)
     .join(' · ');
