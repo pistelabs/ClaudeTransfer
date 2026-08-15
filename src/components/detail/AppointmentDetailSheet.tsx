@@ -1,4 +1,4 @@
-import { CalendarCheck, EllipsisVertical, Globe, Trash2, X } from 'lucide-react';
+import { CalendarCheck, CreditCard, EllipsisVertical, Globe, Trash2, X } from 'lucide-react';
 import { STAFF } from '../../data/catalogue';
 import { formatBookedAt, initialsOf } from '../../lib/dates';
 import { useScheduler } from '../../store/useScheduler';
@@ -137,33 +137,25 @@ export function AppointmentDetailSheet() {
               <div className="totals__label">Balance due</div>
               <div className="totals__balance">{totals.balance}</div>
             </div>
-            {/* What it is made of on the left, what it comes to on the right —
-                two columns rather than four lines, so the bar stays short. */}
-            <dl className="totals__split">
-              <div className="totals__line">
-                <dt>{totals.service ? totals.service.name : 'Appointment'}</dt>
-                <dd>{totals.servicePrice}</dd>
-              </div>
-              <div className="totals__line">
-                <dt>Equipment</dt>
-                <dd>{totals.extras}</dd>
-              </div>
-            </dl>
+            {/* What it comes to, and what has been taken. The breakdown behind the
+                subtotal is a hover away rather than two more lines in the bar. */}
             <dl className="totals__split">
               <div className="totals__line">
                 <dt>Subtotal</dt>
-                <dd>{totals.subtotal}</dd>
+                <dd title={`${totals.service?.name ?? 'Appointment'} ${totals.servicePrice} · Equipment ${totals.extras}`}>
+                  {totals.subtotal}
+                </dd>
               </div>
               <div className="totals__line">
                 <dt>Paid</dt>
-                <dd className="is-paid">{totals.paid}</dd>
+                {isMeeting ? <dd className="is-paid">{totals.paid}</dd> : <PaymentControl totals={totals} />}
               </div>
             </dl>
-            {!isMeeting && <PaymentControl totals={totals} />}
             <div style={{ flex: 1 }} />
             <div className="popover-anchor" ref={menuRef}>
               <button className="complete-btn" type="button" onClick={openComplete}>
-                Appointment Complete
+                <CreditCard size={16} strokeWidth={2} />
+                Complete
               </button>
               <button
                 className="complete-btn__more"

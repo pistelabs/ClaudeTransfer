@@ -849,43 +849,46 @@
 
 /* ---- taking the money ---- */
 
+.totals__pay {
+  position: relative;
+  margin: 0;
+}
+
+/* The Paid figure doubles as the way in to recording a payment. */
 .pay-btn {
   display: inline-flex;
-  flex: 0 0 auto;
-  gap: 7px;
+  gap: 5px;
   align-items: center;
-  height: 34px;
-  padding: 0 14px;
-  color: var(--n-800);
-  font-size: 12.5px;
+  padding: 1px 6px;
+  margin-right: -6px;
+  color: var(--success);
+  font-size: 12px;
   font-weight: 600;
-  background: #fff;
-  border: 1px solid var(--n-150);
-  border-radius: var(--r-control);
+  font-variant-numeric: tabular-nums;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 5px;
   cursor: pointer;
 }
 
 .pay-btn:hover {
-  background: var(--n-30);
+  background: var(--n-50);
+  border-color: var(--n-150);
 }
 
 .pay-btn--paid {
   color: var(--success-text);
-  background: var(--success-tint);
-  border-color: var(--success-border);
 }
 
 /* A link has gone out but nothing has arrived — not the same as paid. */
 .pay-btn--pending {
   color: var(--warning-text);
-  background: var(--warning-tint);
-  border-color: var(--warning-border);
 }
 
 .pay-menu {
   position: absolute;
+  right: 0;
   bottom: calc(100% + 8px);
-  left: 0;
   z-index: 60;
   width: 292px;
   background: #fff;
@@ -1006,33 +1009,40 @@
 }
 
 .complete-btn {
-  height: 34px;
-  padding: 0 18px;
+  display: inline-flex;
+  gap: 9px;
+  align-items: center;
+  justify-content: center;
+  min-width: 168px;
+  height: 46px;
+  padding: 0 22px;
   color: #fff;
-  font-size: 13px;
+  font-size: 14.5px;
   font-weight: 600;
   white-space: nowrap;
-  background: var(--n-950);
+  background: var(--pay);
   border: none;
   border-radius: var(--r-control) 0 0 var(--r-control);
   cursor: pointer;
+}
+
+.complete-btn:hover {
+  background: var(--pay-hover);
 }
 
 .complete-btn__more {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 34px;
+  width: 40px;
+  height: 46px;
   color: #fff;
   background: var(--n-950);
   border: none;
-  border-left: 1px solid rgb(255 255 255 / 22%);
   border-radius: 0 var(--r-control) var(--r-control) 0;
   cursor: pointer;
 }
 
-.complete-btn:hover,
 .complete-btn__more:hover {
   background: var(--dark-action);
 }
@@ -1041,7 +1051,7 @@
 .appt-menu {
   position: absolute;
   right: 0;
-  bottom: 42px;
+  bottom: 54px;
   z-index: 50;
   min-width: 206px;
   overflow: hidden;

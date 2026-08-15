@@ -17,9 +17,9 @@ const METHOD_ICON: Record<PaymentMethod, typeof CreditCard> = {
 };
 
 /**
- * Taking the money, from the totals bar. The shop has no cash drawer, so every
- * route is a card payment — the popover just records which one, against the
- * balance showing beside it.
+ * The Paid figure in the totals bar, and the popover behind it. The shop has no
+ * cash drawer, so every route it runs itself is a card payment — the popover
+ * records which one, against the balance showing beside it.
  */
 export function PaymentControl({ totals }: { totals: DetailInfo['totals'] }) {
   const open = useScheduler((s) => s.paymentMenu);
@@ -35,7 +35,7 @@ export function PaymentControl({ totals }: { totals: DetailInfo['totals'] }) {
   const taker = payment && payment.by !== null ? STAFF[payment.by] : null;
 
   return (
-    <div className="popover-anchor" ref={ref}>
+    <dd className="popover-anchor totals__pay" ref={ref}>
       <button
         className={`pay-btn${payment ? (payment.pending ? ' pay-btn--pending' : ' pay-btn--paid') : ''}`}
         type="button"
@@ -44,30 +44,15 @@ export function PaymentControl({ totals }: { totals: DetailInfo['totals'] }) {
         title={
           payment
             ? payment.pending
-              ? `Payment link sent at ${payment.at}`
-              : `Paid by ${payment.source ?? method!.label} at ${payment.at}`
+              ? `Payment link sent at ${payment.at} — click to change`
+              : `Paid by ${payment.source ?? method!.label} at ${payment.at} — click to change`
             : 'Record how this was paid'
         }
         onClick={toggle}
       >
-        {payment ? (
-          payment.pending ? (
-            <>
-              <Clock size={15} strokeWidth={2.4} />
-              Link sent
-            </>
-          ) : (
-            <>
-              <Check size={15} strokeWidth={2.6} />
-              Paid · {payment.source ?? method!.label}
-            </>
-          )
-        ) : (
-          <>
-            <Icon size={15} strokeWidth={2} />
-            Take payment
-          </>
-        )}
+        {payment?.pending && <Clock size={13} strokeWidth={2.4} />}
+        {payment && !payment.pending && <Check size={13} strokeWidth={2.8} />}
+        {totals.paid}
       </button>
 
       {open && (
@@ -126,6 +111,6 @@ export function PaymentControl({ totals }: { totals: DetailInfo['totals'] }) {
           )}
         </div>
       )}
-    </div>
+    </dd>
   );
 }
