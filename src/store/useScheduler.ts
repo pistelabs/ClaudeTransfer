@@ -28,6 +28,8 @@ import type {
   NewCustomerDraft,
   OverlapEntry,
   OverlapNotice,
+  Payment,
+  PaymentMethod,
   QuestionnaireMode,
   Seat,
   SelectionState,
@@ -150,6 +152,9 @@ interface State {
   saved: Record<string, string>;
   equipment: Record<string, EquipItem[]>;
   records: Record<string, ApptRecord>;
+  /** what has been taken for a booking, keyed by appointment id */
+  payments: Record<string, Payment>;
+  paymentMenu: boolean;
 
   // ---- complete dialog ----
   showComplete: boolean;
@@ -244,6 +249,10 @@ interface Actions {
   setStaffAnswer: (ci: number, key: string, val: string) => void;
   rescheduleAppt: () => void;
   deleteAppt: () => void;
+  togglePaymentMenu: () => void;
+  closePaymentMenu: () => void;
+  recordPayment: (method: PaymentMethod, amount: number) => void;
+  clearPayment: () => void;
 
   updateEquip: (uid: string, key: 'kind' | 'brand' | 'model' | 'size' | 'flex' | 'camber', val: string) => void;
   removeEquip: (uid: string) => void;
@@ -328,6 +337,8 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
   saved: {},
   equipment: {},
   records: SEED_RECORDS,
+  payments: {},
+  paymentMenu: false,
 
   showComplete: false,
   completeStep: 'review',
@@ -423,6 +434,7 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
         st,
         du: w.du,
         t: w.t,
+        svc: w.svc,
         c: w.c,
         n: w.n,
         party: w.party,
@@ -685,6 +697,7 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
       st: mins,
       du: f.dur,
       t: f.type,
+      svc: f.service ?? undefined,
       c: names[0] || f.customer.trim(),
       n: f.note.trim(),
       bb: sv?.bb ?? 0,
@@ -737,6 +750,7 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
     const walkIn: WalkIn = {
       id: 'w' + Date.now(),
       t: f.type,
+      svc: f.service ?? undefined,
       c: names[0] || f.customer.trim(),
       n: f.note.trim(),
       party: names.length > 1 ? names : undefined,
@@ -992,6 +1006,35 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
 
   deleteAppt: () =>
     set((s) => ({ apptMenu: false, showDetail: false, appts: s.appts.filter((x) => x.id !== s.detailId) })),
+
+  // ---- payment ----------------------------------------------------------
+
+  togglePaymentMenu: () => set((s) => ({ paymentMenu: !s.paymentMenu, apptMenu: false })),
+  closePaymentMenu: () => set({ paymentMenu: false }),
+
+  /**
+   * Records the whole outstanding balance as taken by one method. Part payments
+   * are a POS concern; this console only needs to say the money is in and how.
+   */
+  recordPayment: (method, amount) =>
+    set((s) => {
+      const id = s.detailId;
+      if (!id) return { paymentMenu: false };
+      return {
+        paymentMenu: false,
+        payments: { ...s.payments, [id]: { method, amount, at: stampNow(), by: s.bookedBy } },
+      };
+    }),
+
+  /** Undoes a payment recorded against the wrong booking or by the wrong route. */
+  clearPayment: () =>
+    set((s) => {
+      const id = s.detailId;
+      if (!id) return { paymentMenu: false };
+      const payments = { ...s.payments };
+      delete payments[id];
+      return { paymentMenu: false, payments };
+    }),
 
   // ---- equipment --------------------------------------------------------
 

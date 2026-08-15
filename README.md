@@ -109,6 +109,12 @@ the "now" line and the Today/Upcoming/Past pills meaningful whenever you open it
   against their availability and conflicts. Only the lead's copy drags; the others move with
   it. With more than one fitter on the booking, the staff assessment asks which of them
   recorded it, per person, and the saved badge carries the name.
+- **The bar at the foot of a booking is its bill.** It carries the price of the booked
+  service, anything charged on the equipment, the subtotal and what has been paid. Take
+  payment opens a popover offering the four routes the shop uses — Shopify, a Shopify link,
+  Square or Stripe — records the whole outstanding balance against one of them, and stamps
+  the time and who took it. Reopening shows what was recorded, and it can be removed if it
+  went against the wrong booking.
 - **Equipment is identified before it is worked on.** The entry grid asks type, brand and
   model on one row, then how it measures on the next: size, and the one spec that matters for
   that type — flex on a boot, profile on a ski or board, neither on a helmet. Brands and

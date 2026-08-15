@@ -1,6 +1,7 @@
 import type {
   ApptType,
   EquipServiceGroup,
+  PaymentMethod,
   QuestionField,
   Service,
   ServiceGroup,
@@ -88,6 +89,30 @@ export const ALL_SERVICES: Service[] = SERVICE_GROUPS.flatMap((g) => g.items);
 export function serviceById(id: string | null): Service | null {
   if (!id) return null;
   return ALL_SERVICES.find((s) => s.id === id) ?? null;
+}
+
+/**
+ * The service a booking is for, and so what it costs. Bookings taken through the
+ * sheet name their service outright; older ones only carry a type code, so the
+ * first service of that type stands in for it.
+ */
+export function serviceFor(appt: { svc?: string; t: TypeCode }): Service | null {
+  return serviceById(appt.svc ?? null) ?? ALL_SERVICES.find((s) => s.t === appt.t) ?? null;
+}
+
+/**
+ * How the shop takes money. All four are card routes — the shop has no cash
+ * drawer — so the dialog groups them under one heading.
+ */
+export const PAYMENT_METHODS: { key: PaymentMethod; label: string; sub: string }[] = [
+  { key: 'shopify', label: 'Shopify', sub: 'Charged on the shop till' },
+  { key: 'shopify-link', label: 'Shopify link', sub: 'Payment link sent to the customer' },
+  { key: 'square', label: 'Square', sub: 'Card terminal at the bench' },
+  { key: 'stripe', label: 'Stripe', sub: 'Card or wallet' },
+];
+
+export function paymentMethod(key: PaymentMethod) {
+  return PAYMENT_METHODS.find((m) => m.key === key) ?? PAYMENT_METHODS[0];
 }
 
 /** Customer fitting questionnaire — asked at booking, emailed, or captured at the bench. */

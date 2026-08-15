@@ -9,6 +9,7 @@ import { AppointmentTab } from './AppointmentTab';
 import { CompleteDialog } from './CompleteDialog';
 import { EquipmentTab } from './EquipmentTab';
 import { FittingTab } from './FittingTab';
+import { PaymentControl } from './PaymentControl';
 import { useDetail } from './useDetail';
 import type { BadgeVariant } from '../ui/primitives';
 import type { BookingSource, CheckInSource, DetailTab } from '../../types';
@@ -136,6 +137,18 @@ export function AppointmentDetailSheet() {
               <div className="totals__label">Balance due</div>
               <div className="totals__balance">{totals.balance}</div>
             </div>
+            {/* What it is made of on the left, what it comes to on the right —
+                two columns rather than four lines, so the bar stays short. */}
+            <dl className="totals__split">
+              <div className="totals__line">
+                <dt>{totals.service ? totals.service.name : 'Appointment'}</dt>
+                <dd>{totals.servicePrice}</dd>
+              </div>
+              <div className="totals__line">
+                <dt>Equipment</dt>
+                <dd>{totals.extras}</dd>
+              </div>
+            </dl>
             <dl className="totals__split">
               <div className="totals__line">
                 <dt>Subtotal</dt>
@@ -146,6 +159,7 @@ export function AppointmentDetailSheet() {
                 <dd className="is-paid">{totals.paid}</dd>
               </div>
             </dl>
+            {!isMeeting && <PaymentControl totals={totals} />}
             <div style={{ flex: 1 }} />
             <div className="popover-anchor" ref={menuRef}>
               <button className="complete-btn" type="button" onClick={openComplete}>

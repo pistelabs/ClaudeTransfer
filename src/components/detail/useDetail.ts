@@ -1,8 +1,8 @@
-import { STAFF, TYPES } from '../../data/catalogue';
+import { STAFF, TYPES, serviceFor } from '../../data/catalogue';
 import { initialsOf } from '../../lib/dates';
 import { formatMoney, normalizeName, partyOf, priceValue } from '../../lib/schedule';
 import { TODAY_IDX, equipListOf, useScheduler, type SchedulerStore } from '../../store/useScheduler';
-import type { Appointment, ApptType, CheckInSource, Customer, EquipItem } from '../../types';
+import type { Appointment, ApptType, CheckInSource, Customer, EquipItem, Payment, Service } from '../../types';
 
 export interface PartyMember {
   name: string;
@@ -29,7 +29,18 @@ export interface DetailInfo {
   attendees: string;
   status: { label: string; modifier: 'today' | 'past' | 'upcoming' | 'waiting' };
   equipment: EquipItem[];
-  totals: { balance: string; subtotal: string; paid: string };
+  totals: {
+    balance: string;
+    subtotal: string;
+    paid: string;
+    /** what is still outstanding, as a number, for the payment dialog */
+    due: number;
+    /** the booked service, when the booking names one */
+    service: Service | null;
+    servicePrice: string;
+    extras: string;
+    payment: Payment | null;
+  };
 }
 
 /** Every equipment entry recorded against this booking, one list per person. */
@@ -38,15 +49,40 @@ function equipmentByPerson(store: SchedulerStore, id: string, partySize: number)
 }
 
 /**
- * Live subtotal across every person's equipment. Services marked as included in
- * the appointment price are recorded but not billed on top.
+ * What the booking comes to: the price of the appointment itself, plus any
+ * equipment work billed on top. Services marked as included in the appointment
+ * price are recorded but not charged again. Payment is all or nothing, so the
+ * balance is the subtotal until it is taken and zero afterwards.
  */
-export function totalsFor(store: SchedulerStore, id: string, partySize: number) {
-  let subtotal = 0;
+export function totalsFor(
+  store: SchedulerStore,
+  id: string,
+  partySize: number,
+  appt?: Pick<Appointment, 'svc' | 't'>,
+) {
+  const service = appt && appt.t !== 'MT' ? serviceFor(appt) : null;
+  const servicePrice = service ? priceValue(service.price) : 0;
+
+  let extras = 0;
   for (const list of equipmentByPerson(store, id, partySize)) {
-    for (const e of list) for (const sv of e.services) if (sv.charged) subtotal += priceValue(sv.price);
+    for (const e of list) for (const sv of e.services) if (sv.charged) extras += priceValue(sv.price);
   }
-  return { balance: formatMoney(subtotal), subtotal: formatMoney(subtotal), paid: formatMoney(0) };
+
+  const subtotal = servicePrice + extras;
+  const payment = store.payments[id] ?? null;
+  const paid = payment ? payment.amount : 0;
+
+  return {
+    balance: formatMoney(Math.max(0, subtotal - paid)),
+    subtotal: formatMoney(subtotal),
+    paid: formatMoney(paid),
+    /** the raw figure the payment dialog would take */
+    due: Math.max(0, subtotal - paid),
+    service,
+    servicePrice: formatMoney(servicePrice),
+    extras: formatMoney(extras),
+    payment,
+  };
 }
 
 /**
@@ -69,6 +105,7 @@ export function useDetail(): DetailInfo | null {
       st: 0,
       du: walkIn.du,
       t: walkIn.t,
+      svc: walkIn.svc,
       c: walkIn.c,
       n: walkIn.n,
       party: walkIn.party,
@@ -121,6 +158,6 @@ export function useDetail(): DetailInfo | null {
     attendees,
     status,
     equipment: equipListOf(store),
-    totals: totalsFor(store, appt.id, names.length),
+    totals: totalsFor(store, appt.id, names.length, appt),
   };
 }

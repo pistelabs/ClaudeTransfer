@@ -36,6 +36,8 @@ export interface Appointment {
   /** duration in minutes */
   du: number;
   t: TypeCode;
+  /** the service booked, when one was chosen; the price comes from it */
+  svc?: string;
   /** primary customer name (or meeting title for `MT`) */
   c: string;
   /** note */
@@ -68,6 +70,8 @@ export interface WalkIn {
   id: string;
   /** the work they have come in for */
   t: TypeCode;
+  /** the service they are here for, when one was chosen */
+  svc?: string;
   c: string;
   n: string;
   party?: string[];
@@ -184,6 +188,19 @@ export interface ApptRecord {
   /** required-at-booking answers for the primary customer */
   details?: Answers;
   seats?: { customer: string; details: Answers }[];
+}
+
+/** How the shop took the money. Every route is a card payment of some kind. */
+export type PaymentMethod = 'shopify' | 'shopify-link' | 'square' | 'stripe';
+
+export interface Payment {
+  method: PaymentMethod;
+  /** what was taken, in euro */
+  amount: number;
+  /** when it was recorded, `4:07 PM` */
+  at: string;
+  /** the staff member who took it */
+  by: number | null;
 }
 
 export type QuestionnaireMode = 'now' | 'email' | 'onsite';
