@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { errorMessage } from "@/lib/workshop/store"
 
 /** Add / rename a service group. Enter submits. */
 export function GroupDialog({
@@ -25,7 +26,7 @@ export function GroupDialog({
   onOpenChange: (open: boolean) => void
   /** Existing group name when renaming, null when adding. */
   initialName: string | null
-  onSubmit: (name: string) => void
+  onSubmit: (name: string) => Promise<void>
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -48,14 +49,24 @@ function GroupForm({
 }: {
   initialName: string | null
   onCancel: () => void
-  onSubmit: (name: string) => void
+  onSubmit: (name: string) => Promise<void>
 }) {
   const [name, setName] = React.useState(initialName ?? "")
+  const [saving, setSaving] = React.useState(false)
+  const [error, setError] = React.useState<string | null>(null)
 
-  const canSave = name.trim().length > 0
-  const submit = () => {
+  const canSave = name.trim().length > 0 && !saving
+  const submit = async () => {
     if (!canSave) return
-    onSubmit(name.trim())
+    setSaving(true)
+    setError(null)
+    try {
+      await onSubmit(name.trim())
+    } catch (cause) {
+      setError(errorMessage(cause))
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -75,17 +86,18 @@ function GroupForm({
           onKeyDown={(event) => {
             if (event.key === "Enter") {
               event.preventDefault()
-              submit()
+              void submit()
             }
           }}
         />
+        {error ? <p className="text-[13px] text-destructive">{error}</p> : null}
       </div>
       <DialogFooter>
-        <Button variant="outline" onClick={onCancel}>
+        <Button variant="outline" disabled={saving} onClick={onCancel}>
           Cancel
         </Button>
         <Button disabled={!canSave} onClick={submit}>
-          {initialName === null ? "Create" : "Save changes"}
+          {saving ? "Saving…" : initialName === null ? "Create" : "Save changes"}
         </Button>
       </DialogFooter>
     </>

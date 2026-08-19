@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { FIELD_TYPE_LABELS, uid } from "@/lib/workshop/data"
+import { FIELD_TYPE_LABELS, localId } from "@/lib/workshop/data"
 import type { FieldType, RequiredField, SelectMode } from "@/lib/workshop/types"
 
 /**
@@ -29,15 +29,15 @@ export function RequiredFieldsEditor({
   onChange: (fields: RequiredField[]) => void
   emptyMessage?: string
 }) {
-  const update = (id: string, patch: Partial<RequiredField>) =>
-    onChange(fields.map((field) => (field.id === id ? { ...field, ...patch } : field)))
+  const update = (key: string, patch: Partial<RequiredField>) =>
+    onChange(fields.map((field) => (field.key === key ? { ...field, ...patch } : field)))
 
   const setType = (field: RequiredField, type: FieldType) => {
     const options =
       type === "options" && field.options.length === 0
-        ? [{ id: uid("o"), value: "" }]
+        ? [{ key: localId("option"), value: "" }]
         : field.options
-    update(field.id, { type, options })
+    update(field.key, { type, options })
   }
 
   if (fields.length === 0) {
@@ -51,17 +51,17 @@ export function RequiredFieldsEditor({
   return (
     <div className="flex flex-col gap-3">
       {fields.map((field) => (
-        <div key={field.id} className="rounded-md border p-3">
+        <div key={field.key} className="rounded-md border p-3">
           <div className="flex items-start gap-2">
             <div className="flex-1">
-              <Label htmlFor={"label-" + field.id} className="sr-only">
+              <Label htmlFor={"label-" + field.key} className="sr-only">
                 Field label
               </Label>
               <Input
-                id={"label-" + field.id}
+                id={"label-" + field.key}
                 value={field.label}
                 placeholder="Field label (e.g. Rider weight)"
-                onChange={(event) => update(field.id, { label: event.target.value })}
+                onChange={(event) => update(field.key, { label: event.target.value })}
               />
             </div>
             <Select
@@ -85,7 +85,7 @@ export function RequiredFieldsEditor({
               size="icon"
               aria-label="Remove field"
               className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-              onClick={() => onChange(fields.filter((f) => f.id !== field.id))}
+              onClick={() => onChange(fields.filter((f) => f.key !== field.key))}
             >
               <Trash2Icon />
             </Button>
@@ -97,7 +97,7 @@ export function RequiredFieldsEditor({
                 <span className="text-[12.5px] text-muted-foreground">Customer can select:</span>
                 <Tabs
                   value={field.selectMode}
-                  onValueChange={(value) => update(field.id, { selectMode: value as SelectMode })}
+                  onValueChange={(value) => update(field.key, { selectMode: value as SelectMode })}
                 >
                   <TabsList className="h-8 bg-background">
                     <TabsTrigger value="single" className="text-xs">
@@ -111,7 +111,7 @@ export function RequiredFieldsEditor({
               </div>
 
               {field.options.map((option) => (
-                <div key={option.id} className="flex items-center gap-2">
+                <div key={option.key} className="flex items-center gap-2">
                   <span className="text-muted-foreground/60">
                     {field.selectMode === "multi" ? (
                       <SquareIcon className="size-4" />
@@ -125,9 +125,9 @@ export function RequiredFieldsEditor({
                     aria-label="Option label"
                     className="h-8 bg-background"
                     onChange={(event) =>
-                      update(field.id, {
+                      update(field.key, {
                         options: field.options.map((o) =>
-                          o.id === option.id ? { ...o, value: event.target.value } : o,
+                          o.key === option.key ? { ...o, value: event.target.value } : o,
                         ),
                       })
                     }
@@ -139,8 +139,8 @@ export function RequiredFieldsEditor({
                     className="size-8 text-muted-foreground hover:text-destructive"
                     aria-label="Remove option"
                     onClick={() =>
-                      update(field.id, {
-                        options: field.options.filter((o) => o.id !== option.id),
+                      update(field.key, {
+                        options: field.options.filter((o) => o.key !== option.key),
                       })
                     }
                   >
@@ -155,8 +155,8 @@ export function RequiredFieldsEditor({
                 size="sm"
                 className="self-start bg-background"
                 onClick={() =>
-                  update(field.id, {
-                    options: [...field.options, { id: uid("o"), value: "" }],
+                  update(field.key, {
+                    options: [...field.options, { key: localId("option"), value: "" }],
                   })
                 }
               >

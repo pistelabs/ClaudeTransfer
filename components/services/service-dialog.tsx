@@ -33,20 +33,27 @@ import { SelectableTile } from "@/components/services/selectable-tile"
 import {
   SERVICE_COLORS,
   STANDARD_ENTRIES,
+  emptyServiceInput,
   makeRequiredField,
-  makeService,
 } from "@/lib/workshop/data"
 import { useWorkshop } from "@/lib/workshop/store"
-import type { DurationUnit, PricingType, Service } from "@/lib/workshop/types"
+import type {
+  DurationUnit,
+  Id,
+  PricingType,
+  Service,
+  ServiceInput,
+  StandardEntryCode,
+} from "@/lib/workshop/types"
 import { cn } from "@/lib/utils"
 
 /** Draft copy of the service being edited — Save commits it, Cancel discards. */
-interface Draft extends Omit<Service, "price" | "duration"> {
+interface Draft extends Omit<ServiceInput, "price" | "duration"> {
   price: string
   duration: string
 }
 
-function toDraft(service: Service): Draft {
+function toDraft(service: ServiceInput): Draft {
   return {
     ...structuredClone(service),
     price: service.price ? String(service.price) : "",
@@ -64,7 +71,8 @@ export function ServiceDialog({
   onOpenChange: (open: boolean) => void
   /** Existing service to edit, or null to add a new one. */
   service: Service | null
-  onSave: (service: Service) => void
+  /** Persists the service; the dialog stays open and shows the error if it rejects. */
+  onSave: (input: ServiceInput) => Promise<void>
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -86,33 +94,49 @@ function ServiceForm({
 }: {
   service: Service | null
   onCancel: () => void
-  onSave: (service: Service) => void
+  onSave: (input: ServiceInput) => Promise<void>
 }) {
   const { enabledEquipmentTypes, currencySymbol } = useWorkshop()
-  const [draft, setDraft] = React.useState<Draft>(() => toDraft(service ?? makeService()))
+  const [draft, setDraft] = React.useState<Draft>(() => toDraft(service ?? emptyServiceInput()))
+  const [saving, setSaving] = React.useState(false)
 
   const set = <K extends keyof Draft>(key: K, value: Draft[K]) =>
     setDraft((current) => ({ ...current, [key]: value }))
 
-  const toggleRecord = (key: "equipmentTypes" | "standardEntries", name: string) =>
+  const toggleEquipmentType = (id: Id) =>
     setDraft((current) => ({
       ...current,
-      [key]: { ...current[key], [name]: !current[key][name] },
+      equipmentTypeIds: current.equipmentTypeIds.includes(id)
+        ? current.equipmentTypeIds.filter((current) => current !== id)
+        : [...current.equipmentTypeIds, id],
     }))
 
-  const canSave = draft.name.trim().length > 0
+  const toggleStandardEntry = (code: StandardEntryCode) =>
+    setDraft((current) => ({
+      ...current,
+      standardEntries: current.standardEntries.includes(code)
+        ? current.standardEntries.filter((entry) => entry !== code)
+        : [...current.standardEntries, code],
+    }))
 
-  const handleSave = () => {
+  const canSave = draft.name.trim().length > 0 && !saving
+
+  const handleSave = async () => {
     if (!canSave) return
-    onSave({
-      ...draft,
-      name: draft.name.trim(),
-      description: draft.description.trim(),
-      price: parseFloat(draft.price) || 0,
-      duration: parseInt(draft.duration, 10) || 0,
-      terms: draft.terms.trim(),
-      releaseTerms: draft.releaseTerms.trim(),
-    })
+    setSaving(true)
+    try {
+      await onSave({
+        ...draft,
+        name: draft.name.trim(),
+        description: draft.description.trim(),
+        price: parseFloat(draft.price) || 0,
+        duration: parseInt(draft.duration, 10) || 0,
+        terms: draft.terms.trim(),
+        releaseTerms: draft.releaseTerms.trim(),
+      })
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -288,18 +312,25 @@ function ServiceForm({
         <section className="flex flex-col gap-4 py-6">
           <SectionLabel>Equipment types</SectionLabel>
           <div className="grid gap-2.5 sm:grid-cols-2">
-            {enabledEquipmentTypes.map((name) => (
+            {enabledEquipmentTypes.map((equipmentType) => (
               <SelectableTile
-                key={name}
-                label={name}
-                selected={!!draft.equipmentTypes[name]}
-                onSelect={() => toggleRecord("equipmentTypes", name)}
+                key={equipmentType.id}
+                label={equipmentType.name}
+                selected={draft.equipmentTypeIds.includes(equipmentType.id)}
+                onSelect={() => toggleEquipmentType(equipmentType.id)}
               />
             ))}
           </div>
-          <p className="text-xs text-muted-foreground">
-            Only equipment types enabled under Equipment Types can be assigned here.
-          </p>
+          {enabledEquipmentTypes.length === 0 ? (
+            <p className="rounded-md border border-dashed px-4 py-6 text-center text-[13px] text-muted-foreground">
+              No equipment types are enabled yet. Enable them under Equipment Types to assign them
+              here.
+            </p>
+          ) : (
+            <p className="text-xs text-muted-foreground">
+              Only equipment types enabled under Equipment Types can be assigned here.
+            </p>
+          )}
         </section>
 
         <Separator />
@@ -334,11 +365,11 @@ function ServiceForm({
             <div className="grid gap-2.5 sm:grid-cols-2">
               {STANDARD_ENTRIES.map((entry) => (
                 <SelectableTile
-                  key={entry.name}
+                  key={entry.code}
                   label={entry.name}
                   hint={entry.hint}
-                  selected={!!draft.standardEntries[entry.name]}
-                  onSelect={() => toggleRecord("standardEntries", entry.name)}
+                  selected={draft.standardEntries.includes(entry.code)}
+                  onSelect={() => toggleStandardEntry(entry.code)}
                   className="bg-background"
                 />
               ))}
@@ -429,11 +460,11 @@ function ServiceForm({
       </div>
 
       <DialogFooter className="border-t px-6 py-4">
-        <Button type="button" variant="outline" onClick={onCancel}>
+        <Button type="button" variant="outline" disabled={saving} onClick={onCancel}>
           Cancel
         </Button>
         <Button type="button" disabled={!canSave} onClick={handleSave}>
-          {service ? "Save changes" : "Add service"}
+          {saving ? "Saving…" : service ? "Save changes" : "Add service"}
         </Button>
       </DialogFooter>
     </>

@@ -16,6 +16,7 @@ export function ConfirmDeleteDialog({
   title,
   description,
   confirmLabel = "Delete",
+  pending = false,
   onConfirm,
 }: {
   open: boolean
@@ -23,6 +24,8 @@ export function ConfirmDeleteDialog({
   title: string
   description: string
   confirmLabel?: string
+  /** True while the delete request is in flight. */
+  pending?: boolean
   onConfirm: () => void
 }) {
   return (
@@ -33,11 +36,11 @@ export function ConfirmDeleteDialog({
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" disabled={pending} onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button variant="destructive" onClick={onConfirm}>
-            {confirmLabel}
+          <Button variant="destructive" disabled={pending} onClick={onConfirm}>
+            {pending ? "Deleting…" : confirmLabel}
           </Button>
         </DialogFooter>
       </DialogContent>

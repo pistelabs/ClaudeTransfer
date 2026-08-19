@@ -2,105 +2,138 @@
 
 import * as React from "react"
 
-import {
-  DEFAULT_EQUIPMENT_TYPES,
-  DEFAULT_GENERAL,
-  DEFAULT_SERVICE_GROUPS,
-  EQUIPMENT_TYPES,
-  CURRENCY_SYMBOLS,
-  uid,
-} from "./data"
-import type { GeneralSettings, Service, ServiceGroup } from "./types"
+import { djangoWorkshopApi } from "@/lib/api/django-workshop-api"
+import { ApiError, isApiConfigured } from "@/lib/api/http"
+import { mockWorkshopApi } from "@/lib/api/mock-workshop-api"
+import type { WorkshopApi } from "@/lib/api/workshop-api"
+import { byPosition, CURRENCY_SYMBOLS, DEFAULT_GENERAL } from "./data"
+import type { EquipmentType, Id, Service, ServiceGroup, ServiceInput } from "./types"
 
-interface WorkshopState {
-  general: GeneralSettings
-  equipmentTypes: Record<string, boolean>
+/** Django when NEXT_PUBLIC_API_BASE_URL is set, otherwise the in-memory stand-in. */
+const api: WorkshopApi = isApiConfigured ? djangoWorkshopApi : mockWorkshopApi
+
+type Status = "loading" | "ready" | "error"
+
+interface WorkshopContextValue {
+  status: Status
+  error: string | null
+  reload: () => void
+  /** True while running against the in-memory stand-in rather than Django. */
+  usingMockApi: boolean
+
+  equipmentTypes: EquipmentType[]
+  /** Equipment types the workshop offers — the only ones assignable to a service. */
+  enabledEquipmentTypes: EquipmentType[]
   serviceGroups: ServiceGroup[]
-}
-
-interface WorkshopContextValue extends WorkshopState {
   currencySymbol: string
-  /** Equipment types enabled under the Equipment Types section, in canonical order. */
-  enabledEquipmentTypes: string[]
-  addServiceGroup: (name: string) => string
-  renameServiceGroup: (groupId: string, name: string) => void
-  deleteServiceGroup: (groupId: string) => void
-  saveService: (groupId: string, service: Service) => void
-  deleteService: (groupId: string, serviceId: string) => void
-  duplicateService: (groupId: string, serviceId: string) => void
-  toggleServiceVisibility: (groupId: string, serviceId: string) => void
+
+  createServiceGroup: (name: string) => Promise<ServiceGroup>
+  renameServiceGroup: (groupId: Id, name: string) => Promise<void>
+  deleteServiceGroup: (groupId: Id) => Promise<void>
+  createService: (groupId: Id, input: ServiceInput) => Promise<Service>
+  updateService: (serviceId: Id, groupId: Id, input: ServiceInput) => Promise<Service>
+  deleteService: (groupId: Id, serviceId: Id) => Promise<void>
 }
 
 const WorkshopContext = React.createContext<WorkshopContextValue | null>(null)
 
+export function errorMessage(error: unknown) {
+  if (error instanceof ApiError) return error.message
+  if (error instanceof Error) return error.message
+  return "Something went wrong"
+}
+
 export function WorkshopProvider({ children }: { children: React.ReactNode }) {
-  const [general] = React.useState<GeneralSettings>(DEFAULT_GENERAL)
-  const [equipmentTypes] = React.useState<Record<string, boolean>>(DEFAULT_EQUIPMENT_TYPES)
-  const [serviceGroups, setServiceGroups] = React.useState<ServiceGroup[]>(DEFAULT_SERVICE_GROUPS)
+  const [status, setStatus] = React.useState<Status>("loading")
+  const [error, setError] = React.useState<string | null>(null)
+  const [equipmentTypes, setEquipmentTypes] = React.useState<EquipmentType[]>([])
+  const [serviceGroups, setServiceGroups] = React.useState<ServiceGroup[]>([])
+  const [reloadToken, setReloadToken] = React.useState(0)
+
+  // Loads equipment types and service groups; re-runs when reload() bumps the token.
+  React.useEffect(() => {
+    let cancelled = false
+
+    Promise.all([api.listEquipmentTypes(), api.listServiceGroups()])
+      .then(([types, groups]) => {
+        if (cancelled) return
+        setEquipmentTypes(types)
+        setServiceGroups(groups)
+        setStatus("ready")
+      })
+      .catch((cause) => {
+        if (cancelled) return
+        setError(errorMessage(cause))
+        setStatus("error")
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [reloadToken])
 
   const value = React.useMemo<WorkshopContextValue>(() => {
-    const enabled = EQUIPMENT_TYPES.filter((name) => equipmentTypes[name])
-
-    const mapGroup = (groupId: string, fn: (group: ServiceGroup) => ServiceGroup) =>
+    const replaceGroup = (groupId: Id, fn: (group: ServiceGroup) => ServiceGroup) =>
       setServiceGroups((groups) => groups.map((g) => (g.id === groupId ? fn(g) : g)))
 
     return {
-      general,
-      equipmentTypes,
-      serviceGroups,
-      currencySymbol: CURRENCY_SYMBOLS[general.currency],
-      enabledEquipmentTypes: enabled.length ? [...enabled] : [...EQUIPMENT_TYPES],
+      status,
+      error,
+      usingMockApi: !isApiConfigured,
+      reload: () => {
+        setStatus("loading")
+        setError(null)
+        setReloadToken((token) => token + 1)
+      },
 
-      addServiceGroup(name) {
-        const id = uid("g")
-        setServiceGroups((groups) => [...groups, { id, name, services: [] }])
-        return id
+      equipmentTypes,
+      enabledEquipmentTypes: equipmentTypes.filter((type) => type.enabled),
+      serviceGroups,
+      currencySymbol: CURRENCY_SYMBOLS[DEFAULT_GENERAL.currency],
+
+      async createServiceGroup(name) {
+        const group = await api.createServiceGroup(name)
+        setServiceGroups((groups) => [...groups, group].sort(byPosition))
+        return group
       },
-      renameServiceGroup(groupId, name) {
-        mapGroup(groupId, (group) => ({ ...group, name }))
+
+      async renameServiceGroup(groupId, name) {
+        const group = await api.updateServiceGroup(groupId, name)
+        replaceGroup(groupId, (current) => ({ ...current, name: group.name }))
       },
-      deleteServiceGroup(groupId) {
-        setServiceGroups((groups) => groups.filter((g) => g.id !== groupId))
+
+      async deleteServiceGroup(groupId) {
+        await api.deleteServiceGroup(groupId)
+        setServiceGroups((groups) => groups.filter((group) => group.id !== groupId))
       },
-      saveService(groupId, service) {
-        mapGroup(groupId, (group) => ({
+
+      async createService(groupId, input) {
+        const service = await api.createService(groupId, input)
+        replaceGroup(groupId, (group) => ({
           ...group,
-          services: group.services.some((s) => s.id === service.id)
-            ? group.services.map((s) => (s.id === service.id ? service : s))
-            : [...group.services, service],
+          services: [...group.services, service].sort(byPosition),
         }))
+        return service
       },
-      deleteService(groupId, serviceId) {
-        mapGroup(groupId, (group) => ({
+
+      async updateService(serviceId, groupId, input) {
+        const service = await api.updateService(serviceId, groupId, input)
+        replaceGroup(groupId, (group) => ({
           ...group,
-          services: group.services.filter((s) => s.id !== serviceId),
+          services: group.services.map((current) => (current.id === serviceId ? service : current)),
         }))
+        return service
       },
-      duplicateService(groupId, serviceId) {
-        mapGroup(groupId, (group) => {
-          const index = group.services.findIndex((s) => s.id === serviceId)
-          if (index === -1) return group
-          const original = group.services[index]
-          const copy: Service = {
-            ...structuredClone(original),
-            id: uid("s"),
-            name: original.name + " (copy)",
-          }
-          const services = [...group.services]
-          services.splice(index + 1, 0, copy)
-          return { ...group, services }
-        })
-      },
-      toggleServiceVisibility(groupId, serviceId) {
-        mapGroup(groupId, (group) => ({
+
+      async deleteService(groupId, serviceId) {
+        await api.deleteService(serviceId)
+        replaceGroup(groupId, (group) => ({
           ...group,
-          services: group.services.map((s) =>
-            s.id === serviceId ? { ...s, disabled: !s.disabled } : s,
-          ),
+          services: group.services.filter((service) => service.id !== serviceId),
         }))
       },
     }
-  }, [general, equipmentTypes, serviceGroups])
+  }, [status, error, equipmentTypes, serviceGroups])
 
   return <WorkshopContext.Provider value={value}>{children}</WorkshopContext.Provider>
 }

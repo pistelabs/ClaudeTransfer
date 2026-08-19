@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils"
 export function ServiceRow({
   service,
   currencySymbol,
+  busy = false,
   onEdit,
   onDuplicate,
   onDelete,
@@ -21,6 +22,8 @@ export function ServiceRow({
 }: {
   service: Service
   currencySymbol: string
+  /** True while a request for this service is in flight. */
+  busy?: boolean
   onEdit: () => void
   onDuplicate: () => void
   onDelete: () => void
@@ -45,7 +48,11 @@ export function ServiceRow({
               {service.name}
             </span>
             {service.pricingType === "quoted" ? <Badge variant="outline">Quoted</Badge> : null}
-            {service.disabled ? <Badge variant="secondary">Hidden</Badge> : null}
+            {service.disabled ? (
+              <Badge variant="outline" className="text-muted-foreground">
+                Hidden
+              </Badge>
+            ) : null}
           </div>
           <div className="mt-0.5 flex min-w-0 items-center gap-2.5 text-xs text-muted-foreground">
             {duration ? (
@@ -76,6 +83,7 @@ export function ServiceRow({
             <span className="inline-flex">
               <Switch
                 checked={!service.disabled}
+                disabled={busy}
                 onCheckedChange={onToggleVisibility}
                 aria-label={service.disabled ? "Show service" : "Hide service"}
               />
@@ -101,6 +109,7 @@ export function ServiceRow({
               variant="ghost"
               size="icon"
               aria-label="Duplicate service"
+              disabled={busy}
               onClick={onDuplicate}
             >
               <CopyIcon />
@@ -116,6 +125,7 @@ export function ServiceRow({
               size="icon"
               aria-label="Delete service"
               className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+              disabled={busy}
               onClick={onDelete}
             >
               <Trash2Icon />

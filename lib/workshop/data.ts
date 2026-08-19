@@ -1,24 +1,10 @@
-import type { GeneralSettings, RequiredField, Service, ServiceGroup } from "./types"
-
-/** The fixed list of equipment types a workshop can enable (Equipment Types section). */
-export const EQUIPMENT_TYPES = [
-  "Alpine Ski",
-  "Touring Ski",
-  "Race Ski",
-  "Snowboard",
-  "Powder Board",
-  "Splitboard",
-  "Kids Ski",
-  "Kids Board",
-  "Mountain Bike",
-  "Road Bike",
-  "Electric Bike",
-  "Kids Bike",
-  "Alpine Ski Boots",
-  "Touring Ski Boots",
-  "Snowboard Boots",
-  "Other",
-] as const
+import type {
+  GeneralSettings,
+  RequiredField,
+  Service,
+  ServiceInput,
+  StandardEntryCode,
+} from "./types"
 
 /** Kanban column / calendar job colours. */
 export const SERVICE_COLORS = [
@@ -38,10 +24,10 @@ export const SERVICE_COLORS = [
 ] as const
 
 /** Built-in, pre-formatted capture forms offered in the Required information section. */
-export const STANDARD_ENTRIES = [
-  { name: "DIN", hint: "Binding release setting" },
-  { name: "Snowboard Stance", hint: "Width, angles and setback" },
-] as const
+export const STANDARD_ENTRIES: Array<{ code: StandardEntryCode; name: string; hint: string }> = [
+  { code: "din", name: "DIN", hint: "Binding release setting" },
+  { code: "snowboard_stance", name: "Snowboard Stance", hint: "Width, angles and setback" },
+]
 
 export const CURRENCY_SYMBOLS: Record<GeneralSettings["currency"], string> = {
   CHF: "CHF ",
@@ -56,13 +42,20 @@ export const FIELD_TYPE_LABELS: Record<RequiredField["type"], string> = {
   file: "File upload",
 }
 
-export function uid(prefix: string) {
-  return prefix + Math.random().toString(36).slice(2, 9)
+/** Groups and services are ordered by the position the backend assigns. */
+export function byPosition<T extends { position: number; id: string }>(a: T, b: T) {
+  return a.position - b.position || Number(a.id) - Number(b.id)
 }
 
-export function makeService(overrides: Partial<Service> = {}): Service {
+let localSeed = 0
+/** Client-side id for unsaved rows; the database assigns the real one on save. */
+export function localId(prefix: string) {
+  localSeed += 1
+  return prefix + "-local-" + localSeed
+}
+
+export function emptyServiceInput(): ServiceInput {
   return {
-    id: uid("s"),
     name: "",
     description: "",
     color: SERVICE_COLORS[0],
@@ -71,8 +64,8 @@ export function makeService(overrides: Partial<Service> = {}): Service {
     duration: 0,
     durationUnit: "min",
     allowMultiples: false,
-    equipmentTypes: {},
-    standardEntries: {},
+    equipmentTypeIds: [],
+    standardEntries: [],
     requiredInfo: [],
     signatureRequired: false,
     terms: "",
@@ -85,24 +78,36 @@ export function makeService(overrides: Partial<Service> = {}): Service {
     docketCount: 1,
     barcodeOnDocket: true,
     disabled: false,
-    ...overrides,
   }
 }
 
-export function makeRequiredField(): RequiredField {
-  return { id: uid("f"), label: "", type: "free", selectMode: "single", options: [] }
+/** The editable half of a saved service — what create/update send back. */
+export function toServiceInput(service: Service): ServiceInput {
+  const { id, groupId, position, ...input } = service
+  void id
+  void groupId
+  void position
+  return structuredClone(input)
 }
 
-export function formatPrice(service: Service, symbol: string) {
+export function makeRequiredField(): RequiredField {
+  return { key: localId("field"), label: "", type: "free", selectMode: "single", options: [] }
+}
+
+export function formatPrice(service: Pick<ServiceInput, "price" | "pricingType">, symbol: string) {
   const amount = symbol + Number(service.price || 0).toFixed(2)
   return service.pricingType === "quoted" ? "From " + amount : amount
 }
 
-export function formatDuration(service: Service) {
+export function formatDuration(service: Pick<ServiceInput, "duration" | "durationUnit">) {
   if (!service.duration) return ""
   return service.durationUnit === "hr" ? service.duration + " h" : service.duration + " min"
 }
 
+/**
+ * General settings still live in the client until the General section is wired
+ * to Django; the currency drives the price formatting shown here.
+ */
 export const DEFAULT_GENERAL: GeneralSettings = {
   name: "Alpine Werks",
   email: "hello@alpinewerks.com",
@@ -112,39 +117,3 @@ export const DEFAULT_GENERAL: GeneralSettings = {
   currency: "CHF",
   dateFormat: "DD/MM/YYYY",
 }
-
-export const DEFAULT_EQUIPMENT_TYPES: Record<string, boolean> = {
-  "Alpine Ski": true,
-  "Touring Ski": true,
-  Snowboard: true,
-  "Alpine Ski Boots": true,
-  "Snowboard Boots": true,
-}
-
-export const DEFAULT_SERVICE_GROUPS: ServiceGroup[] = [
-  {
-    id: "g1",
-    name: "Standard tunes",
-    services: [
-      makeService({
-        id: "s1",
-        name: "Full Tune",
-        description: "Base grind, edge sharpen, hot wax",
-        price: 170,
-        color: "#3b82f6",
-        duration: 45,
-        equipmentTypes: { "Alpine Ski": true, "Touring Ski": true },
-      }),
-      makeService({
-        id: "s2",
-        name: "Hot Wax",
-        price: 40,
-        color: "#22c55e",
-        duration: 15,
-        equipmentTypes: { "Alpine Ski": true, Snowboard: true },
-      }),
-    ],
-  },
-  { id: "g2", name: "Bootwork", services: [] },
-  { id: "g3", name: "Extras", services: [] },
-]

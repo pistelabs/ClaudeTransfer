@@ -1,24 +1,41 @@
+/** Primary keys arrive from Django as integers; the UI keeps them as strings. */
+export type Id = string
+
 export type FieldType = "free" | "options" | "file"
 export type SelectMode = "single" | "multi"
 export type PricingType = "fixed" | "quoted"
 export type DurationUnit = "min" | "hr"
+/** Built-in capture forms, stored on the service as codes. */
+export type StandardEntryCode = "din" | "snowboard_stance"
+
+export interface EquipmentType {
+  id: Id
+  name: string
+  /** Whether the workshop offers this type (toggled in the Equipment Types section). */
+  enabled: boolean
+}
 
 export interface FieldOption {
-  id: string
+  /** Absent until the option has been saved. */
+  id?: Id
+  /** Stable React key while the option is unsaved. */
+  key: string
   value: string
 }
 
-/** A single repeatable "required information" field on a service or appointment. */
+/** A single repeatable "required information" field on a service. */
 export interface RequiredField {
-  id: string
+  id?: Id
+  /** Stable key for React while the field is unsaved. */
+  key: string
   label: string
   type: FieldType
   selectMode: SelectMode
   options: FieldOption[]
 }
 
-export interface Service {
-  id: string
+/** Everything the service editor can change — the write payload, minus the id. */
+export interface ServiceInput {
   name: string
   description: string
   color: string
@@ -27,8 +44,8 @@ export interface Service {
   duration: number
   durationUnit: DurationUnit
   allowMultiples: boolean
-  equipmentTypes: Record<string, boolean>
-  standardEntries: Record<string, boolean>
+  equipmentTypeIds: Id[]
+  standardEntries: StandardEntryCode[]
   requiredInfo: RequiredField[]
   /** Check-in waiver */
   signatureRequired: boolean
@@ -47,9 +64,16 @@ export interface Service {
   disabled: boolean
 }
 
+export interface Service extends ServiceInput {
+  id: Id
+  groupId: Id
+  position: number
+}
+
 export interface ServiceGroup {
-  id: string
+  id: Id
   name: string
+  position: number
   services: Service[]
 }
 
