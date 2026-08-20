@@ -1,6 +1,20 @@
 import { apiRequest, unwrapList } from "./http"
-import type { EquipmentTypeDto, ServiceDto, ServiceGroupDto } from "./dto"
-import { fromServiceInput, toEquipmentType, toService, toServiceGroup } from "./serializers"
+import type {
+  AppointmentDto,
+  AppointmentGroupDto,
+  EquipmentTypeDto,
+  ServiceDto,
+  ServiceGroupDto,
+} from "./dto"
+import {
+  fromAppointmentInput,
+  fromServiceInput,
+  toAppointment,
+  toAppointmentGroup,
+  toEquipmentType,
+  toService,
+  toServiceGroup,
+} from "./serializers"
 import type { WorkshopApi } from "./workshop-api"
 
 /** Endpoints are documented in docs/django-api.md. */
@@ -63,5 +77,58 @@ export const djangoWorkshopApi: WorkshopApi = {
 
   async deleteService(id) {
     await apiRequest<void>("/services/" + id + "/", { method: "DELETE" })
+  },
+
+  async listAppointmentGroups() {
+    const body = await apiRequest<AppointmentGroupDto[] | { results: AppointmentGroupDto[] }>(
+      "/appointment-groups/",
+    )
+    return unwrapList(body)
+      .map(toAppointmentGroup)
+      .map((group) => ({
+        ...group,
+        appointments: [...group.appointments].sort((a, b) => a.position - b.position),
+      }))
+      .sort((a, b) => a.position - b.position)
+  },
+
+  async createAppointmentGroup(name) {
+    const dto = await apiRequest<AppointmentGroupDto>("/appointment-groups/", {
+      method: "POST",
+      json: { name },
+    })
+    return toAppointmentGroup(dto)
+  },
+
+  async updateAppointmentGroup(id, name) {
+    const dto = await apiRequest<AppointmentGroupDto>("/appointment-groups/" + id + "/", {
+      method: "PATCH",
+      json: { name },
+    })
+    return toAppointmentGroup(dto)
+  },
+
+  async deleteAppointmentGroup(id) {
+    await apiRequest<void>("/appointment-groups/" + id + "/", { method: "DELETE" })
+  },
+
+  async createAppointment(groupId, input) {
+    const dto = await apiRequest<AppointmentDto>("/appointments/", {
+      method: "POST",
+      json: fromAppointmentInput(groupId, input),
+    })
+    return toAppointment(dto)
+  },
+
+  async updateAppointment(id, groupId, input) {
+    const dto = await apiRequest<AppointmentDto>("/appointments/" + id + "/", {
+      method: "PUT",
+      json: fromAppointmentInput(groupId, input),
+    })
+    return toAppointment(dto)
+  },
+
+  async deleteAppointment(id) {
+    await apiRequest<void>("/appointments/" + id + "/", { method: "DELETE" })
   },
 }

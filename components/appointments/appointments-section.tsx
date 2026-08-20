@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { PencilIcon, PlusIcon, Trash2Icon, WrenchIcon } from "lucide-react"
+import { CalendarIcon, PencilIcon, PlusIcon, Trash2Icon } from "lucide-react"
 import { toast } from "sonner"
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
@@ -18,72 +18,73 @@ import {
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { AppointmentDialog } from "@/components/appointments/appointment-dialog"
+import { AppointmentRow } from "@/components/appointments/appointment-row"
 import { ConfirmDeleteDialog } from "@/components/workshop/confirm-delete-dialog"
 import { GroupDialog } from "@/components/workshop/group-dialog"
-import { ServiceDialog } from "@/components/services/service-dialog"
-import { ServiceRow } from "@/components/services/service-row"
-import { toServiceInput } from "@/lib/workshop/data"
+import { toAppointmentInput } from "@/lib/workshop/data"
 import { errorMessage, useWorkshop } from "@/lib/workshop/store"
-import type { Id, Service, ServiceInput } from "@/lib/workshop/types"
+import type { Appointment, AppointmentInput, Id } from "@/lib/workshop/types"
 
 type GroupDialogState = { open: boolean; mode: "add" | "rename" }
-type ServiceDialogState = { open: boolean; service: Service | null }
+type AppointmentDialogState = { open: boolean; appointment: Appointment | null }
 type DeleteState =
-  { open: boolean; kind: "group" } | { open: boolean; kind: "service"; service: Service }
+  | { open: boolean; kind: "group" }
+  | { open: boolean; kind: "appointment"; appointment: Appointment }
 
-export function ServicesSection() {
+export function AppointmentsSection() {
   const {
     status,
     error,
     reload,
     usingMockApi,
-    serviceGroups,
+    appointmentGroups,
     currencySymbol,
-    createServiceGroup,
-    renameServiceGroup,
-    deleteServiceGroup,
-    createService,
-    updateService,
-    deleteService,
+    createAppointmentGroup,
+    renameAppointmentGroup,
+    deleteAppointmentGroup,
+    createAppointment,
+    updateAppointment,
+    deleteAppointment,
   } = useWorkshop()
 
   const [activeGroupId, setActiveGroupId] = React.useState<Id>("")
-  // Falls back to the first group when nothing is selected or the selection was deleted.
-  const activeGroup = serviceGroups.find((group) => group.id === activeGroupId) ?? serviceGroups[0]
+  // Falls back to the first type when nothing is selected or the selection was deleted.
+  const activeGroup =
+    appointmentGroups.find((group) => group.id === activeGroupId) ?? appointmentGroups[0]
 
   const [groupDialog, setGroupDialog] = React.useState<GroupDialogState>({
     open: false,
     mode: "add",
   })
-  const [serviceDialog, setServiceDialog] = React.useState<ServiceDialogState>({
+  const [appointmentDialog, setAppointmentDialog] = React.useState<AppointmentDialogState>({
     open: false,
-    service: null,
+    appointment: null,
   })
   const [deleteState, setDeleteState] = React.useState<DeleteState | null>(null)
   const [deleting, setDeleting] = React.useState(false)
-  /** Ids of services with a request in flight, so their row actions stay disabled. */
-  const [busyServiceIds, setBusyServiceIds] = React.useState<Id[]>([])
+  /** Ids of appointments with a request in flight, so their row actions stay disabled. */
+  const [busyIds, setBusyIds] = React.useState<Id[]>([])
 
-  const withBusyService = async (serviceId: Id, run: () => Promise<void>) => {
-    setBusyServiceIds((ids) => [...ids, serviceId])
+  const withBusy = async (appointmentId: Id, run: () => Promise<void>) => {
+    setBusyIds((ids) => [...ids, appointmentId])
     try {
       await run()
     } catch (cause) {
       toast.error(errorMessage(cause))
     } finally {
-      setBusyServiceIds((ids) => ids.filter((id) => id !== serviceId))
+      setBusyIds((ids) => ids.filter((id) => id !== appointmentId))
     }
   }
 
-  const services = activeGroup?.services ?? []
+  const appointments = activeGroup?.appointments ?? []
 
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-xl font-semibold tracking-[-0.02em]">Services</h1>
+        <h1 className="text-xl font-semibold tracking-[-0.02em]">Appointments</h1>
         <p className="mt-1.5 text-sm text-muted-foreground">
-          Create service groups (e.g. Standard, Additional, Extras) and add the services customers
-          can book under each.
+          Create appointment types and add the appointments customers can book under each.
         </p>
       </div>
 
@@ -96,11 +97,11 @@ export function ServicesSection() {
         </Alert>
       ) : null}
 
-      {status === "loading" ? <ServicesSkeleton /> : null}
+      {status === "loading" ? <AppointmentsSkeleton /> : null}
 
       {status === "error" ? (
         <Alert variant="destructive">
-          <AlertTitle>Could not load services</AlertTitle>
+          <AlertTitle>Could not load appointments</AlertTitle>
           <AlertDescription>
             <p>{error}</p>
             <Button variant="outline" size="sm" className="mt-2" onClick={reload}>
@@ -112,16 +113,16 @@ export function ServicesSection() {
 
       {status === "ready" ? (
         <>
-          {/* Group selector */}
+          {/* Type selector */}
           <div className="flex flex-wrap items-center gap-2">
-            {serviceGroups.length ? (
+            {appointmentGroups.length ? (
               <Tabs value={activeGroup?.id ?? ""} onValueChange={setActiveGroupId}>
                 <TabsList>
-                  {serviceGroups.map((group) => (
+                  {appointmentGroups.map((group) => (
                     <TabsTrigger key={group.id} value={group.id} className="gap-2">
                       {group.name}
                       <Badge variant="secondary" className="px-1.5 tabular-nums">
-                        {group.services.length}
+                        {group.appointments.length}
                       </Badge>
                     </TabsTrigger>
                   ))}
@@ -130,7 +131,7 @@ export function ServicesSection() {
             ) : null}
             <Button variant="outline" onClick={() => setGroupDialog({ open: true, mode: "add" })}>
               <PlusIcon />
-              Add group
+              Add type
             </Button>
           </div>
 
@@ -140,12 +141,12 @@ export function ServicesSection() {
                 <div className="flex items-center gap-2.5">
                   <CardTitle className="text-base">{activeGroup.name}</CardTitle>
                   <Badge variant="secondary">
-                    {activeGroup.services.length}{" "}
-                    {activeGroup.services.length === 1 ? "service" : "services"}
+                    {activeGroup.appointments.length}{" "}
+                    {activeGroup.appointments.length === 1 ? "appointment" : "appointments"}
                   </Badge>
                 </div>
                 <CardDescription>
-                  Services available under &ldquo;{activeGroup.name}&rdquo;
+                  Appointments available under &ldquo;{activeGroup.name}&rdquo;
                 </CardDescription>
                 <CardAction className="flex items-center gap-1">
                   <Tooltip>
@@ -153,95 +154,97 @@ export function ServicesSection() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        aria-label="Rename group"
+                        aria-label="Rename type"
                         onClick={() => setGroupDialog({ open: true, mode: "rename" })}
                       >
                         <PencilIcon />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent>Rename group</TooltipContent>
+                    <TooltipContent>Rename type</TooltipContent>
                   </Tooltip>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
                         variant="ghost"
                         size="icon"
-                        aria-label="Delete group"
+                        aria-label="Delete type"
                         className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                         onClick={() => setDeleteState({ open: true, kind: "group" })}
                       >
                         <Trash2Icon />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent>Delete group</TooltipContent>
+                    <TooltipContent>Delete type</TooltipContent>
                   </Tooltip>
                 </CardAction>
               </CardHeader>
 
               <CardContent>
-                {/* Services sub-card */}
+                {/* Appointments sub-card */}
                 <div className="overflow-hidden rounded-lg border">
                   <div className="flex items-start justify-between gap-4 border-b bg-muted/50 px-5 py-4">
                     <div>
                       <div className="flex items-center gap-2">
-                        <h2 className="text-[15px] font-semibold">Services</h2>
-                        {services.length ? (
+                        <h2 className="text-[15px] font-semibold">Appointments</h2>
+                        {appointments.length ? (
                           <Badge variant="secondary" className="tabular-nums">
-                            {services.length}
+                            {appointments.length}
                           </Badge>
                         ) : null}
                       </div>
                       <p className="mt-0.5 text-[13px] text-muted-foreground">
-                        Shown to customers and staff when booking work in.
+                        Offered to customers when they book a slot.
                       </p>
                     </div>
-                    <Button onClick={() => setServiceDialog({ open: true, service: null })}>
+                    <Button onClick={() => setAppointmentDialog({ open: true, appointment: null })}>
                       <PlusIcon />
-                      Add service
+                      Add appointment
                     </Button>
                   </div>
 
-                  {services.length === 0 ? (
+                  {appointments.length === 0 ? (
                     <div className="px-6 py-11 text-center">
                       <div className="mx-auto mb-3 flex size-11 items-center justify-center rounded-md bg-muted text-muted-foreground">
-                        <WrenchIcon className="size-5" />
+                        <CalendarIcon className="size-5" />
                       </div>
-                      <div className="text-sm font-semibold">No services yet</div>
+                      <div className="text-sm font-semibold">No appointments yet</div>
                       <p className="mt-1 text-[13px] text-muted-foreground">
-                        Add your first service under this group.
+                        Add your first appointment under this type.
                       </p>
                       <Button
                         className="mt-4"
-                        onClick={() => setServiceDialog({ open: true, service: null })}
+                        onClick={() => setAppointmentDialog({ open: true, appointment: null })}
                       >
                         <PlusIcon />
-                        Add service
+                        Add appointment
                       </Button>
                     </div>
                   ) : (
                     <div className="flex flex-col">
-                      {services.map((service) => (
-                        <ServiceRow
-                          key={service.id}
-                          service={service}
+                      {appointments.map((appointment) => (
+                        <AppointmentRow
+                          key={appointment.id}
+                          appointment={appointment}
                           currencySymbol={currencySymbol}
-                          busy={busyServiceIds.includes(service.id)}
-                          onEdit={() => setServiceDialog({ open: true, service })}
+                          busy={busyIds.includes(appointment.id)}
+                          onEdit={() => setAppointmentDialog({ open: true, appointment })}
                           onDuplicate={() =>
-                            withBusyService(service.id, async () => {
-                              await createService(activeGroup.id, {
-                                ...toServiceInput(service),
-                                name: service.name + " (copy)",
+                            withBusy(appointment.id, async () => {
+                              await createAppointment(activeGroup.id, {
+                                ...toAppointmentInput(appointment),
+                                name: appointment.name + " (copy)",
                               })
-                              toast.success(service.name + " duplicated")
+                              toast.success(appointment.name + " duplicated")
                             })
                           }
-                          onDelete={() => setDeleteState({ open: true, kind: "service", service })}
+                          onDelete={() =>
+                            setDeleteState({ open: true, kind: "appointment", appointment })
+                          }
                           onToggleVisibility={() =>
-                            withBusyService(service.id, async () => {
-                              await updateService(service.id, activeGroup.id, {
-                                ...toServiceInput(service),
-                                disabled: !service.disabled,
+                            withBusy(appointment.id, async () => {
+                              await updateAppointment(appointment.id, activeGroup.id, {
+                                ...toAppointmentInput(appointment),
+                                disabled: !appointment.disabled,
                               })
                             })
                           }
@@ -256,18 +259,18 @@ export function ServicesSection() {
             <Card>
               <CardContent className="py-12 text-center">
                 <div className="mx-auto mb-3 flex size-11 items-center justify-center rounded-md bg-muted text-muted-foreground">
-                  <WrenchIcon className="size-5" />
+                  <CalendarIcon className="size-5" />
                 </div>
-                <div className="text-sm font-semibold">No service groups yet</div>
+                <div className="text-sm font-semibold">No appointment types yet</div>
                 <p className="mt-1 text-[13px] text-muted-foreground">
-                  Groups organise the services your workshop sells.
+                  Types organise the appointments customers can book.
                 </p>
                 <Button
                   className="mt-4"
                   onClick={() => setGroupDialog({ open: true, mode: "add" })}
                 >
                   <PlusIcon />
-                  Add group
+                  Add type
                 </Button>
               </CardContent>
             </Card>
@@ -279,34 +282,36 @@ export function ServicesSection() {
         open={groupDialog.open}
         onOpenChange={(open) => setGroupDialog((state) => ({ ...state, open }))}
         initialName={groupDialog.mode === "rename" ? (activeGroup?.name ?? "") : null}
+        nounSingular="type"
+        placeholder="e.g. Standard"
         onSubmit={async (name) => {
           if (groupDialog.mode === "add") {
-            const group = await createServiceGroup(name)
+            const group = await createAppointmentGroup(name)
             setActiveGroupId(group.id)
-            toast.success(name + " group created")
+            toast.success(name + " type created")
           } else if (activeGroup) {
-            await renameServiceGroup(activeGroup.id, name)
-            toast.success("Group renamed")
+            await renameAppointmentGroup(activeGroup.id, name)
+            toast.success("Type renamed")
           }
           setGroupDialog((state) => ({ ...state, open: false }))
         }}
       />
 
-      <ServiceDialog
-        open={serviceDialog.open}
-        onOpenChange={(open) => setServiceDialog((state) => ({ ...state, open }))}
-        service={serviceDialog.service}
-        onSave={async (input: ServiceInput) => {
+      <AppointmentDialog
+        open={appointmentDialog.open}
+        onOpenChange={(open) => setAppointmentDialog((state) => ({ ...state, open }))}
+        appointment={appointmentDialog.appointment}
+        onSave={async (input: AppointmentInput) => {
           if (!activeGroup) return
           try {
-            if (serviceDialog.service) {
-              await updateService(serviceDialog.service.id, activeGroup.id, input)
+            if (appointmentDialog.appointment) {
+              await updateAppointment(appointmentDialog.appointment.id, activeGroup.id, input)
               toast.success(input.name + " updated")
             } else {
-              await createService(activeGroup.id, input)
+              await createAppointment(activeGroup.id, input)
               toast.success(input.name + " added")
             }
-            setServiceDialog({ open: false, service: null })
+            setAppointmentDialog({ open: false, appointment: null })
           } catch (cause) {
             toast.error(errorMessage(cause))
           }
@@ -316,11 +321,11 @@ export function ServicesSection() {
       <ConfirmDeleteDialog
         open={!!deleteState?.open}
         onOpenChange={(open) => setDeleteState((state) => (state ? { ...state, open } : state))}
-        title={deleteState?.kind === "group" ? "Delete this group?" : "Delete this service?"}
+        title={deleteState?.kind === "group" ? "Delete this type?" : "Delete this appointment?"}
         description={
           deleteState?.kind === "group"
-            ? "The group and every service inside it will be removed. This cannot be undone."
-            : "The service will no longer be available to book. This cannot be undone."
+            ? "The type and every appointment inside it will be removed. This cannot be undone."
+            : "The appointment will no longer be available to book. This cannot be undone."
         }
         pending={deleting}
         onConfirm={async () => {
@@ -328,11 +333,11 @@ export function ServicesSection() {
           setDeleting(true)
           try {
             if (deleteState.kind === "group") {
-              await deleteServiceGroup(activeGroup.id)
-              toast.success("Group deleted")
+              await deleteAppointmentGroup(activeGroup.id)
+              toast.success("Type deleted")
             } else {
-              await deleteService(activeGroup.id, deleteState.service.id)
-              toast.success(deleteState.service.name + " deleted")
+              await deleteAppointment(activeGroup.id, deleteState.appointment.id)
+              toast.success(deleteState.appointment.name + " deleted")
             }
             setDeleteState(null)
           } catch (cause) {
@@ -346,7 +351,7 @@ export function ServicesSection() {
   )
 }
 
-function ServicesSkeleton() {
+function AppointmentsSkeleton() {
   return (
     <div className="flex flex-col gap-6">
       <Skeleton className="h-9 w-72" />

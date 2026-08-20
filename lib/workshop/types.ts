@@ -23,7 +23,7 @@ export interface FieldOption {
   value: string
 }
 
-/** A single repeatable "required information" field on a service. */
+/** A single repeatable "required information" field on a service or appointment. */
 export interface RequiredField {
   id?: Id
   /** Stable key for React while the field is unsaved. */
@@ -32,6 +32,8 @@ export interface RequiredField {
   type: FieldType
   selectMode: SelectMode
   options: FieldOption[]
+  /** Booking fields only: also ask this on the Customer information questionnaire. */
+  copyToCustomer?: boolean
 }
 
 /** Everything the service editor can change — the write payload, minus the id. */
@@ -59,7 +61,6 @@ export interface ServiceInput {
   releaseStaffSig: boolean
   /** Dockets */
   docketCount: number
-  barcodeOnDocket: boolean
   /** Hidden from booking when true */
   disabled: boolean
 }
@@ -85,4 +86,68 @@ export interface GeneralSettings {
   logo: string | null
   currency: "CHF" | "EUR" | "GBP" | "USD"
   dateFormat: "DD/MM/YYYY" | "MM/DD/YYYY" | "YYYY-MM-DD"
+}
+
+export type AppointmentMode = "work" | "checkin"
+export type BufferPosition = "before" | "after" | "both"
+
+/** A repeatable question set with an optional terms-and-signature step. */
+export interface Questionnaire {
+  fields: RequiredField[]
+  signatureRequired: boolean
+  terms: string
+}
+
+/** Everything the appointment editor can change — the write payload, minus the id. */
+export interface AppointmentInput {
+  mode: AppointmentMode
+  name: string
+  description: string
+  color: string
+  duration: number
+  durationUnit: DurationUnit
+
+  /* Carry out work */
+  price: number
+  bufferAmount: number
+  bufferUnit: DurationUnit
+  bufferPosition: BufferPosition
+  bookingAskName: boolean
+  bookingAskEmail: boolean
+  bookingAskPhone: boolean
+  /** Custom fields asked at booking; those flagged copyToCustomer are mirrored below. */
+  bookingFields: RequiredField[]
+  maxCustomers: number
+  staffRequired: number
+  customerQuestionnaire: Questionnaire
+  staffQuestionnaire: Questionnaire
+  equipmentTypeIds: Id[]
+
+  /* Workshop check-in */
+  checkinAskName: boolean
+  checkinAskEmail: boolean
+  checkinAskPhone: boolean
+  checkinAskBrand: boolean
+  checkinAskModel: boolean
+  checkinAskSize: boolean
+  checkinAskColour: boolean
+  checkinAskNotes: boolean
+  allowServiceBooking: boolean
+  bookableServiceIds: Id[]
+
+  /** Hidden from booking when true */
+  disabled: boolean
+}
+
+export interface Appointment extends AppointmentInput {
+  id: Id
+  groupId: Id
+  position: number
+}
+
+export interface AppointmentGroup {
+  id: Id
+  name: string
+  position: number
+  appointments: Appointment[]
 }

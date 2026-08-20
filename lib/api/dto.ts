@@ -45,7 +45,6 @@ export interface ServiceDto {
   release_customer_signature: boolean
   release_staff_signature: boolean
   docket_count: number
-  barcode_on_docket: boolean
   is_hidden: boolean
   position: number
 }
@@ -62,4 +61,64 @@ export interface ServiceGroupDto {
   position: number
   /** Nested read-only list; see docs/django-api.md. */
   services: ServiceDto[]
+}
+
+/** Appointment fields carry the questionnaire they belong to. */
+export interface AppointmentFieldDto extends RequiredFieldDto {
+  role: "booking" | "customer" | "staff"
+  copy_to_customer?: boolean
+}
+
+export interface AppointmentDto {
+  id: number | string
+  group: number | string
+  mode: "work" | "checkin"
+  name: string
+  description: string
+  color: string
+  duration: number
+  duration_unit: "min" | "hr"
+
+  price: string | number
+  buffer_amount: number
+  buffer_unit: "min" | "hr"
+  buffer_position: "before" | "after" | "both"
+  booking_ask_name: boolean
+  booking_ask_email: boolean
+  booking_ask_phone: boolean
+  max_customers: number
+  staff_required: number
+  customer_signature_required: boolean
+  customer_terms: string
+  staff_signature_required: boolean
+  staff_terms: string
+  equipment_types: Array<number | string>
+
+  checkin_ask_name: boolean
+  checkin_ask_email: boolean
+  checkin_ask_phone: boolean
+  checkin_ask_brand: boolean
+  checkin_ask_model: boolean
+  checkin_ask_size: boolean
+  checkin_ask_colour: boolean
+  checkin_ask_notes: boolean
+  allow_service_booking: boolean
+  bookable_services: Array<number | string>
+
+  /** Booking, customer and staff questions in one list, split by `role`. */
+  fields: AppointmentFieldDto[]
+  is_hidden: boolean
+  position: number
+}
+
+export type AppointmentPayload = Omit<AppointmentDto, "id" | "position" | "price"> & {
+  price: string
+  position?: number
+}
+
+export interface AppointmentGroupDto {
+  id: number | string
+  name: string
+  position: number
+  appointments: AppointmentDto[]
 }

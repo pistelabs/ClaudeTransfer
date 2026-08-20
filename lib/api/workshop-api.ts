@@ -1,4 +1,13 @@
-import type { EquipmentType, Id, Service, ServiceGroup, ServiceInput } from "@/lib/workshop/types"
+import type {
+  Appointment,
+  AppointmentGroup,
+  AppointmentInput,
+  EquipmentType,
+  Id,
+  Service,
+  ServiceGroup,
+  ServiceInput,
+} from "@/lib/workshop/types"
 
 /**
  * Everything the admin console needs from the backend. The Django adapter talks
@@ -18,4 +27,15 @@ export interface WorkshopApi {
   createService(groupId: Id, input: ServiceInput): Promise<Service>
   updateService(id: Id, groupId: Id, input: ServiceInput): Promise<Service>
   deleteService(id: Id): Promise<void>
+
+  /** Appointment types with their appointments nested, ordered by position. */
+  listAppointmentGroups(): Promise<AppointmentGroup[]>
+
+  createAppointmentGroup(name: string): Promise<AppointmentGroup>
+  updateAppointmentGroup(id: Id, name: string): Promise<AppointmentGroup>
+  deleteAppointmentGroup(id: Id): Promise<void>
+
+  createAppointment(groupId: Id, input: AppointmentInput): Promise<Appointment>
+  updateAppointment(id: Id, groupId: Id, input: AppointmentInput): Promise<Appointment>
+  deleteAppointment(id: Id): Promise<void>
 }

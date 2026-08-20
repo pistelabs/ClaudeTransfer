@@ -1,4 +1,8 @@
 import type {
+  AppointmentDto,
+  AppointmentFieldDto,
+  AppointmentGroupDto,
+  AppointmentPayload,
   EquipmentTypeDto,
   RequiredFieldDto,
   ServiceDto,
@@ -6,7 +10,11 @@ import type {
   ServicePayload,
 } from "./dto"
 import type {
+  Appointment,
+  AppointmentGroup,
+  AppointmentInput,
   EquipmentType,
+  Questionnaire,
   RequiredField,
   Service,
   ServiceGroup,
@@ -87,7 +95,6 @@ export function toService(dto: ServiceDto): Service {
     releaseCustomerSig: !!dto.release_customer_signature,
     releaseStaffSig: !!dto.release_staff_signature,
     docketCount: dto.docket_count ?? 0,
-    barcodeOnDocket: !!dto.barcode_on_docket,
     disabled: !!dto.is_hidden,
   }
 }
@@ -115,8 +122,144 @@ export function fromServiceInput(groupId: string, input: ServiceInput): ServiceP
     release_customer_signature: input.releaseCustomerSig,
     release_staff_signature: input.releaseStaffSig,
     docket_count: input.docketCount,
-    barcode_on_docket: input.barcodeOnDocket,
     is_hidden: input.disabled,
+  }
+}
+
+function toQuestionnaire(
+  fields: AppointmentFieldDto[],
+  role: AppointmentFieldDto["role"],
+  signatureRequired: boolean,
+  terms: string,
+): Questionnaire {
+  return {
+    fields: fields.filter((field) => field.role === role).map(toRequiredField),
+    signatureRequired,
+    terms,
+  }
+}
+
+function fromAppointmentField(
+  field: RequiredField,
+  index: number,
+  role: AppointmentFieldDto["role"],
+): AppointmentFieldDto {
+  return {
+    ...fromRequiredField(field, index),
+    role,
+    ...(role === "booking" ? { copy_to_customer: !!field.copyToCustomer } : {}),
+  }
+}
+
+export function toAppointment(dto: AppointmentDto): Appointment {
+  const fields = dto.fields ?? []
+  return {
+    id: String(dto.id),
+    groupId: String(dto.group),
+    position: dto.position ?? 0,
+    mode: dto.mode ?? "work",
+    name: dto.name ?? "",
+    description: dto.description ?? "",
+    color: dto.color ?? "#0284c7",
+    duration: dto.duration ?? 0,
+    durationUnit: dto.duration_unit ?? "min",
+
+    price: Number(dto.price ?? 0),
+    bufferAmount: dto.buffer_amount ?? 0,
+    bufferUnit: dto.buffer_unit ?? "min",
+    bufferPosition: dto.buffer_position ?? "after",
+    bookingAskName: dto.booking_ask_name ?? true,
+    bookingAskEmail: dto.booking_ask_email ?? true,
+    bookingAskPhone: dto.booking_ask_phone ?? true,
+    bookingFields: fields
+      .filter((field) => field.role === "booking")
+      .map((field) => ({ ...toRequiredField(field), copyToCustomer: !!field.copy_to_customer })),
+    maxCustomers: dto.max_customers ?? 1,
+    staffRequired: dto.staff_required ?? 1,
+    customerQuestionnaire: toQuestionnaire(
+      fields,
+      "customer",
+      !!dto.customer_signature_required,
+      dto.customer_terms ?? "",
+    ),
+    staffQuestionnaire: toQuestionnaire(
+      fields,
+      "staff",
+      !!dto.staff_signature_required,
+      dto.staff_terms ?? "",
+    ),
+    equipmentTypeIds: (dto.equipment_types ?? []).map(String),
+
+    checkinAskName: dto.checkin_ask_name ?? true,
+    checkinAskEmail: dto.checkin_ask_email ?? true,
+    checkinAskPhone: dto.checkin_ask_phone ?? true,
+    checkinAskBrand: dto.checkin_ask_brand ?? true,
+    checkinAskModel: dto.checkin_ask_model ?? true,
+    checkinAskSize: dto.checkin_ask_size ?? true,
+    checkinAskColour: dto.checkin_ask_colour ?? true,
+    checkinAskNotes: dto.checkin_ask_notes ?? true,
+    allowServiceBooking: !!dto.allow_service_booking,
+    bookableServiceIds: (dto.bookable_services ?? []).map(String),
+
+    disabled: !!dto.is_hidden,
+  }
+}
+
+export function fromAppointmentInput(groupId: string, input: AppointmentInput): AppointmentPayload {
+  return {
+    group: groupId,
+    mode: input.mode,
+    name: input.name,
+    description: input.description,
+    color: input.color,
+    duration: input.duration,
+    duration_unit: input.durationUnit,
+
+    price: input.price.toFixed(2),
+    buffer_amount: input.bufferAmount,
+    buffer_unit: input.bufferUnit,
+    buffer_position: input.bufferPosition,
+    booking_ask_name: input.bookingAskName,
+    booking_ask_email: input.bookingAskEmail,
+    booking_ask_phone: input.bookingAskPhone,
+    max_customers: input.maxCustomers,
+    staff_required: input.staffRequired,
+    customer_signature_required: input.customerQuestionnaire.signatureRequired,
+    customer_terms: input.customerQuestionnaire.terms,
+    staff_signature_required: input.staffQuestionnaire.signatureRequired,
+    staff_terms: input.staffQuestionnaire.terms,
+    equipment_types: input.equipmentTypeIds,
+
+    checkin_ask_name: input.checkinAskName,
+    checkin_ask_email: input.checkinAskEmail,
+    checkin_ask_phone: input.checkinAskPhone,
+    checkin_ask_brand: input.checkinAskBrand,
+    checkin_ask_model: input.checkinAskModel,
+    checkin_ask_size: input.checkinAskSize,
+    checkin_ask_colour: input.checkinAskColour,
+    checkin_ask_notes: input.checkinAskNotes,
+    allow_service_booking: input.allowServiceBooking,
+    bookable_services: input.bookableServiceIds,
+
+    fields: [
+      ...input.bookingFields.map((field, index) => fromAppointmentField(field, index, "booking")),
+      ...input.customerQuestionnaire.fields.map((field, index) =>
+        fromAppointmentField(field, index, "customer"),
+      ),
+      ...input.staffQuestionnaire.fields.map((field, index) =>
+        fromAppointmentField(field, index, "staff"),
+      ),
+    ],
+    is_hidden: input.disabled,
+  }
+}
+
+export function toAppointmentGroup(dto: AppointmentGroupDto): AppointmentGroup {
+  return {
+    id: String(dto.id),
+    name: dto.name ?? "",
+    position: dto.position ?? 0,
+    appointments: (dto.appointments ?? []).map(toAppointment),
   }
 }
 

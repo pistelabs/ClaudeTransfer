@@ -2,8 +2,8 @@
 
 Bringing designs to Ai for the guys, hopefully reducing their workload.
 
-This repo currently holds the **Workshop Admin — Services** section, built from the
-`Admin_Services_Section` design handoff. Every interactive element comes from
+This repo currently holds the **Workshop Admin — Services and Appointments** sections, built from
+the `Admin_Services_Section` design handoff. Every interactive element comes from
 [ui.shadcn.com](https://ui.shadcn.com) components.
 
 ## Running it
@@ -21,8 +21,8 @@ saying so, so the UI can be reviewed before the backend is up.
 
 ## Data
 
-Equipment types, service groups and services live in Django and are read and written over its REST
-API — nothing is stored in the browser. **[docs/django-api.md](docs/django-api.md)** is the
+Equipment types, service groups, services, appointment types and appointments live in Django and
+are read and written over its REST API — nothing is stored in the browser. **[docs/django-api.md](docs/django-api.md)** is the
 contract: endpoints, the exact payloads, and a reference DRF implementation (models, serializers,
 viewsets, router) that this UI was tested against end to end.
 
@@ -33,9 +33,6 @@ viewsets, router) that this UI was tested against end to end.
 | Endpoint calls | `lib/api/django-workshop-api.ts` |
 | In-memory stand-in when no API is configured | `lib/api/mock-workshop-api.ts` |
 | Load + mutate state for the pages | `lib/workshop/store.tsx` |
-
-Appointment groups and appointments follow the same pattern and are specified in the doc; their UI
-is not built yet.
 
 ## What is built
 
@@ -56,17 +53,32 @@ is not built yet.
      multi-select option builder).
   6. **Waivers** — independent check-in and release waivers, each revealing its terms textarea and
      customer/staff signature checkboxes.
-  7. **Dockets** — dockets-per-job stepper and a barcode switch.
+  7. **Dockets** — dockets-per-job stepper.
 
   Save is disabled until the name is filled; Escape and backdrop close without saving; the dialog
   edits a draft copy, so Cancel discards.
+
+`/admin/appointments` — the same structure for appointments:
+
+- **Appointment types** — pill selector with counts, plus add / rename / delete.
+- **Appointments list** — colour dot, name, `Check-in` / `Hidden` badges, duration + description,
+  price (work mode), visibility `Switch`, and edit / duplicate / delete.
+- **Add / edit appointment dialog** (680px) whose first control picks the mode:
+  - **Carry out work** — basics and colour, duration, price, buffer time with Before / After / Both,
+    the booking questions (Name / Email / Phone plus custom fields, each with a *Copy to Customer
+    information* toggle), capacity steppers for customers and staff, and a tabbed area for
+    **Customer information** / **Staff information** / **Equipment** — each questionnaire with its
+    own fields, terms and signature switch, and the copied-from-booking fields listed automatically.
+  - **Workshop check-in** — the reduced flow: basics, duration, the customer and equipment
+    checkboxes (Name/Email/Phone, Brand/Model/Size/Colour, Notes), and a switch that reveals the
+    bookable services grouped by service group.
 
 Loading, empty and error states are covered: a skeleton while the API responds, an alert with a
 retry button when it fails, inline errors on save, and disabled controls while a request is in
 flight.
 
-The other four sections (General, Equipment Types, Appointments, Notifications) exist as routes with
-placeholder pages so the section nav works — they are not part of this slice.
+The other three sections (General, Equipment Types, Notifications) exist as routes with placeholder
+pages so the section nav works — they are not part of this slice.
 
 ## Stack
 
@@ -82,8 +94,11 @@ drops new components straight into `components/ui/`.
 
 ```
 app/admin/services/page.tsx      the Services route
+app/admin/appointments/page.tsx  the Appointments route
 app/admin/layout.tsx             app bar + section nav + providers
-components/services/             services UI (section, rows, dialogs, field editor, tiles)
+components/services/             services UI (section, row, dialog)
+components/appointments/         appointments UI (section, row, dialog)
+components/workshop/             shared pieces (field editor, tiles, stepper, group dialogs)
 components/ui/                   shadcn/ui components
 lib/api/                         Django REST client, DTO mapping, mock fallback
 lib/workshop/                    domain types, constants and the store

@@ -41,8 +41,13 @@ Swap `lib/api/http.ts` if you use token or JWT auth instead — it is the only p
 
 Plain lists and DRF's paginated `{count, next, previous, results}` envelope are both accepted.
 
-Not yet consumed by the UI, but the same shape is expected when the Appointments section is built:
-`/appointment-groups/` (nested `appointments`) and `/appointments/`.
+| GET | `/appointment-groups/` | Appointment types, each with its `appointments` nested |
+| POST | `/appointment-groups/` | `{ "name": "Standard" }` |
+| PATCH | `/appointment-groups/{id}/` | `{ "name": "…" }` |
+| DELETE | `/appointment-groups/{id}/` | Cascades to its appointments |
+| POST | `/appointments/` | Full appointment payload including `group` |
+| PUT | `/appointments/{id}/` | Full appointment payload |
+| DELETE | `/appointments/{id}/` | |
 
 ## Service payload
 
@@ -77,7 +82,6 @@ Not yet consumed by the UI, but the same shape is expected when the Appointments
   "release_customer_signature": true,
   "release_staff_signature": false,
   "docket_count": 1,
-  "barcode_on_docket": true,
   "is_hidden": false
 }
 ```
@@ -93,6 +97,68 @@ Notes:
 
 Validation errors are surfaced in the UI. DRF's `{"name": ["This field is required."]}` and
 `{"detail": "…"}` are both understood.
+
+## Appointment payload
+
+```json
+{
+  "group": 1,
+  "mode": "work",
+  "name": "Boot Fitting",
+  "description": "In-store fitting consultation",
+  "color": "#0284c7",
+  "duration": 45,
+  "duration_unit": "min",
+
+  "price": "60.00",
+  "buffer_amount": 10,
+  "buffer_unit": "min",
+  "buffer_position": "after",
+  "booking_ask_name": true,
+  "booking_ask_email": true,
+  "booking_ask_phone": true,
+  "max_customers": 1,
+  "staff_required": 1,
+  "customer_signature_required": false,
+  "customer_terms": "",
+  "staff_signature_required": false,
+  "staff_terms": "",
+  "equipment_types": [13],
+
+  "checkin_ask_name": true,
+  "checkin_ask_email": true,
+  "checkin_ask_phone": true,
+  "checkin_ask_brand": true,
+  "checkin_ask_model": true,
+  "checkin_ask_size": true,
+  "checkin_ask_colour": true,
+  "checkin_ask_notes": true,
+  "allow_service_booking": false,
+  "bookable_services": [],
+
+  "fields": [
+    {
+      "role": "booking",
+      "label": "Preferred technician",
+      "field_type": "free",
+      "select_mode": "single",
+      "copy_to_customer": true,
+      "position": 0,
+      "options": []
+    }
+  ],
+  "is_hidden": false
+}
+```
+
+Notes:
+
+- `mode` is `work` (full booking) or `checkin` (workshop drop-off). Both modes post every field;
+  the UI only shows the ones relevant to the selected mode.
+- `fields` is one writable nested list covering all three questionnaires, split by `role`:
+  `booking`, `customer`, `staff`. `copy_to_customer` applies to booking fields and mirrors the
+  field onto the Customer information tab.
+- `bookable_services` is a list of service PKs, used when `allow_service_booking` is true.
 
 ## Reference implementation
 
@@ -145,8 +211,89 @@ class Service(models.Model):
     release_staff_signature = models.BooleanField(default=False)
 
     docket_count = models.PositiveIntegerField(default=1)
-    barcode_on_docket = models.BooleanField(default=True)
     is_hidden = models.BooleanField(default=False)
+    position = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["position", "id"]
+
+
+class AppointmentGroup(models.Model):
+    name = models.CharField(max_length=120)
+    position = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["position", "id"]
+
+
+class Appointment(models.Model):
+    MODES = [("work", "Carry out work"), ("checkin", "Workshop check-in")]
+    UNITS = [("min", "Minutes"), ("hr", "Hours")]
+    BUFFER_POSITIONS = [("before", "Before"), ("after", "After"), ("both", "Both")]
+
+    group = models.ForeignKey(AppointmentGroup, related_name="appointments", on_delete=models.CASCADE)
+    mode = models.CharField(max_length=7, choices=MODES, default="work")
+    name = models.CharField(max_length=120)
+    description = models.TextField(blank=True)
+    color = models.CharField(max_length=7, default="#0284c7")
+    duration = models.PositiveIntegerField(default=0)
+    duration_unit = models.CharField(max_length=3, choices=UNITS, default="min")
+
+    # Carry out work
+    price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    buffer_amount = models.PositiveIntegerField(default=0)
+    buffer_unit = models.CharField(max_length=3, choices=UNITS, default="min")
+    buffer_position = models.CharField(max_length=6, choices=BUFFER_POSITIONS, default="after")
+    booking_ask_name = models.BooleanField(default=True)
+    booking_ask_email = models.BooleanField(default=True)
+    booking_ask_phone = models.BooleanField(default=True)
+    max_customers = models.PositiveIntegerField(default=1)
+    staff_required = models.PositiveIntegerField(default=1)
+    customer_signature_required = models.BooleanField(default=False)
+    customer_terms = models.TextField(blank=True)
+    staff_signature_required = models.BooleanField(default=False)
+    staff_terms = models.TextField(blank=True)
+    equipment_types = models.ManyToManyField(EquipmentType, related_name="appointments", blank=True)
+
+    # Workshop check-in
+    checkin_ask_name = models.BooleanField(default=True)
+    checkin_ask_email = models.BooleanField(default=True)
+    checkin_ask_phone = models.BooleanField(default=True)
+    checkin_ask_brand = models.BooleanField(default=True)
+    checkin_ask_model = models.BooleanField(default=True)
+    checkin_ask_size = models.BooleanField(default=True)
+    checkin_ask_colour = models.BooleanField(default=True)
+    checkin_ask_notes = models.BooleanField(default=True)
+    allow_service_booking = models.BooleanField(default=False)
+    bookable_services = models.ManyToManyField(Service, related_name="appointments", blank=True)
+
+    is_hidden = models.BooleanField(default=False)
+    position = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["position", "id"]
+
+
+class AppointmentField(models.Model):
+    ROLES = [("booking", "Booking"), ("customer", "Customer"), ("staff", "Staff")]
+    FIELD_TYPES = [("free", "Free entry"), ("options", "Predefined options"), ("file", "File upload")]
+    SELECT_MODES = [("single", "Single select"), ("multi", "Multi select")]
+
+    appointment = models.ForeignKey(Appointment, related_name="fields", on_delete=models.CASCADE)
+    role = models.CharField(max_length=8, choices=ROLES)
+    label = models.CharField(max_length=120)
+    field_type = models.CharField(max_length=7, choices=FIELD_TYPES, default="free")
+    select_mode = models.CharField(max_length=6, choices=SELECT_MODES, default="single")
+    copy_to_customer = models.BooleanField(default=False)
+    position = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["position", "id"]
+
+
+class AppointmentFieldOption(models.Model):
+    field = models.ForeignKey(AppointmentField, related_name="options", on_delete=models.CASCADE)
+    value = models.CharField(max_length=120)
     position = models.PositiveIntegerField(default=0)
 
     class Meta:
@@ -181,6 +328,10 @@ class RequiredFieldOption(models.Model):
 from rest_framework import serializers
 
 from .models import (
+    Appointment,
+    AppointmentField,
+    AppointmentFieldOption,
+    AppointmentGroup,
     EquipmentType,
     RequiredField,
     RequiredFieldOption,
@@ -272,14 +423,110 @@ class ServiceGroupSerializer(serializers.ModelSerializer):
         last = ServiceGroup.objects.order_by("-position").first()
         validated_data.setdefault("position", last.position + 1 if last else 0)
         return super().create(validated_data)
+
+class AppointmentFieldOptionSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(required=False)
+
+    class Meta:
+        model = AppointmentFieldOption
+        fields = ["id", "value", "position"]
+
+
+class AppointmentFieldSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(required=False)
+    options = AppointmentFieldOptionSerializer(many=True, required=False)
+
+    class Meta:
+        model = AppointmentField
+        fields = [
+            "id",
+            "role",
+            "label",
+            "field_type",
+            "select_mode",
+            "copy_to_customer",
+            "position",
+            "options",
+        ]
+
+
+class AppointmentSerializer(serializers.ModelSerializer):
+    fields = AppointmentFieldSerializer(many=True, required=False)
+
+    class Meta:
+        model = Appointment
+        exclude = []
+
+    def create(self, validated_data):
+        fields = validated_data.pop("fields", [])
+        equipment_types = validated_data.pop("equipment_types", [])
+        services = validated_data.pop("bookable_services", [])
+        validated_data.setdefault("position", self._next_position(validated_data["group"]))
+        appointment = Appointment.objects.create(**validated_data)
+        appointment.equipment_types.set(equipment_types)
+        appointment.bookable_services.set(services)
+        self._sync_fields(appointment, fields)
+        return appointment
+
+    def update(self, instance, validated_data):
+        fields = validated_data.pop("fields", None)
+        equipment_types = validated_data.pop("equipment_types", None)
+        services = validated_data.pop("bookable_services", None)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        if equipment_types is not None:
+            instance.equipment_types.set(equipment_types)
+        if services is not None:
+            instance.bookable_services.set(services)
+        if fields is not None:
+            self._sync_fields(instance, fields)
+        return instance
+
+    @staticmethod
+    def _next_position(group):
+        last = Appointment.objects.filter(group=group).order_by("-position").first()
+        return last.position + 1 if last else 0
+
+    def _sync_fields(self, appointment, fields):
+        """Replace booking, customer and staff questions with what was sent."""
+        appointment.fields.all().delete()
+        for position, field in enumerate(fields):
+            options = field.pop("options", [])
+            field.pop("id", None)
+            field["position"] = position
+            appointment_field = AppointmentField.objects.create(appointment=appointment, **field)
+            for option_position, option in enumerate(options):
+                option.pop("id", None)
+                option["position"] = option_position
+                AppointmentFieldOption.objects.create(field=appointment_field, **option)
+
+
+class AppointmentGroupSerializer(serializers.ModelSerializer):
+    appointments = AppointmentSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = AppointmentGroup
+        fields = ["id", "name", "position", "appointments"]
+
+    def create(self, validated_data):
+        last = AppointmentGroup.objects.order_by("-position").first()
+        validated_data.setdefault("position", last.position + 1 if last else 0)
+        return super().create(validated_data)
 ```
 
 ```python
 # views.py
 from rest_framework import viewsets
 
-from .models import EquipmentType, Service, ServiceGroup
-from .serializers import EquipmentTypeSerializer, ServiceGroupSerializer, ServiceSerializer
+from .models import Appointment, AppointmentGroup, EquipmentType, Service, ServiceGroup
+from .serializers import (
+    AppointmentGroupSerializer,
+    AppointmentSerializer,
+    EquipmentTypeSerializer,
+    ServiceGroupSerializer,
+    ServiceSerializer,
+)
 
 
 class EquipmentTypeViewSet(viewsets.ModelViewSet):
@@ -298,18 +545,42 @@ class ServiceViewSet(viewsets.ModelViewSet):
     queryset = Service.objects.prefetch_related("equipment_types", "required_fields__options")
     serializer_class = ServiceSerializer
     filterset_fields = ["group"]  # needs django-filter installed and configured
+
+
+class AppointmentGroupViewSet(viewsets.ModelViewSet):
+    queryset = AppointmentGroup.objects.prefetch_related(
+        "appointments__equipment_types",
+        "appointments__bookable_services",
+        "appointments__fields__options",
+    )
+    serializer_class = AppointmentGroupSerializer
+
+
+class AppointmentViewSet(viewsets.ModelViewSet):
+    queryset = Appointment.objects.prefetch_related(
+        "equipment_types", "bookable_services", "fields__options"
+    )
+    serializer_class = AppointmentSerializer
 ```
 
 ```python
 # urls.py
 from rest_framework.routers import DefaultRouter
 
-from .views import EquipmentTypeViewSet, ServiceGroupViewSet, ServiceViewSet
+from .views import (
+    AppointmentGroupViewSet,
+    AppointmentViewSet,
+    EquipmentTypeViewSet,
+    ServiceGroupViewSet,
+    ServiceViewSet,
+)
 
 router = DefaultRouter()
 router.register("equipment-types", EquipmentTypeViewSet)
 router.register("service-groups", ServiceGroupViewSet)
 router.register("services", ServiceViewSet)
+router.register("appointment-groups", AppointmentGroupViewSet)
+router.register("appointments", AppointmentViewSet)
 
 urlpatterns = router.urls
 ```
@@ -317,6 +588,6 @@ urlpatterns = router.urls
 `position` is assigned server-side on create so new services and groups append to the end; the UI
 keeps its lists sorted by it.
 
-`_sync_fields` deletes and recreates rows, which is the simplest correct behaviour for a form that
-always posts the full list. Switch to an upsert keyed on the incoming `id` if you need the field PKs
+`_sync_fields` (on both serializers) deletes and recreates rows, which is the simplest correct
+behaviour for a form that always posts the full list. Switch to an upsert keyed on the incoming `id` if you need the field PKs
 to survive edits (e.g. because captured answers reference them).

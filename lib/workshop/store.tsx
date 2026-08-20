@@ -7,7 +7,16 @@ import { ApiError, isApiConfigured } from "@/lib/api/http"
 import { mockWorkshopApi } from "@/lib/api/mock-workshop-api"
 import type { WorkshopApi } from "@/lib/api/workshop-api"
 import { byPosition, CURRENCY_SYMBOLS, DEFAULT_GENERAL } from "./data"
-import type { EquipmentType, Id, Service, ServiceGroup, ServiceInput } from "./types"
+import type {
+  Appointment,
+  AppointmentGroup,
+  AppointmentInput,
+  EquipmentType,
+  Id,
+  Service,
+  ServiceGroup,
+  ServiceInput,
+} from "./types"
 
 /** Django when NEXT_PUBLIC_API_BASE_URL is set, otherwise the in-memory stand-in. */
 const api: WorkshopApi = isApiConfigured ? djangoWorkshopApi : mockWorkshopApi
@@ -25,6 +34,7 @@ interface WorkshopContextValue {
   /** Equipment types the workshop offers — the only ones assignable to a service. */
   enabledEquipmentTypes: EquipmentType[]
   serviceGroups: ServiceGroup[]
+  appointmentGroups: AppointmentGroup[]
   currencySymbol: string
 
   createServiceGroup: (name: string) => Promise<ServiceGroup>
@@ -33,6 +43,17 @@ interface WorkshopContextValue {
   createService: (groupId: Id, input: ServiceInput) => Promise<Service>
   updateService: (serviceId: Id, groupId: Id, input: ServiceInput) => Promise<Service>
   deleteService: (groupId: Id, serviceId: Id) => Promise<void>
+
+  createAppointmentGroup: (name: string) => Promise<AppointmentGroup>
+  renameAppointmentGroup: (groupId: Id, name: string) => Promise<void>
+  deleteAppointmentGroup: (groupId: Id) => Promise<void>
+  createAppointment: (groupId: Id, input: AppointmentInput) => Promise<Appointment>
+  updateAppointment: (
+    appointmentId: Id,
+    groupId: Id,
+    input: AppointmentInput,
+  ) => Promise<Appointment>
+  deleteAppointment: (groupId: Id, appointmentId: Id) => Promise<void>
 }
 
 const WorkshopContext = React.createContext<WorkshopContextValue | null>(null)
@@ -48,17 +69,19 @@ export function WorkshopProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = React.useState<string | null>(null)
   const [equipmentTypes, setEquipmentTypes] = React.useState<EquipmentType[]>([])
   const [serviceGroups, setServiceGroups] = React.useState<ServiceGroup[]>([])
+  const [appointmentGroups, setAppointmentGroups] = React.useState<AppointmentGroup[]>([])
   const [reloadToken, setReloadToken] = React.useState(0)
 
   // Loads equipment types and service groups; re-runs when reload() bumps the token.
   React.useEffect(() => {
     let cancelled = false
 
-    Promise.all([api.listEquipmentTypes(), api.listServiceGroups()])
-      .then(([types, groups]) => {
+    Promise.all([api.listEquipmentTypes(), api.listServiceGroups(), api.listAppointmentGroups()])
+      .then(([types, groups, appointmentTypes]) => {
         if (cancelled) return
         setEquipmentTypes(types)
         setServiceGroups(groups)
+        setAppointmentGroups(appointmentTypes)
         setStatus("ready")
       })
       .catch((cause) => {
@@ -76,6 +99,11 @@ export function WorkshopProvider({ children }: { children: React.ReactNode }) {
     const replaceGroup = (groupId: Id, fn: (group: ServiceGroup) => ServiceGroup) =>
       setServiceGroups((groups) => groups.map((g) => (g.id === groupId ? fn(g) : g)))
 
+    const replaceAppointmentGroup = (
+      groupId: Id,
+      fn: (group: AppointmentGroup) => AppointmentGroup,
+    ) => setAppointmentGroups((groups) => groups.map((g) => (g.id === groupId ? fn(g) : g)))
+
     return {
       status,
       error,
@@ -89,6 +117,7 @@ export function WorkshopProvider({ children }: { children: React.ReactNode }) {
       equipmentTypes,
       enabledEquipmentTypes: equipmentTypes.filter((type) => type.enabled),
       serviceGroups,
+      appointmentGroups,
       currencySymbol: CURRENCY_SYMBOLS[DEFAULT_GENERAL.currency],
 
       async createServiceGroup(name) {
@@ -132,8 +161,54 @@ export function WorkshopProvider({ children }: { children: React.ReactNode }) {
           services: group.services.filter((service) => service.id !== serviceId),
         }))
       },
+
+      async createAppointmentGroup(name) {
+        const group = await api.createAppointmentGroup(name)
+        setAppointmentGroups((groups) => [...groups, group].sort(byPosition))
+        return group
+      },
+
+      async renameAppointmentGroup(groupId, name) {
+        const group = await api.updateAppointmentGroup(groupId, name)
+        replaceAppointmentGroup(groupId, (current) => ({ ...current, name: group.name }))
+      },
+
+      async deleteAppointmentGroup(groupId) {
+        await api.deleteAppointmentGroup(groupId)
+        setAppointmentGroups((groups) => groups.filter((group) => group.id !== groupId))
+      },
+
+      async createAppointment(groupId, input) {
+        const appointment = await api.createAppointment(groupId, input)
+        replaceAppointmentGroup(groupId, (group) => ({
+          ...group,
+          appointments: [...group.appointments, appointment].sort(byPosition),
+        }))
+        return appointment
+      },
+
+      async updateAppointment(appointmentId, groupId, input) {
+        const appointment = await api.updateAppointment(appointmentId, groupId, input)
+        replaceAppointmentGroup(groupId, (group) => ({
+          ...group,
+          appointments: group.appointments.map((current) =>
+            current.id === appointmentId ? appointment : current,
+          ),
+        }))
+        return appointment
+      },
+
+      async deleteAppointment(groupId, appointmentId) {
+        await api.deleteAppointment(appointmentId)
+        replaceAppointmentGroup(groupId, (group) => ({
+          ...group,
+          appointments: group.appointments.filter(
+            (appointment) => appointment.id !== appointmentId,
+          ),
+        }))
+      },
     }
-  }, [status, error, equipmentTypes, serviceGroups])
+  }, [status, error, equipmentTypes, serviceGroups, appointmentGroups])
 
   return <WorkshopContext.Provider value={value}>{children}</WorkshopContext.Provider>
 }

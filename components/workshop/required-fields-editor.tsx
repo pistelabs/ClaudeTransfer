@@ -1,6 +1,14 @@
 "use client"
 
-import { CircleIcon, PlusIcon, SquareIcon, Trash2Icon, UploadIcon, XIcon } from "lucide-react"
+import {
+  CircleIcon,
+  PlusIcon,
+  SquareIcon,
+  Trash2Icon,
+  UploadIcon,
+  UserPlusIcon,
+  XIcon,
+} from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -13,6 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { FIELD_TYPE_LABELS, localId } from "@/lib/workshop/data"
 import type { FieldType, RequiredField, SelectMode } from "@/lib/workshop/types"
 
@@ -24,10 +33,15 @@ export function RequiredFieldsEditor({
   fields,
   onChange,
   emptyMessage = "No required fields. Add one to capture info like binding position or rider weight.",
+  labelPlaceholder = "Field label (e.g. Rider weight)",
+  /** Booking fields only: offers a toggle that mirrors the field into Customer information. */
+  showCopyToCustomer = false,
 }: {
   fields: RequiredField[]
   onChange: (fields: RequiredField[]) => void
   emptyMessage?: string
+  labelPlaceholder?: string
+  showCopyToCustomer?: boolean
 }) {
   const update = (key: string, patch: Partial<RequiredField>) =>
     onChange(fields.map((field) => (field.key === key ? { ...field, ...patch } : field)))
@@ -60,7 +74,7 @@ export function RequiredFieldsEditor({
               <Input
                 id={"label-" + field.key}
                 value={field.label}
-                placeholder="Field label (e.g. Rider weight)"
+                placeholder={labelPlaceholder}
                 onChange={(event) => update(field.key, { label: event.target.value })}
               />
             </div>
@@ -79,6 +93,27 @@ export function RequiredFieldsEditor({
                 ))}
               </SelectContent>
             </Select>
+            {showCopyToCustomer ? (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    type="button"
+                    variant={field.copyToCustomer ? "secondary" : "ghost"}
+                    size="icon"
+                    aria-label="Copy to Customer information"
+                    aria-pressed={!!field.copyToCustomer}
+                    onClick={() => update(field.key, { copyToCustomer: !field.copyToCustomer })}
+                  >
+                    <UserPlusIcon />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {field.copyToCustomer
+                    ? "Also asked on Customer information"
+                    : "Copy to Customer information"}
+                </TooltipContent>
+              </Tooltip>
+            ) : null}
             <Button
               type="button"
               variant="ghost"

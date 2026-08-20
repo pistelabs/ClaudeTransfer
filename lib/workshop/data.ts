@@ -1,4 +1,6 @@
 import type {
+  Appointment,
+  AppointmentInput,
   GeneralSettings,
   RequiredField,
   Service,
@@ -76,7 +78,6 @@ export function emptyServiceInput(): ServiceInput {
     releaseCustomerSig: true,
     releaseStaffSig: false,
     docketCount: 1,
-    barcodeOnDocket: true,
     disabled: false,
   }
 }
@@ -84,6 +85,53 @@ export function emptyServiceInput(): ServiceInput {
 /** The editable half of a saved service — what create/update send back. */
 export function toServiceInput(service: Service): ServiceInput {
   const { id, groupId, position, ...input } = service
+  void id
+  void groupId
+  void position
+  return structuredClone(input)
+}
+
+export function emptyAppointmentInput(): AppointmentInput {
+  return {
+    mode: "work",
+    name: "",
+    description: "",
+    color: "#0284c7",
+    duration: 0,
+    durationUnit: "min",
+
+    price: 0,
+    bufferAmount: 0,
+    bufferUnit: "min",
+    bufferPosition: "after",
+    bookingAskName: true,
+    bookingAskEmail: true,
+    bookingAskPhone: true,
+    bookingFields: [],
+    maxCustomers: 1,
+    staffRequired: 1,
+    customerQuestionnaire: { fields: [], signatureRequired: false, terms: "" },
+    staffQuestionnaire: { fields: [], signatureRequired: false, terms: "" },
+    equipmentTypeIds: [],
+
+    checkinAskName: true,
+    checkinAskEmail: true,
+    checkinAskPhone: true,
+    checkinAskBrand: true,
+    checkinAskModel: true,
+    checkinAskSize: true,
+    checkinAskColour: true,
+    checkinAskNotes: true,
+    allowServiceBooking: false,
+    bookableServiceIds: [],
+
+    disabled: false,
+  }
+}
+
+/** The editable half of a saved appointment — what create/update send back. */
+export function toAppointmentInput(appointment: Appointment): AppointmentInput {
+  const { id, groupId, position, ...input } = appointment
   void id
   void groupId
   void position

@@ -26,10 +26,10 @@ import { Separator } from "@/components/ui/separator"
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
-import { NumberStepper } from "@/components/services/number-stepper"
-import { RequiredFieldsEditor } from "@/components/services/required-fields-editor"
-import { SectionLabel } from "@/components/services/section-label"
-import { SelectableTile } from "@/components/services/selectable-tile"
+import { NumberStepper } from "@/components/workshop/number-stepper"
+import { RequiredFieldsEditor } from "@/components/workshop/required-fields-editor"
+import { SectionLabel } from "@/components/workshop/section-label"
+import { SelectableTile } from "@/components/workshop/selectable-tile"
 import {
   SERVICE_COLORS,
   STANDARD_ENTRIES,
@@ -449,13 +449,6 @@ function ServiceForm({
               onChange={(value) => set("docketCount", value)}
             />
           </div>
-          <SwitchRow
-            id="barcode-on-docket"
-            title="Print barcode on docket"
-            description="Adds a scannable job barcode to each printed docket"
-            checked={draft.barcodeOnDocket}
-            onCheckedChange={(checked) => set("barcodeOnDocket", checked)}
-          />
         </section>
       </div>
 
