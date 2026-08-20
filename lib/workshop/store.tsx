@@ -13,6 +13,9 @@ import type {
   AppointmentInput,
   EquipmentType,
   Id,
+  NotificationChannel,
+  NotificationEvent,
+  NotificationEventInput,
   Service,
   ServiceGroup,
   ServiceInput,
@@ -35,6 +38,9 @@ interface WorkshopContextValue {
   enabledEquipmentTypes: EquipmentType[]
   serviceGroups: ServiceGroup[]
   appointmentGroups: AppointmentGroup[]
+  notificationEvents: NotificationEvent[]
+  /** Read-only address every notification is sent from. */
+  sendingDomain: string
   currencySymbol: string
 
   createServiceGroup: (name: string) => Promise<ServiceGroup>
@@ -54,6 +60,16 @@ interface WorkshopContextValue {
     input: AppointmentInput,
   ) => Promise<Appointment>
   deleteAppointment: (groupId: Id, appointmentId: Id) => Promise<void>
+
+  updateNotificationEvent: (
+    eventId: Id,
+    input: NotificationEventInput,
+  ) => Promise<NotificationEvent>
+  sendNotificationTest: (
+    eventId: Id,
+    channel: NotificationChannel,
+    recipient: string,
+  ) => Promise<void>
 }
 
 const WorkshopContext = React.createContext<WorkshopContextValue | null>(null)
@@ -70,18 +86,28 @@ export function WorkshopProvider({ children }: { children: React.ReactNode }) {
   const [equipmentTypes, setEquipmentTypes] = React.useState<EquipmentType[]>([])
   const [serviceGroups, setServiceGroups] = React.useState<ServiceGroup[]>([])
   const [appointmentGroups, setAppointmentGroups] = React.useState<AppointmentGroup[]>([])
+  const [notificationEvents, setNotificationEvents] = React.useState<NotificationEvent[]>([])
+  const [sendingDomain, setSendingDomain] = React.useState("")
   const [reloadToken, setReloadToken] = React.useState(0)
 
   // Loads equipment types and service groups; re-runs when reload() bumps the token.
   React.useEffect(() => {
     let cancelled = false
 
-    Promise.all([api.listEquipmentTypes(), api.listServiceGroups(), api.listAppointmentGroups()])
-      .then(([types, groups, appointmentTypes]) => {
+    Promise.all([
+      api.listEquipmentTypes(),
+      api.listServiceGroups(),
+      api.listAppointmentGroups(),
+      api.listNotificationEvents(),
+      api.getSendingDomain(),
+    ])
+      .then(([types, groups, appointmentTypes, events, domain]) => {
         if (cancelled) return
         setEquipmentTypes(types)
         setServiceGroups(groups)
         setAppointmentGroups(appointmentTypes)
+        setNotificationEvents(events)
+        setSendingDomain(domain)
         setStatus("ready")
       })
       .catch((cause) => {
@@ -118,6 +144,8 @@ export function WorkshopProvider({ children }: { children: React.ReactNode }) {
       enabledEquipmentTypes: equipmentTypes.filter((type) => type.enabled),
       serviceGroups,
       appointmentGroups,
+      notificationEvents,
+      sendingDomain,
       currencySymbol: CURRENCY_SYMBOLS[DEFAULT_GENERAL.currency],
 
       async createServiceGroup(name) {
@@ -198,6 +226,18 @@ export function WorkshopProvider({ children }: { children: React.ReactNode }) {
         return appointment
       },
 
+      async updateNotificationEvent(eventId, input) {
+        const event = await api.updateNotificationEvent(eventId, input)
+        setNotificationEvents((events) =>
+          events.map((current) => (current.id === eventId ? event : current)),
+        )
+        return event
+      },
+
+      async sendNotificationTest(eventId, channel, recipient) {
+        await api.sendNotificationTest(eventId, channel, recipient)
+      },
+
       async deleteAppointment(groupId, appointmentId) {
         await api.deleteAppointment(appointmentId)
         replaceAppointmentGroup(groupId, (group) => ({
@@ -208,7 +248,15 @@ export function WorkshopProvider({ children }: { children: React.ReactNode }) {
         }))
       },
     }
-  }, [status, error, equipmentTypes, serviceGroups, appointmentGroups])
+  }, [
+    status,
+    error,
+    equipmentTypes,
+    serviceGroups,
+    appointmentGroups,
+    notificationEvents,
+    sendingDomain,
+  ])
 
   return <WorkshopContext.Provider value={value}>{children}</WorkshopContext.Provider>
 }

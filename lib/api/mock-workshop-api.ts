@@ -4,6 +4,7 @@ import type {
   AppointmentGroup,
   AppointmentInput,
   EquipmentType,
+  NotificationEvent,
   Service,
   ServiceGroup,
   ServiceInput,
@@ -114,6 +115,138 @@ const appointmentGroups: AppointmentGroup[] = [
     ],
   },
   { id: "2", name: "Premium", position: 1, appointments: [] },
+]
+
+function seedEvent(
+  position: number,
+  key: string,
+  name: string,
+  description: string,
+  overrides: Partial<NotificationEvent> = {},
+): NotificationEvent {
+  return {
+    id: String(position + 1),
+    key,
+    name,
+    audience: "customer",
+    description,
+    position,
+    enabled: true,
+    smsEnabled: false,
+    emailEnabled: false,
+    smsMode: "default",
+    smsBody: "",
+    smsDefaultBody: "",
+    emailMode: "default",
+    emailSubject: "",
+    emailBody: "",
+    emailDefaultSubject: "",
+    emailDefaultBody: "",
+    emailImages: [],
+    timing: null,
+    ...overrides,
+  }
+}
+
+const notificationEvents: NotificationEvent[] = [
+  seedEvent(
+    0,
+    "appointment_confirmation",
+    "Appointment confirmation",
+    "Sent when an appointment is booked",
+    {
+      smsEnabled: true,
+      emailEnabled: true,
+      smsDefaultBody: "Hi {Name}, your Alpine Werks booking for {Service} is confirmed.",
+      emailDefaultSubject: "Your booking at Alpine Werks is confirmed",
+      emailDefaultBody:
+        "Hi {Name},\n\nYour appointment for {Service} is confirmed. We have your {Equipment} on the list and will see you then.",
+    },
+  ),
+  seedEvent(
+    1,
+    "appointment_reminder",
+    "Appointment reminder",
+    "Sent 24 hours before the appointment",
+    {
+      smsEnabled: true,
+      smsDefaultBody: "Hi {Name}, reminder: your {Service} appointment is tomorrow.",
+      emailDefaultSubject: "Reminder: your appointment is tomorrow",
+      emailDefaultBody: "Hi {Name},\n\nJust a reminder about your {Service} appointment tomorrow.",
+      timing: { hours: 24, when: "before", anchor: "the appointment" },
+    },
+  ),
+  seedEvent(
+    2,
+    "appointment_cancellation",
+    "Appointment cancellation",
+    "Sent when an appointment is cancelled",
+    {
+      smsEnabled: true,
+      emailEnabled: true,
+      smsDefaultBody:
+        "Hi {Name}, your Alpine Werks appointment has been cancelled. Contact us to rebook.",
+      emailDefaultSubject: "Your appointment has been cancelled",
+      emailDefaultBody: "Hi {Name},\n\nYour appointment for {Service} has been cancelled.",
+    },
+  ),
+  seedEvent(3, "service_booking", "Service booking", "Sent when a service job is booked in", {
+    emailEnabled: true,
+    smsDefaultBody: "Hi {Name}, we have booked in your {Service}.",
+    emailDefaultSubject: "Service booking confirmed",
+    emailDefaultBody: "Hi {Name},\n\nWe have booked in your {Equipment} for {Service}.",
+  }),
+  seedEvent(4, "service_checkin", "Service check-in", "Sent when equipment is checked in", {
+    smsEnabled: true,
+    smsDefaultBody:
+      "Hi {Name}, we have checked in your {Equipment}. We will let you know when it is ready.",
+    emailDefaultSubject: "Your equipment is checked in",
+    emailDefaultBody:
+      "Hi {Name},\n\nWe have received your {Equipment} and work will begin shortly.",
+  }),
+  seedEvent(
+    5,
+    "service_completion",
+    "Service completion",
+    "Sent when the job is ready for collection",
+    {
+      smsEnabled: true,
+      emailEnabled: true,
+      smsDefaultBody: "Good news {Name}! Your {Equipment} is ready for collection.",
+      emailDefaultSubject: "Your equipment is ready for collection",
+      emailDefaultBody:
+        "Hi {Name},\n\nYour {Service} is complete and your {Equipment} is ready for collection.",
+    },
+  ),
+  seedEvent(6, "walkin_ready", "Walk-in ready", "Sent when the customer is next in the queue", {
+    smsEnabled: true,
+    smsDefaultBody:
+      "Hi {Name}, you are next in the queue at Alpine Werks. Please come to the desk.",
+    emailDefaultSubject: "You are next in the queue",
+    emailDefaultBody: "Hi {Name},\n\nYou are next in the queue — please come to the desk.",
+  }),
+  seedEvent(
+    7,
+    "staff_job_assignment",
+    "Staff job assignment",
+    "Sent to staff when a job is assigned to them",
+    {
+      audience: "staff",
+      enabled: false,
+      smsDefaultBody: "New job assigned: {Service} for {Name}.",
+      emailDefaultSubject: "New job assigned to you",
+      emailDefaultBody:
+        "A new job has been assigned to you.\n\nService: {Service}\nCustomer: {Name}",
+    },
+  ),
+  seedEvent(8, "review_reminder", "Review reminder", "Sent 48 hours after completion", {
+    emailEnabled: true,
+    smsDefaultBody: "Thanks {Name}! How did we do? Leave Alpine Werks a review.",
+    emailDefaultSubject: "How did we do?",
+    emailDefaultBody:
+      "Hi {Name},\n\nWe hope you are enjoying your {Equipment}. We would love your feedback — please leave us a review.",
+    timing: { hours: 48, when: "after", anchor: "completion" },
+  }),
 ]
 
 const clone = <T>(value: T): T => structuredClone(value)
@@ -255,4 +388,22 @@ export const mockWorkshopApi: WorkshopApi = {
     }
     return settle(undefined as void)
   },
+
+  getSendingDomain: () => settle("alpinewerks@pistelabs.com"),
+
+  listNotificationEvents: () => settle(notificationEvents),
+
+  updateNotificationEvent(id, input) {
+    const index = notificationEvents.findIndex((event) => event.id === id)
+    if (index === -1) throw new Error("Notification event " + id + " not found")
+    const event: NotificationEvent = {
+      ...notificationEvents[index],
+      ...clone(input),
+      timing: input.timing ? { ...notificationEvents[index].timing!, ...input.timing } : null,
+    }
+    notificationEvents[index] = event
+    return settle(event)
+  },
+
+  sendNotificationTest: () => settle(undefined as void),
 }

@@ -4,6 +4,9 @@ import type {
   AppointmentInput,
   EquipmentType,
   Id,
+  NotificationChannel,
+  NotificationEvent,
+  NotificationEventInput,
   Service,
   ServiceGroup,
   ServiceInput,
@@ -38,4 +41,12 @@ export interface WorkshopApi {
   createAppointment(groupId: Id, input: AppointmentInput): Promise<Appointment>
   updateAppointment(id: Id, groupId: Id, input: AppointmentInput): Promise<Appointment>
   deleteAppointment(id: Id): Promise<void>
+
+  /** The address every notification is sent from — read-only in the console. */
+  getSendingDomain(): Promise<string>
+  /** Notification events, ordered by position. */
+  listNotificationEvents(): Promise<NotificationEvent[]>
+  updateNotificationEvent(id: Id, input: NotificationEventInput): Promise<NotificationEvent>
+  /** Fires one test message; the 15-per-hour limit is enforced before calling. */
+  sendNotificationTest(id: Id, channel: NotificationChannel, recipient: string): Promise<void>
 }

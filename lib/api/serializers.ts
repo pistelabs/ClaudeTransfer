@@ -1,5 +1,7 @@
 import type {
   AppointmentDto,
+  NotificationEventDto,
+  NotificationEventPayload,
   AppointmentFieldDto,
   AppointmentGroupDto,
   AppointmentPayload,
@@ -12,6 +14,8 @@ import type {
 import type {
   Appointment,
   AppointmentGroup,
+  NotificationEvent,
+  NotificationEventInput,
   AppointmentInput,
   EquipmentType,
   Questionnaire,
@@ -269,5 +273,67 @@ export function toServiceGroup(dto: ServiceGroupDto): ServiceGroup {
     name: dto.name ?? "",
     position: dto.position ?? 0,
     services: (dto.services ?? []).map(toService),
+  }
+}
+
+export function toNotificationEvent(dto: NotificationEventDto): NotificationEvent {
+  return {
+    id: String(dto.id),
+    key: dto.key ?? "",
+    name: dto.name ?? "",
+    audience: dto.audience ?? "customer",
+    description: dto.description ?? "",
+    position: dto.position ?? 0,
+
+    enabled: !!dto.enabled,
+    smsEnabled: !!dto.sms_enabled,
+    emailEnabled: !!dto.email_enabled,
+
+    smsMode: dto.sms_mode ?? "default",
+    smsBody: dto.sms_body ?? "",
+    smsDefaultBody: dto.sms_default_body ?? "",
+
+    emailMode: dto.email_mode ?? "default",
+    emailSubject: dto.email_subject ?? "",
+    emailBody: dto.email_body ?? "",
+    emailDefaultSubject: dto.email_default_subject ?? "",
+    emailDefaultBody: dto.email_default_body ?? "",
+    emailImages: (dto.email_images ?? []).map((image) => ({
+      id: image.id === undefined ? undefined : String(image.id),
+      key: image.id === undefined ? fieldKey() : "image-" + image.id,
+      src: image.src ?? "",
+      placement: image.placement ?? "header",
+    })),
+
+    timing:
+      dto.timing_hours === null || dto.timing_hours === undefined
+        ? null
+        : {
+            hours: dto.timing_hours,
+            when: dto.timing_when ?? "before",
+            anchor: dto.timing_anchor ?? "",
+          },
+  }
+}
+
+export function fromNotificationEventInput(
+  input: NotificationEventInput,
+): NotificationEventPayload {
+  return {
+    enabled: input.enabled,
+    sms_enabled: input.smsEnabled,
+    email_enabled: input.emailEnabled,
+    sms_mode: input.smsMode,
+    sms_body: input.smsBody,
+    email_mode: input.emailMode,
+    email_subject: input.emailSubject,
+    email_body: input.emailBody,
+    email_images: input.emailImages.map((image, index) => ({
+      ...(image.id ? { id: image.id } : {}),
+      src: image.src,
+      placement: image.placement,
+      position: index,
+    })),
+    ...(input.timing ? { timing_hours: input.timing.hours } : {}),
   }
 }

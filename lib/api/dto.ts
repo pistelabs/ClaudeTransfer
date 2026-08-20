@@ -122,3 +122,57 @@ export interface AppointmentGroupDto {
   position: number
   appointments: AppointmentDto[]
 }
+
+export interface EmailImageDto {
+  id?: number | string
+  src: string
+  placement: "header" | "above_body" | "below_body" | "footer"
+  position?: number
+}
+
+export interface NotificationEventDto {
+  id: number | string
+  key: string
+  name: string
+  audience: "customer" | "staff"
+  description: string
+  position: number
+
+  enabled: boolean
+  sms_enabled: boolean
+  email_enabled: boolean
+
+  sms_mode: "default" | "custom"
+  sms_body: string
+  sms_default_body: string
+
+  email_mode: "default" | "custom"
+  email_subject: string
+  email_body: string
+  email_default_subject: string
+  email_default_body: string
+  email_images: EmailImageDto[]
+
+  /** Null on events that fire immediately. */
+  timing_hours: number | null
+  timing_when: "before" | "after" | null
+  timing_anchor: string | null
+}
+
+/** PATCH body — only the editable fields are ever sent. */
+export interface NotificationEventPayload {
+  enabled: boolean
+  sms_enabled: boolean
+  email_enabled: boolean
+  sms_mode: "default" | "custom"
+  sms_body: string
+  email_mode: "default" | "custom"
+  email_subject: string
+  email_body: string
+  email_images: EmailImageDto[]
+  timing_hours?: number | null
+}
+
+export interface CompanySendingDomainDto {
+  address: string
+}

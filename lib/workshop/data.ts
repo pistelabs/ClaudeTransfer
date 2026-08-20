@@ -2,6 +2,9 @@ import type {
   Appointment,
   AppointmentInput,
   GeneralSettings,
+  ImagePlacement,
+  NotificationEvent,
+  NotificationEventInput,
   RequiredField,
   Service,
   ServiceInput,
@@ -47,6 +50,43 @@ export const FIELD_TYPE_LABELS: Record<RequiredField["type"], string> = {
 /** Groups and services are ordered by the position the backend assigns. */
 export function byPosition<T extends { position: number; id: string }>(a: T, b: T) {
   return a.position - b.position || Number(a.id) - Number(b.id)
+}
+
+/** Merge tags offered in the message editors. */
+export const MERGE_TAGS = [
+  "{Name}",
+  "{Equipment}",
+  "{Service}",
+  "{Appointment}",
+  "{Date}",
+  "{Time}",
+]
+
+export const IMAGE_PLACEMENTS: Array<{ value: ImagePlacement; label: string }> = [
+  { value: "header", label: "Header" },
+  { value: "above_body", label: "Above body" },
+  { value: "below_body", label: "Below body" },
+  { value: "footer", label: "Footer" },
+]
+
+/** Test sends are capped at 15 per rolling hour across SMS and email. */
+const TEST_SEND_LIMIT = 15
+const TEST_SEND_WINDOW_MS = 60 * 60 * 1000
+let testSendLog: number[] = []
+
+function pruneTestSendLog() {
+  const cutoff = Date.now() - TEST_SEND_WINDOW_MS
+  testSendLog = testSendLog.filter((timestamp) => timestamp > cutoff)
+}
+
+export function testSendAllowed() {
+  pruneTestSendLog()
+  return testSendLog.length < TEST_SEND_LIMIT
+}
+
+export function recordTestSend() {
+  pruneTestSendLog()
+  testSendLog.push(Date.now())
 }
 
 let localSeed = 0
@@ -136,6 +176,22 @@ export function toAppointmentInput(appointment: Appointment): AppointmentInput {
   void groupId
   void position
   return structuredClone(input)
+}
+
+/** The editable half of a notification event — what PATCH sends back. */
+export function toNotificationEventInput(event: NotificationEvent): NotificationEventInput {
+  return {
+    enabled: event.enabled,
+    smsEnabled: event.smsEnabled,
+    emailEnabled: event.emailEnabled,
+    smsMode: event.smsMode,
+    smsBody: event.smsBody,
+    emailMode: event.emailMode,
+    emailSubject: event.emailSubject,
+    emailBody: event.emailBody,
+    emailImages: structuredClone(event.emailImages),
+    timing: event.timing ? { ...event.timing } : null,
+  }
 }
 
 export function makeRequiredField(): RequiredField {

@@ -151,3 +151,72 @@ export interface AppointmentGroup {
   position: number
   appointments: Appointment[]
 }
+
+export type NotificationAudience = "customer" | "staff"
+export type MessageMode = "default" | "custom"
+export type ImagePlacement = "header" | "above_body" | "below_body" | "footer"
+export type NotificationChannel = "sms" | "email"
+
+export interface EmailImage {
+  id?: Id
+  key: string
+  src: string
+  placement: ImagePlacement
+}
+
+/** When a reminder-style event fires, relative to its anchor. */
+export interface NotificationTiming {
+  hours: number
+  when: "before" | "after"
+  /** What the offset is measured from, e.g. "the appointment". */
+  anchor: string
+}
+
+export interface NotificationEvent {
+  id: Id
+  /** Stable slug, e.g. appointment_reminder. */
+  key: string
+  name: string
+  audience: NotificationAudience
+  description: string
+  position: number
+
+  enabled: boolean
+  smsEnabled: boolean
+  emailEnabled: boolean
+
+  smsMode: MessageMode
+  smsBody: string
+  /** Copy used when smsMode is "default"; read-only. */
+  smsDefaultBody: string
+
+  emailMode: MessageMode
+  emailSubject: string
+  emailBody: string
+  emailDefaultSubject: string
+  emailDefaultBody: string
+  emailImages: EmailImage[]
+
+  /** Present on reminder-style events only. */
+  timing: NotificationTiming | null
+}
+
+/** The editable half of a notification event. */
+export type NotificationEventInput = Pick<
+  NotificationEvent,
+  | "enabled"
+  | "smsEnabled"
+  | "emailEnabled"
+  | "smsMode"
+  | "smsBody"
+  | "emailMode"
+  | "emailSubject"
+  | "emailBody"
+  | "emailImages"
+  | "timing"
+>
+
+export interface CompanySendingDomain {
+  /** Read-only address every notification is sent from. */
+  address: string
+}

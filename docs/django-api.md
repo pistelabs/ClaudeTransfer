@@ -48,6 +48,10 @@ Plain lists and DRF's paginated `{count, next, previous, results}` envelope are 
 | POST | `/appointments/` | Full appointment payload including `group` |
 | PUT | `/appointments/{id}/` | Full appointment payload |
 | DELETE | `/appointments/{id}/` | |
+| GET | `/sending-domain/` | `{ "address": "alpinewerks@pistelabs.com" }` — read-only |
+| GET | `/notifications/` | Notification events, ordered by `position` |
+| PATCH | `/notifications/{id}/` | Editable fields only (see below) |
+| POST | `/notifications/{id}/send-test/` | `{ "channel": "sms" \| "email", "recipient": "…" }` |
 
 ## Service payload
 
@@ -159,6 +163,44 @@ Notes:
   `booking`, `customer`, `staff`. `copy_to_customer` applies to booking fields and mirrors the
   field onto the Customer information tab.
 - `bookable_services` is a list of service PKs, used when `allow_service_booking` is true.
+
+## Notification payload
+
+`GET /notifications/` returns one row per event; the console only ever PATCHes the editable half:
+
+```json
+{
+  "enabled": true,
+  "sms_enabled": true,
+  "email_enabled": false,
+  "sms_mode": "custom",
+  "sms_body": "Hi {Name}, your kit is ready.",
+  "email_mode": "default",
+  "email_subject": "",
+  "email_body": "",
+  "email_images": [{ "src": "https://…/logo.png", "placement": "header", "position": 0 }],
+  "timing_hours": 24
+}
+```
+
+The read side adds the identity and default copy, which the console never writes:
+`key`, `name`, `audience` (`customer` / `staff`), `description`, `position`,
+`sms_default_body`, `email_default_subject`, `email_default_body`,
+`timing_when` (`before` / `after`) and `timing_anchor`.
+
+Notes:
+
+- Events are seeded rows, not user-created — there is no POST or DELETE for them.
+- `*_mode` picks between the stock copy (`default`, shown read-only) and the shop's own text
+  (`custom`).
+- `email_images.placement` is one of `header`, `above_body`, `below_body`, `footer`; the list is
+  writable and nested, ordered by `position`.
+- `timing_hours` is only sent for events that have a timing (appointment reminder, review
+  reminder).
+- **Test sends are capped at 15 per rolling hour** across SMS and email. The console enforces this
+  before calling `send-test/`, but the endpoint should enforce it too — a client-side limit is not
+  a limit.
+- The sending domain is fixed infrastructure config, so `/sending-domain/` is read-only.
 
 ## Reference implementation
 
@@ -300,6 +342,58 @@ class AppointmentFieldOption(models.Model):
         ordering = ["position", "id"]
 
 
+class NotificationEvent(models.Model):
+    AUDIENCES = [("customer", "Customer"), ("staff", "Staff")]
+    MODES = [("default", "Default"), ("custom", "Custom")]
+    WHEN = [("before", "Before"), ("after", "After")]
+
+    key = models.SlugField(unique=True)
+    name = models.CharField(max_length=120)
+    audience = models.CharField(max_length=8, choices=AUDIENCES, default="customer")
+    description = models.CharField(max_length=200, blank=True)
+    position = models.PositiveIntegerField(default=0)
+
+    enabled = models.BooleanField(default=True)
+    sms_enabled = models.BooleanField(default=False)
+    email_enabled = models.BooleanField(default=False)
+
+    sms_mode = models.CharField(max_length=7, choices=MODES, default="default")
+    sms_body = models.TextField(blank=True)
+    sms_default_body = models.TextField(blank=True)
+
+    email_mode = models.CharField(max_length=7, choices=MODES, default="default")
+    email_subject = models.CharField(max_length=200, blank=True)
+    email_body = models.TextField(blank=True)
+    email_default_subject = models.CharField(max_length=200, blank=True)
+    email_default_body = models.TextField(blank=True)
+
+    timing_hours = models.PositiveIntegerField(null=True, blank=True)
+    timing_when = models.CharField(max_length=6, choices=WHEN, null=True, blank=True)
+    timing_anchor = models.CharField(max_length=120, blank=True)
+
+    class Meta:
+        ordering = ["position", "id"]
+
+
+class NotificationImage(models.Model):
+    PLACEMENTS = [
+        ("header", "Header"),
+        ("above_body", "Above body"),
+        ("below_body", "Below body"),
+        ("footer", "Footer"),
+    ]
+
+    event = models.ForeignKey(
+        NotificationEvent, related_name="email_images", on_delete=models.CASCADE
+    )
+    src = models.URLField()
+    placement = models.CharField(max_length=10, choices=PLACEMENTS, default="header")
+    position = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["position", "id"]
+
+
 class RequiredField(models.Model):
     FIELD_TYPES = [("free", "Free entry"), ("options", "Predefined options"), ("file", "File upload")]
     SELECT_MODES = [("single", "Single select"), ("multi", "Multi select")]
@@ -333,6 +427,8 @@ from .models import (
     AppointmentFieldOption,
     AppointmentGroup,
     EquipmentType,
+    NotificationEvent,
+    NotificationImage,
     RequiredField,
     RequiredFieldOption,
     Service,
@@ -513,17 +609,71 @@ class AppointmentGroupSerializer(serializers.ModelSerializer):
         last = AppointmentGroup.objects.order_by("-position").first()
         validated_data.setdefault("position", last.position + 1 if last else 0)
         return super().create(validated_data)
+
+class NotificationImageSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(required=False)
+
+    class Meta:
+        model = NotificationImage
+        fields = ["id", "src", "placement", "position"]
+
+
+class NotificationEventSerializer(serializers.ModelSerializer):
+    email_images = NotificationImageSerializer(many=True, required=False)
+
+    class Meta:
+        model = NotificationEvent
+        fields = "__all__"
+        # Identity and default copy are seeded, never written by the console.
+        read_only_fields = [
+            "key",
+            "name",
+            "audience",
+            "description",
+            "position",
+            "sms_default_body",
+            "email_default_subject",
+            "email_default_body",
+            "timing_when",
+            "timing_anchor",
+        ]
+
+    def update(self, instance, validated_data):
+        images = validated_data.pop("email_images", None)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        if images is not None:
+            instance.email_images.all().delete()
+            for position, image in enumerate(images):
+                image.pop("id", None)
+                image["position"] = position
+                NotificationImage.objects.create(event=instance, **image)
+        return instance
 ```
 
 ```python
 # views.py
-from rest_framework import viewsets
+from django.conf import settings
+from django.utils import timezone
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
-from .models import Appointment, AppointmentGroup, EquipmentType, Service, ServiceGroup
+from .models import (
+    Appointment,
+    AppointmentGroup,
+    EquipmentType,
+    NotificationEvent,
+    Service,
+    ServiceGroup,
+)
 from .serializers import (
     AppointmentGroupSerializer,
     AppointmentSerializer,
     EquipmentTypeSerializer,
+    NotificationEventSerializer,
     ServiceGroupSerializer,
     ServiceSerializer,
 )
@@ -561,16 +711,55 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         "equipment_types", "bookable_services", "fields__options"
     )
     serializer_class = AppointmentSerializer
+
+
+class SendingDomainView(APIView):
+    """Read-only: the address every notification is sent from."""
+
+    def get(self, request):
+        return Response({"address": settings.NOTIFICATION_SENDING_DOMAIN})
+
+
+class NotificationEventViewSet(viewsets.ModelViewSet):
+    """Events are seeded rows — list, retrieve and update only."""
+
+    http_method_names = ["get", "patch", "put", "post", "head", "options"]
+    queryset = NotificationEvent.objects.prefetch_related("email_images")
+    serializer_class = NotificationEventSerializer
+
+    @action(detail=True, methods=["post"], url_path="send-test")
+    def send_test(self, request, pk=None):
+        event = self.get_object()
+        channel = request.data.get("channel")
+        recipient = request.data.get("recipient", "").strip()
+        if channel not in {"sms", "email"} or not recipient:
+            return Response(
+                {"detail": "channel and recipient are required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        # Enforce the 15-per-hour cap server-side as well as in the console.
+        if not test_send_allowed(request.user):
+            return Response(
+                {"detail": "Test-send limit reached. Try again later."},
+                status=status.HTTP_429_TOO_MANY_REQUESTS,
+            )
+        record_test_send(request.user, event, channel, recipient, timezone.now())
+        # …hand off to your SMS/email provider here…
+        return Response(status=status.HTTP_204_NO_CONTENT)
 ```
 
 ```python
 # urls.py
 from rest_framework.routers import DefaultRouter
 
+from django.urls import path
+
 from .views import (
     AppointmentGroupViewSet,
     AppointmentViewSet,
     EquipmentTypeViewSet,
+    NotificationEventViewSet,
+    SendingDomainView,
     ServiceGroupViewSet,
     ServiceViewSet,
 )
@@ -581,8 +770,11 @@ router.register("service-groups", ServiceGroupViewSet)
 router.register("services", ServiceViewSet)
 router.register("appointment-groups", AppointmentGroupViewSet)
 router.register("appointments", AppointmentViewSet)
+router.register("notifications", NotificationEventViewSet)
 
-urlpatterns = router.urls
+urlpatterns = router.urls + [
+    path("sending-domain/", SendingDomainView.as_view()),
+]
 ```
 
 `position` is assigned server-side on create so new services and groups append to the end; the UI

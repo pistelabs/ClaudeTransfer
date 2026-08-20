@@ -2,16 +2,20 @@ import { apiRequest, unwrapList } from "./http"
 import type {
   AppointmentDto,
   AppointmentGroupDto,
+  CompanySendingDomainDto,
   EquipmentTypeDto,
+  NotificationEventDto,
   ServiceDto,
   ServiceGroupDto,
 } from "./dto"
 import {
   fromAppointmentInput,
+  fromNotificationEventInput,
   fromServiceInput,
   toAppointment,
   toAppointmentGroup,
   toEquipmentType,
+  toNotificationEvent,
   toService,
   toServiceGroup,
 } from "./serializers"
@@ -130,5 +134,34 @@ export const djangoWorkshopApi: WorkshopApi = {
 
   async deleteAppointment(id) {
     await apiRequest<void>("/appointments/" + id + "/", { method: "DELETE" })
+  },
+
+  async getSendingDomain() {
+    const dto = await apiRequest<CompanySendingDomainDto>("/sending-domain/")
+    return dto.address
+  },
+
+  async listNotificationEvents() {
+    const body = await apiRequest<NotificationEventDto[] | { results: NotificationEventDto[] }>(
+      "/notifications/",
+    )
+    return unwrapList(body)
+      .map(toNotificationEvent)
+      .sort((a, b) => a.position - b.position)
+  },
+
+  async updateNotificationEvent(id, input) {
+    const dto = await apiRequest<NotificationEventDto>("/notifications/" + id + "/", {
+      method: "PATCH",
+      json: fromNotificationEventInput(input),
+    })
+    return toNotificationEvent(dto)
+  },
+
+  async sendNotificationTest(id, channel, recipient) {
+    await apiRequest<void>("/notifications/" + id + "/send-test/", {
+      method: "POST",
+      json: { channel, recipient },
+    })
   },
 }
