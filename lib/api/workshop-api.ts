@@ -27,6 +27,8 @@ export interface WorkshopApi {
   updateServiceGroup(id: Id, name: string): Promise<ServiceGroup>
   deleteServiceGroup(id: Id): Promise<void>
 
+  /** Commits a new row order for the group; ids are in the order they should appear. */
+  reorderServices(groupId: Id, orderedIds: Id[]): Promise<void>
   createService(groupId: Id, input: ServiceInput): Promise<Service>
   updateService(id: Id, groupId: Id, input: ServiceInput): Promise<Service>
   deleteService(id: Id): Promise<void>
@@ -38,6 +40,7 @@ export interface WorkshopApi {
   updateAppointmentGroup(id: Id, name: string): Promise<AppointmentGroup>
   deleteAppointmentGroup(id: Id): Promise<void>
 
+  reorderAppointments(groupId: Id, orderedIds: Id[]): Promise<void>
   createAppointment(groupId: Id, input: AppointmentInput): Promise<Appointment>
   updateAppointment(id: Id, groupId: Id, input: AppointmentInput): Promise<Appointment>
   deleteAppointment(id: Id): Promise<void>

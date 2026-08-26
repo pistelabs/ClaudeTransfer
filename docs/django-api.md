@@ -35,6 +35,7 @@ Swap `lib/api/http.ts` if you use token or JWT auth instead — it is the only p
 | POST | `/service-groups/` | `{ "name": "Standard tunes" }` |
 | PATCH | `/service-groups/{id}/` | `{ "name": "…" }` |
 | DELETE | `/service-groups/{id}/` | Cascades to its services |
+| POST | `/service-groups/{id}/reorder/` | `{ "services": [3, 1, 2] }` — rewrites `position` |
 | POST | `/services/` | Full service payload including `group` |
 | PUT | `/services/{id}/` | Full service payload (the dialog always sends every field) |
 | DELETE | `/services/{id}/` | |
@@ -45,6 +46,7 @@ Plain lists and DRF's paginated `{count, next, previous, results}` envelope are 
 | POST | `/appointment-groups/` | `{ "name": "Standard" }` |
 | PATCH | `/appointment-groups/{id}/` | `{ "name": "…" }` |
 | DELETE | `/appointment-groups/{id}/` | Cascades to its appointments |
+| POST | `/appointment-groups/{id}/reorder/` | `{ "appointments": [7, 5, 6] }` — rewrites `position` |
 | POST | `/appointments/` | Full appointment payload including `group` |
 | PUT | `/appointments/{id}/` | Full appointment payload |
 | DELETE | `/appointments/{id}/` | |
@@ -655,6 +657,7 @@ class NotificationEventSerializer(serializers.ModelSerializer):
 ```python
 # views.py
 from django.conf import settings
+from django.db import transaction
 from django.utils import timezone
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -679,6 +682,32 @@ from .serializers import (
 )
 
 
+def apply_order(related_manager, ids):
+    """Set position by index for the posted ids, rejecting anything outside the group."""
+    if not isinstance(ids, list) or not ids:
+        return Response({"detail": "A list of ids is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+    rows = {row.pk: row for row in related_manager.all()}
+    try:
+        ordered = [rows[int(pk)] for pk in ids]
+    except (KeyError, TypeError, ValueError):
+        return Response(
+            {"detail": "Ids must all belong to this group."}, status=status.HTTP_400_BAD_REQUEST
+        )
+    if len(ordered) != len(rows):
+        return Response(
+            {"detail": "Every row in the group must be included."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    with transaction.atomic():
+        for position, row in enumerate(ordered):
+            if row.position != position:
+                row.position = position
+                row.save(update_fields=["position"])
+    return Response(status=status.HTTP_204_NO_CONTENT)
+
+
 class EquipmentTypeViewSet(viewsets.ModelViewSet):
     queryset = EquipmentType.objects.all()
     serializer_class = EquipmentTypeSerializer
@@ -689,6 +718,11 @@ class ServiceGroupViewSet(viewsets.ModelViewSet):
         "services__equipment_types", "services__required_fields__options"
     )
     serializer_class = ServiceGroupSerializer
+
+    @action(detail=True, methods=["post"])
+    def reorder(self, request, pk=None):
+        """Rewrite service positions to match the posted id order."""
+        return apply_order(self.get_object().services, request.data.get("services"))
 
 
 class ServiceViewSet(viewsets.ModelViewSet):
@@ -704,6 +738,11 @@ class AppointmentGroupViewSet(viewsets.ModelViewSet):
         "appointments__fields__options",
     )
     serializer_class = AppointmentGroupSerializer
+
+    @action(detail=True, methods=["post"])
+    def reorder(self, request, pk=None):
+        """Rewrite appointment positions to match the posted id order."""
+        return apply_order(self.get_object().appointments, request.data.get("appointments"))
 
 
 class AppointmentViewSet(viewsets.ModelViewSet):
@@ -778,7 +817,9 @@ urlpatterns = router.urls + [
 ```
 
 `position` is assigned server-side on create so new services and groups append to the end; the UI
-keeps its lists sorted by it.
+keeps its lists sorted by it. Rows are drag-reorderable in the console: dropping a row posts the
+group's full id list to `reorder/`, which rewrites `position` to match. The console applies the new
+order immediately and puts it back if the request fails, so the endpoint should be atomic.
 
 `_sync_fields` (on both serializers) deletes and recreates rows, which is the simplest correct
 behaviour for a form that always posts the full list. Switch to an upsert keyed on the incoming `id` if you need the field PKs

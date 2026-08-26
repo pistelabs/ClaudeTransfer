@@ -46,6 +46,8 @@ interface WorkshopContextValue {
   createServiceGroup: (name: string) => Promise<ServiceGroup>
   renameServiceGroup: (groupId: Id, name: string) => Promise<void>
   deleteServiceGroup: (groupId: Id) => Promise<void>
+  /** Applies the new order straight away, then commits it; reverts if the API rejects. */
+  reorderServices: (groupId: Id, orderedIds: Id[]) => Promise<void>
   createService: (groupId: Id, input: ServiceInput) => Promise<Service>
   updateService: (serviceId: Id, groupId: Id, input: ServiceInput) => Promise<Service>
   deleteService: (groupId: Id, serviceId: Id) => Promise<void>
@@ -53,6 +55,7 @@ interface WorkshopContextValue {
   createAppointmentGroup: (name: string) => Promise<AppointmentGroup>
   renameAppointmentGroup: (groupId: Id, name: string) => Promise<void>
   deleteAppointmentGroup: (groupId: Id) => Promise<void>
+  reorderAppointments: (groupId: Id, orderedIds: Id[]) => Promise<void>
   createAppointment: (groupId: Id, input: AppointmentInput) => Promise<Appointment>
   updateAppointment: (
     appointmentId: Id,
@@ -164,6 +167,23 @@ export function WorkshopProvider({ children }: { children: React.ReactNode }) {
         setServiceGroups((groups) => groups.filter((group) => group.id !== groupId))
       },
 
+      async reorderServices(groupId, orderedIds) {
+        const previous = serviceGroups
+        replaceGroup(groupId, (group) => ({
+          ...group,
+          services: orderedIds
+            .map((id) => group.services.find((service) => service.id === id))
+            .filter((service): service is Service => !!service)
+            .map((service, index) => ({ ...service, position: index })),
+        }))
+        try {
+          await api.reorderServices(groupId, orderedIds)
+        } catch (cause) {
+          setServiceGroups(previous)
+          throw cause
+        }
+      },
+
       async createService(groupId, input) {
         const service = await api.createService(groupId, input)
         replaceGroup(groupId, (group) => ({
@@ -204,6 +224,23 @@ export function WorkshopProvider({ children }: { children: React.ReactNode }) {
       async deleteAppointmentGroup(groupId) {
         await api.deleteAppointmentGroup(groupId)
         setAppointmentGroups((groups) => groups.filter((group) => group.id !== groupId))
+      },
+
+      async reorderAppointments(groupId, orderedIds) {
+        const previous = appointmentGroups
+        replaceAppointmentGroup(groupId, (group) => ({
+          ...group,
+          appointments: orderedIds
+            .map((id) => group.appointments.find((appointment) => appointment.id === id))
+            .filter((appointment): appointment is Appointment => !!appointment)
+            .map((appointment, index) => ({ ...appointment, position: index })),
+        }))
+        try {
+          await api.reorderAppointments(groupId, orderedIds)
+        } catch (cause) {
+          setAppointmentGroups(previous)
+          throw cause
+        }
       },
 
       async createAppointment(groupId, input) {

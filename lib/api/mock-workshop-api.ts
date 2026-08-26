@@ -290,6 +290,15 @@ export const mockWorkshopApi: WorkshopApi = {
     return settle(undefined as void)
   },
 
+  reorderServices(groupId, orderedIds) {
+    const group = findGroup(groupId)
+    group.services = orderedIds
+      .map((id) => group.services.find((service) => service.id === id))
+      .filter((service): service is Service => !!service)
+      .map((service, index) => ({ ...service, position: index }))
+    return settle(undefined as void)
+  },
+
   createService(groupId, input: ServiceInput) {
     const group = findGroup(groupId)
     const service: Service = {
@@ -349,6 +358,15 @@ export const mockWorkshopApi: WorkshopApi = {
   deleteAppointmentGroup(id) {
     const index = appointmentGroups.findIndex((group) => group.id === id)
     if (index > -1) appointmentGroups.splice(index, 1)
+    return settle(undefined as void)
+  },
+
+  reorderAppointments(groupId, orderedIds) {
+    const group = findAppointmentGroup(groupId)
+    group.appointments = orderedIds
+      .map((id) => group.appointments.find((appointment) => appointment.id === id))
+      .filter((appointment): appointment is Appointment => !!appointment)
+      .map((appointment, index) => ({ ...appointment, position: index }))
     return settle(undefined as void)
   },
 

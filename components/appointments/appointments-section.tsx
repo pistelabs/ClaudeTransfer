@@ -22,6 +22,7 @@ import { AppointmentDialog } from "@/components/appointments/appointment-dialog"
 import { AppointmentRow } from "@/components/appointments/appointment-row"
 import { ConfirmDeleteDialog } from "@/components/workshop/confirm-delete-dialog"
 import { GroupDialog } from "@/components/workshop/group-dialog"
+import { useDragReorder } from "@/components/workshop/use-drag-reorder"
 import { toAppointmentInput } from "@/lib/workshop/data"
 import { errorMessage, useWorkshop } from "@/lib/workshop/store"
 import type { Appointment, AppointmentInput, Id } from "@/lib/workshop/types"
@@ -46,6 +47,7 @@ export function AppointmentsSection() {
     createAppointment,
     updateAppointment,
     deleteAppointment,
+    reorderAppointments,
   } = useWorkshop()
 
   const [activeGroupId, setActiveGroupId] = React.useState<Id>("")
@@ -77,7 +79,17 @@ export function AppointmentsSection() {
     }
   }
 
-  const appointments = activeGroup?.appointments ?? []
+  const appointments = React.useMemo(() => activeGroup?.appointments ?? [], [activeGroup])
+
+  // Drag (or arrow-key) reordering; the store applies the order and reverts on failure.
+  const reorder = useDragReorder(appointments, async (orderedIds) => {
+    if (!activeGroup) return
+    try {
+      await reorderAppointments(activeGroup.id, orderedIds)
+    } catch (cause) {
+      toast.error(errorMessage(cause))
+    }
+  })
 
   return (
     <div className="flex flex-col gap-6">
@@ -193,7 +205,7 @@ export function AppointmentsSection() {
                         ) : null}
                       </div>
                       <p className="mt-0.5 text-[13px] text-muted-foreground">
-                        Offered to customers when they book a slot.
+                        Offered to customers in this order when they book a slot.
                       </p>
                     </div>
                     <Button onClick={() => setAppointmentDialog({ open: true, appointment: null })}>
@@ -221,12 +233,16 @@ export function AppointmentsSection() {
                     </div>
                   ) : (
                     <div className="flex flex-col">
-                      {appointments.map((appointment) => (
+                      {appointments.map((appointment, index) => (
                         <AppointmentRow
                           key={appointment.id}
                           appointment={appointment}
                           currencySymbol={currencySymbol}
                           busy={busyIds.includes(appointment.id)}
+                          dragging={reorder.dragIndex === index}
+                          dropTarget={reorder.overIndex === index}
+                          dragHandleProps={reorder.handleProps(index)}
+                          {...reorder.rowProps(index)}
                           onEdit={() => setAppointmentDialog({ open: true, appointment })}
                           onDuplicate={() =>
                             withBusy(appointment.id, async () => {

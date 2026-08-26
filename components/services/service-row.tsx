@@ -1,5 +1,6 @@
 "use client"
 
+import * as React from "react"
 import { ClockIcon, CopyIcon, PencilIcon, Trash2Icon } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
@@ -7,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Switch } from "@/components/ui/switch"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { DragHandle } from "@/components/workshop/drag-handle"
 import { formatDuration, formatPrice } from "@/lib/workshop/data"
 import type { Service } from "@/lib/workshop/types"
 import { cn } from "@/lib/utils"
@@ -15,28 +17,72 @@ export function ServiceRow({
   service,
   currencySymbol,
   busy = false,
+  dragging = false,
+  dropTarget = false,
+  dragHandleProps,
   onEdit,
   onDuplicate,
   onDelete,
   onToggleVisibility,
+  onDragStart,
+  onDragEnd,
+  ...dragProps
 }: {
   service: Service
   currencySymbol: string
   /** True while a request for this service is in flight. */
   busy?: boolean
+  /** True while this row is the one being dragged. */
+  dragging?: boolean
+  /** True while a dragged row would drop here. */
+  dropTarget?: boolean
+  dragHandleProps?: Pick<React.ComponentProps<"button">, "onKeyDown">
   onEdit: () => void
   onDuplicate: () => void
   onDelete: () => void
   onToggleVisibility: () => void
-}) {
+} & React.ComponentProps<"div">) {
   const duration = formatDuration(service)
+  // Set synchronously on pointer-down so dragstart in the same gesture sees it.
+  const armed = React.useRef(false)
 
   return (
-    <div className="flex flex-col gap-2 px-5 py-3.5 transition-colors duration-[120ms] not-first:border-t hover:bg-muted sm:flex-row sm:items-center sm:gap-3">
+    <div
+      draggable
+      onDragStart={(event) => {
+        // Only a drag that began on the grip reorders the row.
+        if (!armed.current) {
+          event.preventDefault()
+          return
+        }
+        onDragStart?.(event)
+      }}
+      onDragEnd={(event) => {
+        armed.current = false
+        onDragEnd?.(event)
+      }}
+      className={cn(
+        "flex flex-col gap-2 px-5 py-3.5 transition-colors duration-[120ms] not-first:border-t hover:bg-muted sm:flex-row sm:items-center sm:gap-3",
+        dragging && "opacity-40",
+        dropTarget && !dragging && "bg-primary/5 ring-1 ring-primary/40 ring-inset",
+      )}
+      {...dragProps}
+    >
       <div className="flex min-w-0 flex-1 items-start gap-3">
+        <DragHandle
+          label={"Reorder " + service.name}
+          className="mt-0.5"
+          onPointerDown={() => {
+            armed.current = true
+          }}
+          onPointerUp={() => {
+            armed.current = false
+          }}
+          {...dragHandleProps}
+        />
         <span
           aria-hidden
-          className="mt-1.5 size-2.5 shrink-0 rounded-sm"
+          className="mt-2 size-2.5 shrink-0 rounded-sm"
           style={{ backgroundColor: service.disabled ? "var(--muted-foreground)" : service.color }}
         />
 

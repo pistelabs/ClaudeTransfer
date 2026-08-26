@@ -63,6 +63,13 @@ export const djangoWorkshopApi: WorkshopApi = {
     await apiRequest<void>("/service-groups/" + id + "/", { method: "DELETE" })
   },
 
+  async reorderServices(groupId, orderedIds) {
+    await apiRequest<void>("/service-groups/" + groupId + "/reorder/", {
+      method: "POST",
+      json: { services: orderedIds },
+    })
+  },
+
   async createService(groupId, input) {
     const dto = await apiRequest<ServiceDto>("/services/", {
       method: "POST",
@@ -114,6 +121,13 @@ export const djangoWorkshopApi: WorkshopApi = {
 
   async deleteAppointmentGroup(id) {
     await apiRequest<void>("/appointment-groups/" + id + "/", { method: "DELETE" })
+  },
+
+  async reorderAppointments(groupId, orderedIds) {
+    await apiRequest<void>("/appointment-groups/" + groupId + "/reorder/", {
+      method: "POST",
+      json: { appointments: orderedIds },
+    })
   },
 
   async createAppointment(groupId, input) {

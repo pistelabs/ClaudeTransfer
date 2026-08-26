@@ -19,6 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { ConfirmDeleteDialog } from "@/components/workshop/confirm-delete-dialog"
+import { useDragReorder } from "@/components/workshop/use-drag-reorder"
 import { GroupDialog } from "@/components/workshop/group-dialog"
 import { ServiceDialog } from "@/components/services/service-dialog"
 import { ServiceRow } from "@/components/services/service-row"
@@ -45,6 +46,7 @@ export function ServicesSection() {
     createService,
     updateService,
     deleteService,
+    reorderServices,
   } = useWorkshop()
 
   const [activeGroupId, setActiveGroupId] = React.useState<Id>("")
@@ -75,7 +77,17 @@ export function ServicesSection() {
     }
   }
 
-  const services = activeGroup?.services ?? []
+  const services = React.useMemo(() => activeGroup?.services ?? [], [activeGroup])
+
+  // Drag (or arrow-key) reordering; the store applies the order and reverts on failure.
+  const reorder = useDragReorder(services, async (orderedIds) => {
+    if (!activeGroup) return
+    try {
+      await reorderServices(activeGroup.id, orderedIds)
+    } catch (cause) {
+      toast.error(errorMessage(cause))
+    }
+  })
 
   return (
     <div className="flex flex-col gap-6">
@@ -192,7 +204,7 @@ export function ServicesSection() {
                         ) : null}
                       </div>
                       <p className="mt-0.5 text-[13px] text-muted-foreground">
-                        Shown to customers and staff when booking work in.
+                        Shown to customers and staff in this order when booking work in.
                       </p>
                     </div>
                     <Button onClick={() => setServiceDialog({ open: true, service: null })}>
@@ -220,12 +232,16 @@ export function ServicesSection() {
                     </div>
                   ) : (
                     <div className="flex flex-col">
-                      {services.map((service) => (
+                      {services.map((service, index) => (
                         <ServiceRow
                           key={service.id}
                           service={service}
                           currencySymbol={currencySymbol}
                           busy={busyServiceIds.includes(service.id)}
+                          dragging={reorder.dragIndex === index}
+                          dropTarget={reorder.overIndex === index}
+                          dragHandleProps={reorder.handleProps(index)}
+                          {...reorder.rowProps(index)}
                           onEdit={() => setServiceDialog({ open: true, service })}
                           onDuplicate={() =>
                             withBusyService(service.id, async () => {

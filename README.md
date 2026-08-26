@@ -39,9 +39,11 @@ viewsets, router) that this UI was tested against end to end.
 `/admin/services` — the Services section in full:
 
 - **Service groups** — pill selector (`Tabs`) with live counts, plus add / rename / delete.
-- **Services list** — colour dot, name, `Quoted` / `Hidden` badges, duration + description meta,
-  price, a visibility `Switch`, and edit / duplicate / delete actions. Empty states for both
-  "no services in this group" and "no groups at all".
+- **Services list** — drag handle, colour dot, name, `Quoted` / `Hidden` badges, duration +
+  description meta, price, a visibility `Switch`, and edit / duplicate / delete actions. Rows are
+  reorderable by dragging the grip (or focusing it and pressing ↑ / ↓); the order is what customers
+  and staff see elsewhere, and it is saved to Django. Empty states for both "no services in this
+  group" and "no groups at all".
 - **Add / edit service dialog** (660px, sticky header + footer, scrolling body) with:
   1. **Basics** — name, description, colour swatch picker (Kanban / calendar colour).
   2. **Pricing & duration** — Fixed price vs Quoted per job, price (labelled *Minimum price* when
@@ -61,8 +63,9 @@ viewsets, router) that this UI was tested against end to end.
 `/admin/appointments` — the same structure for appointments:
 
 - **Appointment types** — pill selector with counts, plus add / rename / delete.
-- **Appointments list** — colour dot, name, `Check-in` / `Hidden` badges, duration + description,
-  price (work mode), visibility `Switch`, and edit / duplicate / delete.
+- **Appointments list** — same drag-to-reorder rows, with colour dot, name, `Check-in` / `Hidden`
+  badges, duration + description, price (work mode), visibility `Switch`, and edit / duplicate /
+  delete.
 - **Add / edit appointment dialog** (680px) whose first control picks the mode:
   - **Carry out work** — basics and colour, duration, price, buffer time with Before / After / Both,
     the booking questions (Name / Email / Phone plus custom fields, each with a *Copy to Customer
