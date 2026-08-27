@@ -204,6 +204,8 @@ Notes:
 - **Test sends are capped at 15 per rolling hour** across SMS and email. The console enforces this
   before calling `send-test/`, but the endpoint should enforce it too — a client-side limit is not
   a limit.
+- The recipient comes from a popup prefilled with the admin contact in General settings and can be
+  overridden per send, so `recipient` is whatever the user confirmed — validate it server-side.
 - The sending domain is fixed infrastructure config, so `/sending-domain/` is read-only.
 
 ## Reference implementation

@@ -110,10 +110,7 @@ function MessageForm({
     timingHours: event.timing ? String(event.timing.hours) : "",
   }))
   const [saving, setSaving] = React.useState(false)
-  const [recipientOpen, setRecipientOpen] = React.useState(false)
-  const [recipient, setRecipient] = React.useState(defaultRecipient)
-  const [sending, setSending] = React.useState(false)
-  const [limitMessage, setLimitMessage] = React.useState<string | null>(null)
+  const [testOpen, setTestOpen] = React.useState(false)
   const bodyRef = React.useRef<HTMLTextAreaElement>(null)
 
   const set = <K extends keyof Draft>(key: K, value: Draft[K]) =>
@@ -140,10 +137,6 @@ function MessageForm({
     })
   }
 
-  const validRecipient = isSms
-    ? /^[+\d][\d\s()-]{6,}$/.test(recipient.trim())
-    : /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipient.trim())
-
   const handleSave = async () => {
     setSaving(true)
     try {
@@ -168,30 +161,6 @@ function MessageForm({
       )
     } finally {
       setSaving(false)
-    }
-  }
-
-  const handleSendTest = async () => {
-    if (!recipientOpen) {
-      setRecipientOpen(true)
-      return
-    }
-    if (!validRecipient) return
-    // Max 15 test sends per rolling hour across SMS and email.
-    if (!testSendAllowed()) {
-      setLimitMessage("Test-send limit reached. Try again later.")
-      return
-    }
-    setSending(true)
-    setLimitMessage(null)
-    try {
-      await onSendTest(recipient.trim())
-      recordTestSend()
-      toast.success("Test " + (isSms ? "SMS" : "email") + " sent to " + recipient.trim())
-    } catch (cause) {
-      toast.error(errorMessage(cause))
-    } finally {
-      setSending(false)
     }
   }
 
@@ -382,42 +351,12 @@ function MessageForm({
             </div>
           </>
         ) : null}
-
-        {recipientOpen ? (
-          <>
-            <Separator />
-            <div className="grid gap-2">
-              <Label htmlFor="test-recipient">
-                Send test to {isSms ? "phone number" : "email address"}
-              </Label>
-              <Input
-                id="test-recipient"
-                value={recipient}
-                inputMode={isSms ? "tel" : "email"}
-                aria-invalid={!validRecipient}
-                placeholder={isSms ? "+41 79 000 00 00" : "you@example.com"}
-                onChange={(teEvent) => setRecipient(teEvent.target.value)}
-              />
-              {!validRecipient ? (
-                <p className="text-xs text-destructive">
-                  Enter a valid {isSms ? "phone number" : "email address"}.
-                </p>
-              ) : null}
-              {limitMessage ? <p className="text-xs text-destructive">{limitMessage}</p> : null}
-            </div>
-          </>
-        ) : null}
       </div>
 
       <DialogFooter className="border-t px-6 py-4 sm:justify-between">
-        <Button
-          type="button"
-          variant="outline"
-          disabled={sending || (recipientOpen && !validRecipient)}
-          onClick={handleSendTest}
-        >
+        <Button type="button" variant="outline" onClick={() => setTestOpen(true)}>
           <SendIcon />
-          {sending ? "Sending…" : recipientOpen ? "Send now" : "Send test"}
+          Send test
         </Button>
         <div className="flex gap-2">
           <Button type="button" variant="outline" disabled={saving} onClick={onCancel}>
@@ -427,6 +366,146 @@ function MessageForm({
             {saving ? "Saving…" : "Save"}
           </Button>
         </div>
+      </DialogFooter>
+
+      <SendTestDialog
+        open={testOpen}
+        onOpenChange={setTestOpen}
+        channel={channel}
+        eventName={event.name}
+        defaultRecipient={defaultRecipient}
+        onSend={onSendTest}
+      />
+    </>
+  )
+}
+
+/**
+ * Confirm-and-send popup. Opens with the address from General settings filled
+ * in; editing it only affects this one send, and closing forgets the change.
+ */
+function SendTestDialog({
+  open,
+  onOpenChange,
+  channel,
+  eventName,
+  defaultRecipient,
+  onSend,
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  channel: NotificationChannel
+  eventName: string
+  defaultRecipient: string
+  onSend: (recipient: string) => Promise<void>
+}) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[420px]">
+        {/* Mounted only while open, so the recipient always starts from the default. */}
+        <SendTestForm
+          channel={channel}
+          eventName={eventName}
+          defaultRecipient={defaultRecipient}
+          onCancel={() => onOpenChange(false)}
+          onSend={async (recipient) => {
+            await onSend(recipient)
+            onOpenChange(false)
+          }}
+        />
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function SendTestForm({
+  channel,
+  eventName,
+  defaultRecipient,
+  onCancel,
+  onSend,
+}: {
+  channel: NotificationChannel
+  eventName: string
+  defaultRecipient: string
+  onCancel: () => void
+  onSend: (recipient: string) => Promise<void>
+}) {
+  const isSms = channel === "sms"
+  const [recipient, setRecipient] = React.useState(defaultRecipient)
+  const [sending, setSending] = React.useState(false)
+  const [limitMessage, setLimitMessage] = React.useState<string | null>(null)
+
+  const trimmed = recipient.trim()
+  const valid = isSms
+    ? /^[+\d][\d\s()-]{6,}$/.test(trimmed)
+    : /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)
+
+  const send = async () => {
+    if (!valid || sending) return
+    // Max 15 test sends per rolling hour across SMS and email.
+    if (!testSendAllowed()) {
+      setLimitMessage("Test-send limit reached. Try again later.")
+      return
+    }
+    setSending(true)
+    setLimitMessage(null)
+    try {
+      await onSend(trimmed)
+      recordTestSend()
+      toast.success("Test " + (isSms ? "SMS" : "email") + " sent to " + trimmed)
+    } catch (cause) {
+      toast.error(errorMessage(cause))
+    } finally {
+      setSending(false)
+    }
+  }
+
+  return (
+    <>
+      <DialogHeader>
+        <DialogTitle>Send test {isSms ? "SMS" : "email"}</DialogTitle>
+        <DialogDescription>
+          Sends the {eventName.toLowerCase()} message as it is currently saved.
+        </DialogDescription>
+      </DialogHeader>
+
+      <div className="grid gap-2">
+        <Label htmlFor="test-recipient">{isSms ? "Phone number" : "Email address"}</Label>
+        <Input
+          id="test-recipient"
+          autoFocus
+          value={recipient}
+          inputMode={isSms ? "tel" : "email"}
+          aria-invalid={!valid}
+          placeholder={isSms ? "+41 79 000 00 00" : "you@example.com"}
+          onChange={(event) => setRecipient(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.preventDefault()
+              void send()
+            }
+          }}
+        />
+        <p className="text-xs text-muted-foreground">
+          Prefilled from General settings. Changing it here only affects this send.
+        </p>
+        {!valid && trimmed.length > 0 ? (
+          <p className="text-xs text-destructive">
+            Enter a valid {isSms ? "phone number" : "email address"}.
+          </p>
+        ) : null}
+        {limitMessage ? <p className="text-xs text-destructive">{limitMessage}</p> : null}
+      </div>
+
+      <DialogFooter>
+        <Button type="button" variant="outline" disabled={sending} onClick={onCancel}>
+          Cancel
+        </Button>
+        <Button type="button" disabled={!valid || sending} onClick={send}>
+          <SendIcon />
+          {sending ? "Sending…" : "Send now"}
+        </Button>
       </DialogFooter>
     </>
   )

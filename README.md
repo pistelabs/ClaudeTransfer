@@ -83,10 +83,11 @@ viewsets, router) that this UI was tested against end to end.
   ACTIVE`) with an active count, per-channel pills that switch SMS and email on or off, a pencil
   that opens the editor, and a `Switch` for the whole event. Disabled events dim their row.
 - **Message editors** — Default / Custom toggle (the stock copy stays read-only on Default), merge
-  tags inserted at the cursor, a send-timing row on the reminder events, and Send test, which
-  reveals a recipient prefilled from General settings, validates it as a phone number or email, and
-  is capped at 15 sends per rolling hour across both channels. The email editor adds a subject line
-  and images with a header / above body / below body / footer position.
+  tags inserted at the cursor, and a send-timing row on the reminder events. The email editor adds
+  a subject line and images with a header / above body / below body / footer position.
+- **Send test** — opens a popup with the address (or number) from General settings filled in. It can
+  be changed for that one send, is validated as a phone number or email, and sends on **Send now**.
+  Test sends are capped at 15 per rolling hour across both channels.
 
 Loading, empty and error states are covered: a skeleton while the API responds, an alert with a
 retry button when it fails, inline errors on save, and disabled controls while a request is in
