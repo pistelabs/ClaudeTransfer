@@ -109,6 +109,14 @@ export function monthCells(monthOffset: number, now = new Date()): MonthCell[] {
   return cells;
 }
 
+/**
+ * How many months a date sits from the current one — the month a calendar has to
+ * open on for that date to be on screen at all.
+ */
+export function monthOffsetOf(d: Date, now = new Date()): number {
+  return (d.getFullYear() - now.getFullYear()) * 12 + (d.getMonth() - now.getMonth());
+}
+
 export function monthLabel(monthOffset: number, now = new Date()): string {
   const d = new Date(now.getFullYear(), now.getMonth() + monthOffset, 1);
   return `${d.toLocaleString('en-GB', { month: 'long' })} ${d.getFullYear()}`;

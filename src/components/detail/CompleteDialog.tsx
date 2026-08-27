@@ -45,7 +45,8 @@ export function CompleteDialog({ detail }: { detail: DetailInfo }) {
   const { completeStep, pdfReport, saved, closeComplete, setCompleteStep, toggleSvcDone, togglePdf, finishComplete } =
     store;
 
-  useEscape(true, closeComplete);
+  // the other-payment-options menu sits over this dialog, so it takes Escape first
+  useEscape(!store.posMenu, closeComplete);
 
   const groups = workshopGroups(store, detail);
   const onReview = completeStep === 'review';

@@ -32,6 +32,15 @@ network access. Offline the app still runs, just in a system sans-serif.
 - **Plain CSS** with design tokens as custom properties. The design specifies exact pixel
   values (11.5px type, 34px controls, 64px hour rows), so hand-written CSS tracks it more
   honestly than utility classes would.
+- **shadcn/ui component anatomy**, in `components/ui/primitives.tsx`. shadcn's own components
+  are Tailwind, which this build does not use, so the primitives reproduce their shape instead:
+  the same names and props (`Card`/`CardHeader`/`CardTitle`, `Button` with `variant` and `size`,
+  `Badge`, `Separator`, `Label`, `ButtonGroup`, `DropdownMenu`/`Popover` with `Trigger`,
+  `Content`, `Item`, `Label` and `Separator`), styled against the tokens. Triggers take
+  `asChild`, panels take `align` and `side`, and the roles match — `menu`/`menuitem` for a
+  dropdown, `dialog` for a popover. Dropping in the generated shadcn components later is a
+  like-for-like swap. Two Button variants go beyond shadcn's neutral palette because the design
+  asks for them: `pay` for the money-in green, `dark` for the near-black beside it.
 - **lucide-react** for icons.
 
 ## Layout
@@ -49,7 +58,7 @@ src/
     schedule/           the grid: columns, bands, blocks, buffers, drag and selection
     booking/            new-appointment sheet and its steps, team meeting, new customer
     detail/             appointment detail sheet, its three tabs, complete dialog
-    ui/                 avatar, question field, outside-click and escape hooks
+    ui/                 shadcn-shaped primitives, avatar, question field, hooks
   styles/               tokens plus one stylesheet per surface
 ```
 
@@ -116,6 +125,8 @@ the "now" line and the Today/Upcoming/Past pills meaningful whenever you open it
   popover offering the four routes the shop uses (Shopify, a Shopify link, Square, Stripe),
   takes the whole outstanding balance against one, and stamps the time and who took it. It
   turns green when paid and amber while a link is outstanding.
+- **Escape takes the topmost layer only.** A menu or popover opened over a sheet or a dialog
+  closes on the first press; whatever it was covering closes on the next.
 - **Closing out has three endings.** Send to POS keeps the button in the complete dialog; the
   chevron beside it offers the other two. A payment link is sent and the booking is marked
   awaiting payment — the balance stays owing, because a link is not money. An external
@@ -142,7 +153,9 @@ the "now" line and the Today/Upcoming/Past pills meaningful whenever you open it
   opens a month calendar with Today and Tomorrow beneath it. Any date can be opened, forwards
   or back; the arrows step a day, or a week in week view, rolling over the week boundary. A
   booking carries the week it belongs to, so other weeks open empty until something is booked
-  into them — the seed only fills the current one.
+  into them — the seed only fills the current one. A booking sheet opened from a date in
+  another month opens its calendar on that month, so the chosen date is on screen rather than
+  a month back.
 - **Column widths persist per column** and per view; the shift-hours label drops out below
   190px so name and role keep priority. Columns share any spare width so a wide window
   fills edge to edge, and scroll horizontally when it is narrow.

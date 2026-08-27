@@ -234,6 +234,24 @@
   border-color: var(--success-border);
 }
 
+.button--pay {
+  color: #fff;
+  background: var(--pay);
+}
+
+.button--pay:hover {
+  background: var(--pay-hover);
+}
+
+.button--dark {
+  color: #fff;
+  background: var(--n-950);
+}
+
+.button--dark:hover {
+  background: var(--dark-action);
+}
+
 .button--size-sm {
   height: 32px;
   padding: 0 12px;
@@ -254,6 +272,105 @@
   width: 32px;
   height: 32px;
   padding: 0;
+}
+
+/* ---- ButtonGroup ---- */
+
+.button-group {
+  display: inline-flex;
+  align-items: stretch;
+}
+
+.button-group > .button:not(:first-child) {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.button-group > .button:not(:last-child) {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+/* ---- DropdownMenu / Popover ---- */
+
+.dropdown-menu,
+.popover {
+  position: absolute;
+  z-index: 60;
+  background: #fff;
+  border: 1px solid var(--n-125);
+  border-radius: var(--r-input);
+  box-shadow: var(--sh-dialog);
+}
+
+.dropdown-menu {
+  min-width: 206px;
+  padding: 4px;
+  overflow: hidden;
+  border-color: var(--n-150);
+  border-radius: var(--r-control);
+}
+
+.dropdown-menu--start,
+.popover--start {
+  left: 0;
+}
+
+.dropdown-menu--end,
+.popover--end {
+  right: 0;
+}
+
+.dropdown-menu--top,
+.popover--top {
+  bottom: calc(100% + 8px);
+}
+
+.dropdown-menu--bottom,
+.popover--bottom {
+  top: calc(100% + 8px);
+}
+
+.dropdown-menu__item {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+  padding: 9px 10px;
+  color: var(--n-800);
+  font-size: 13px;
+  text-align: left;
+  background: none;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.dropdown-menu__item:hover {
+  background: var(--n-40);
+}
+
+.dropdown-menu__item--destructive {
+  color: var(--danger);
+}
+
+.dropdown-menu__item--destructive:hover {
+  background: var(--danger-tint);
+}
+
+.dropdown-menu__label {
+  padding: 6px 7px 5px;
+  color: var(--n-400);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.dropdown-menu__separator {
+  height: 1px;
+  margin: 4px -4px;
+  background: var(--n-100);
 }
 
 /* ---- DataRow ---- */

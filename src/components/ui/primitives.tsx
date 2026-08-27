@@ -1,4 +1,13 @@
-import type { ButtonHTMLAttributes, HTMLAttributes, LabelHTMLAttributes, ReactNode } from 'react';
+import { cloneElement, createContext, useContext } from 'react';
+import type {
+  ButtonHTMLAttributes,
+  HTMLAttributes,
+  LabelHTMLAttributes,
+  MouseEvent,
+  ReactElement,
+  ReactNode,
+} from 'react';
+import { useEscape, useOutsideClick } from './hooks';
 
 /**
  * shadcn/ui/-shaped primitives.
@@ -72,7 +81,20 @@ export function Label({ className, ...props }: LabelHTMLAttributes<HTMLLabelElem
 
 // ---- Button --------------------------------------------------------------
 
-export type ButtonVariant = 'default' | 'secondary' | 'outline' | 'ghost' | 'destructive' | 'success';
+/**
+ * shadcn's own set, plus two the design asks for: `pay` is the money-in green of
+ * the payment banner's primary action, and `dark` the near-black it pairs with —
+ * neither exists in shadcn's neutral palette.
+ */
+export type ButtonVariant =
+  | 'default'
+  | 'secondary'
+  | 'outline'
+  | 'ghost'
+  | 'destructive'
+  | 'success'
+  | 'pay'
+  | 'dark';
 export type ButtonSize = 'sm' | 'default' | 'lg' | 'icon';
 
 export function Button({
@@ -86,6 +108,142 @@ export function Button({
   return (
     <button type={type} className={cx('button', `button--${variant}`, `button--size-${size}`, className)} {...props} />
   );
+}
+
+// ---- ButtonGroup ---------------------------------------------------------
+
+/** Buttons joined into one control: inner corners flattened, no gap between. */
+export function ButtonGroup({ className, ...props }: DivProps) {
+  return <div role="group" className={cx('button-group', className)} {...props} />;
+}
+
+// ---- DropdownMenu / Popover ----------------------------------------------
+
+/**
+ * Both are the same machinery — an anchored panel that closes on Escape or an
+ * outside click — so they share it, exactly as shadcn's do underneath. Open state
+ * is controlled, since it lives in the scheduler store.
+ */
+interface LayerCtx {
+  open: boolean;
+  setOpen: (v: boolean) => void;
+  kind: 'menu' | 'dialog';
+}
+
+const Layer = createContext<LayerCtx | null>(null);
+
+function useLayer(): LayerCtx {
+  const ctx = useContext(Layer);
+  if (!ctx) throw new Error('Trigger and Content must sit inside their DropdownMenu or Popover');
+  return ctx;
+}
+
+interface RootProps extends DivProps {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+}
+
+function LayerRoot({ open, onOpenChange, kind, className, children, ...props }: RootProps & { kind: LayerCtx['kind'] }) {
+  const ref = useOutsideClick<HTMLDivElement>(open, () => onOpenChange(false));
+  useEscape(open, () => onOpenChange(false));
+  return (
+    <Layer.Provider value={{ open, setOpen: onOpenChange, kind }}>
+      <div className={cx('popover-anchor', className)} ref={ref} {...props}>
+        {children}
+      </div>
+    </Layer.Provider>
+  );
+}
+
+export function DropdownMenu(props: RootProps) {
+  return <LayerRoot kind="menu" {...props} />;
+}
+
+export function Popover(props: RootProps) {
+  return <LayerRoot kind="dialog" {...props} />;
+}
+
+/**
+ * `asChild` hands the trigger behaviour to whatever element is passed, so a
+ * Button stays a Button — the same escape hatch shadcn's Radix triggers give.
+ */
+function LayerTrigger({ asChild, children }: { asChild?: boolean; children: ReactElement }) {
+  const { open, setOpen, kind } = useLayer();
+  const child = children as ReactElement<{ onClick?: (e: MouseEvent<HTMLElement>) => void }>;
+  const trigger = {
+    'aria-haspopup': kind,
+    'aria-expanded': open,
+    onClick: (e: MouseEvent<HTMLElement>) => {
+      child.props.onClick?.(e);
+      setOpen(!open);
+    },
+  };
+  return asChild ? (
+    cloneElement(child, trigger)
+  ) : (
+    <button type="button" {...trigger}>
+      {children}
+    </button>
+  );
+}
+
+export const DropdownMenuTrigger = LayerTrigger;
+export const PopoverTrigger = LayerTrigger;
+
+interface ContentProps extends DivProps {
+  /** which edge of the trigger the panel lines up with */
+  align?: 'start' | 'end';
+  /** which way it opens; the sheet footer sits at the bottom, so `top` is common */
+  side?: 'top' | 'bottom';
+}
+
+function LayerContent({
+  base,
+  align = 'start',
+  side = 'bottom',
+  className,
+  ...props
+}: ContentProps & { base: string }) {
+  const { open, kind } = useLayer();
+  if (!open) return null;
+  return (
+    <div
+      role={kind === 'menu' ? 'menu' : 'dialog'}
+      className={cx(base, `${base}--${align}`, `${base}--${side}`, className)}
+      {...props}
+    />
+  );
+}
+
+export function DropdownMenuContent(props: ContentProps) {
+  return <LayerContent base="dropdown-menu" {...props} />;
+}
+
+export function PopoverContent(props: ContentProps) {
+  return <LayerContent base="popover" {...props} />;
+}
+
+export function DropdownMenuItem({
+  variant = 'default',
+  className,
+  ...props
+}: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'default' | 'destructive' }) {
+  return (
+    <button
+      type="button"
+      role="menuitem"
+      className={cx('dropdown-menu__item', variant !== 'default' && `dropdown-menu__item--${variant}`, className)}
+      {...props}
+    />
+  );
+}
+
+export function DropdownMenuLabel({ className, ...props }: DivProps) {
+  return <div className={cx('dropdown-menu__label', className)} {...props} />;
+}
+
+export function DropdownMenuSeparator({ className, ...props }: DivProps) {
+  return <div role="separator" className={cx('dropdown-menu__separator', className)} {...props} />;
 }
 
 // ---- Definition row ------------------------------------------------------

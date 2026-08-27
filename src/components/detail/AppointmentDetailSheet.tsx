@@ -3,8 +3,18 @@ import { STAFF } from '../../data/catalogue';
 import { formatBookedAt, initialsOf } from '../../lib/dates';
 import { useScheduler } from '../../store/useScheduler';
 import { Avatar } from '../ui/Avatar';
-import { Badge, Button } from '../ui/primitives';
-import { useEscape, useOutsideClick } from '../ui/hooks';
+import {
+  Badge,
+  Button,
+  ButtonGroup,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  Separator,
+} from '../ui/primitives';
+import { useEscape } from '../ui/hooks';
 import { AppointmentTab } from './AppointmentTab';
 import { CompleteDialog } from './CompleteDialog';
 import { EquipmentTab } from './EquipmentTab';
@@ -42,6 +52,7 @@ export function AppointmentDetailSheet() {
   const detail = useDetail();
   const detailTab = useScheduler((s) => s.detailTab);
   const apptMenu = useScheduler((s) => s.apptMenu);
+  const paymentMenu = useScheduler((s) => s.paymentMenu);
   const showComplete = useScheduler((s) => s.showComplete);
   const closeDetail = useScheduler((s) => s.closeDetail);
   const setDetailTab = useScheduler((s) => s.setDetailTab);
@@ -51,8 +62,9 @@ export function AppointmentDetailSheet() {
   const rescheduleAppt = useScheduler((s) => s.rescheduleAppt);
   const deleteAppt = useScheduler((s) => s.deleteAppt);
 
-  const menuRef = useOutsideClick<HTMLDivElement>(apptMenu, closeApptMenu);
-  useEscape(!showComplete, closeDetail);
+  // Escape dismisses the topmost layer only: a menu or popover over the sheet
+  // takes it first, and the sheet itself closes on the next press.
+  useEscape(!showComplete && !apptMenu && !paymentMenu, closeDetail);
 
   if (!detail) return null;
 
@@ -137,6 +149,7 @@ export function AppointmentDetailSheet() {
               <div className="totals__label">Balance due</div>
               <div className="totals__balance">{totals.balance}</div>
             </div>
+            <Separator orientation="vertical" className="totals__rule" />
             {/* What it comes to, and what has been taken. The breakdown behind the
                 subtotal is a hover away rather than two more lines in the bar. */}
             <dl className="totals__split">
@@ -148,38 +161,37 @@ export function AppointmentDetailSheet() {
               </div>
               <div className="totals__line">
                 <dt>Paid</dt>
-                {isMeeting ? <dd className="is-paid">{totals.paid}</dd> : <PaymentControl totals={totals} />}
+                <dd className={isMeeting ? 'is-paid' : 'totals__pay'}>
+                  {isMeeting ? totals.paid : <PaymentControl totals={totals} />}
+                </dd>
               </div>
             </dl>
             <div style={{ flex: 1 }} />
-            <div className="popover-anchor" ref={menuRef}>
-              <button className="complete-btn" type="button" onClick={openComplete}>
-                <CreditCard size={16} strokeWidth={2} />
-                Complete
-              </button>
-              <button
-                className="complete-btn__more"
-                type="button"
-                title="More actions"
-                aria-label="More actions"
-                aria-expanded={apptMenu}
-                onClick={toggleApptMenu}
-              >
-                <EllipsisVertical size={16} strokeWidth={2.4} />
-              </button>
-              {apptMenu && (
-                <div className="appt-menu">
-                  <button className="appt-menu__item" type="button" onClick={rescheduleAppt}>
-                    <CalendarCheck size={16} strokeWidth={2} color="var(--n-600)" />
-                    Reschedule
-                  </button>
-                  <button className="appt-menu__item appt-menu__item--danger" type="button" onClick={deleteAppt}>
-                    <Trash2 size={16} strokeWidth={2} />
-                    Delete appointment
-                  </button>
-                </div>
-              )}
-            </div>
+            <DropdownMenu open={apptMenu} onOpenChange={(v) => (v ? toggleApptMenu() : closeApptMenu())}>
+              <ButtonGroup>
+                <Button variant="pay" size="lg" className="complete-btn" onClick={openComplete}>
+                  <CreditCard size={16} strokeWidth={2} />
+                  Complete
+                </Button>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="dark" size="lg" className="complete-btn__more" aria-label="More actions" title="More actions">
+                    <EllipsisVertical size={16} strokeWidth={2.4} />
+                  </Button>
+                </DropdownMenuTrigger>
+              </ButtonGroup>
+
+              <DropdownMenuContent align="end" side="top" className="appt-menu">
+                <DropdownMenuItem onClick={rescheduleAppt}>
+                  <CalendarCheck size={16} strokeWidth={2} color="var(--n-600)" />
+                  Reschedule
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem variant="destructive" onClick={deleteAppt}>
+                  <Trash2 size={16} strokeWidth={2} />
+                  Delete appointment
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>

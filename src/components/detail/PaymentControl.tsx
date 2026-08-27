@@ -2,8 +2,7 @@ import { Banknote, Check, Clock, CreditCard, Link2, Store, Wallet, X } from 'luc
 import { PAYMENT_METHODS, STAFF, paymentMethod } from '../../data/catalogue';
 import { formatMoney } from '../../lib/schedule';
 import { useScheduler } from '../../store/useScheduler';
-import { Badge } from '../ui/primitives';
-import { useOutsideClick } from '../ui/hooks';
+import { Badge, Popover, PopoverContent, PopoverTrigger } from '../ui/primitives';
 import type { PaymentMethod } from '../../types';
 import type { DetailInfo } from './useDetail';
 
@@ -28,35 +27,33 @@ export function PaymentControl({ totals }: { totals: DetailInfo['totals'] }) {
   const record = useScheduler((s) => s.recordPayment);
   const clear = useScheduler((s) => s.clearPayment);
 
-  const ref = useOutsideClick<HTMLDivElement>(open, close);
   const { payment, due } = totals;
   const method = payment ? paymentMethod(payment.method) : null;
   const Icon = payment ? METHOD_ICON[payment.method] : CreditCard;
   const taker = payment && payment.by !== null ? STAFF[payment.by] : null;
 
   return (
-    <dd className="popover-anchor totals__pay" ref={ref}>
-      <button
-        className={`pay-btn${payment ? (payment.pending ? ' pay-btn--pending' : ' pay-btn--paid') : ''}`}
-        type="button"
-        aria-haspopup="dialog"
-        aria-expanded={open}
-        title={
-          payment
-            ? payment.pending
-              ? `Payment link sent at ${payment.at} — click to change`
-              : `Paid by ${payment.source ?? method!.label} at ${payment.at} — click to change`
-            : 'Record how this was paid'
-        }
-        onClick={toggle}
-      >
-        {payment?.pending && <Clock size={13} strokeWidth={2.4} />}
-        {payment && !payment.pending && <Check size={13} strokeWidth={2.8} />}
-        {totals.paid}
-      </button>
+    <Popover open={open} onOpenChange={(v) => (v ? toggle() : close())}>
+      <PopoverTrigger asChild>
+        <button
+          className={`pay-btn${payment ? (payment.pending ? ' pay-btn--pending' : ' pay-btn--paid') : ''}`}
+          type="button"
+          title={
+            payment
+              ? payment.pending
+                ? `Payment link sent at ${payment.at} — click to change`
+                : `Paid by ${payment.source ?? method!.label} at ${payment.at} — click to change`
+              : 'Record how this was paid'
+          }
+        >
+          {payment?.pending && <Clock size={13} strokeWidth={2.4} />}
+          {payment && !payment.pending && <Check size={13} strokeWidth={2.8} />}
+          {totals.paid}
+        </button>
+      </PopoverTrigger>
 
-      {open && (
-        <div className="pay-menu" role="dialog" aria-label="Payment">
+      {/* the Paid figure sits at the left of the bill bar, so the popover opens rightwards */}
+      <PopoverContent align="start" side="top" className="pay-menu" aria-label="Payment">
           <div className="pay-menu__head">
             <span className="pay-menu__title">{payment ? (payment.pending ? 'Awaiting payment' : 'Payment') : 'Take payment'}</span>
             <span className="pay-menu__amount">{payment ? formatMoney(payment.amount) : formatMoney(due)}</span>
@@ -109,8 +106,7 @@ export function PaymentControl({ totals }: { totals: DetailInfo['totals'] }) {
               })}
             </div>
           )}
-        </div>
-      )}
-    </dd>
+      </PopoverContent>
+    </Popover>
   );
 }

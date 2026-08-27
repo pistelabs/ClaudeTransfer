@@ -10,7 +10,7 @@ import {
   serviceById,
 } from '../data/catalogue';
 import { SEED_CUSTOMERS, SEED_RECORDS, seedAppointments, seedWalkIns } from '../data/seed';
-import { dateKeyOf, todayIndex, weekAt } from '../lib/dates';
+import { dateKeyOf, monthOffsetOf, todayIndex, weekAt } from '../lib/dates';
 import { collisionsFor, partyOf, slotOpen } from '../lib/schedule';
 import { parseTime, rangeLabel, stampNow, toTimeValue } from '../lib/time';
 import type {
@@ -509,7 +509,8 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
       bookedBy: null,
       staffOpen: false,
       rescheduleId: null,
-      monthOffset: 0,
+      // open the calendar on the month being viewed, not always the current one
+      monthOffset: monthOffsetOf(weekAt(s.weekOffset)[s.selDay].iso),
       sheetPage: 'book',
       details: {},
       questionnaire: 'email',
@@ -541,6 +542,8 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
       bookedBy: null,
       staffOpen: false,
       rescheduleId: null,
+      // no date step here, but switching back to the schedule shows one
+      monthOffset: monthOffsetOf(weekAt(s.weekOffset)[s.selDay].iso),
       sheetPage: 'book',
       details: {},
       questionnaire: 'email',
@@ -598,6 +601,7 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
         svcStep: 'service',
         svcTab: 'fitting',
         prefilled: true,
+        monthOffset: monthOffsetOf(weekAt(s.weekOffset)[day].iso),
         custQuery: '',
         custPicked: null,
         seatIdx: 0,
@@ -1024,6 +1028,7 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
       prefilledDur: a.du,
       timePicked: true,
       rescheduleId: a.id,
+      monthOffset: monthOffsetOf(weekAt(a.w ?? 0)[a.d].iso),
       custQuery: a.c,
       custPicked: null,
       form: {
