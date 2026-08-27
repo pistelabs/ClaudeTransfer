@@ -1,0 +1,247 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Geist:wght@300;400;500;600&display=swap');
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--app-bg);
+  color: var(--n-800);
+  font-family: var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+}
+
+input,
+select,
+button,
+textarea {
+  font-family: inherit;
+  color: inherit;
+}
+
+button {
+  font-family: inherit;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--n-200);
+  border: 2px solid var(--app-bg);
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--n-300);
+}
+
+/* ---- animations ---- */
+
+@keyframes sheet-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes now-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(225 29 72 / 40%);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgb(225 29 72 / 0%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ---- app shell ---- */
+
+.app {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--app-bg);
+}
+
+.app__main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* The walk-in queue sits beside the grid, not inside its scroll region. */
+.app__body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+/* ---- shared primitives ---- */
+
+.avatar {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 600;
+  border-radius: 50%;
+}
+
+.avatar--unassigned {
+  color: var(--n-500);
+  background: var(--n-60);
+  border: 1px dashed var(--n-200);
+}
+
+.checkbox {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  color: transparent;
+  background: #fff;
+  border: 1px solid var(--n-200);
+  border-radius: 4px;
+}
+
+.checkbox--on {
+  color: #fff;
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.section-label {
+  color: var(--n-350);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.text-input,
+.select-input {
+  width: 100%;
+  height: 38px;
+  padding: 0 11px;
+  color: var(--n-800);
+  font-size: 13.5px;
+  background: #fff;
+  border: 1px solid var(--n-125);
+  border-radius: 7px;
+  outline: none;
+}
+
+.text-input:focus,
+.select-input:focus,
+.textarea-input:focus {
+  border-color: var(--primary);
+  box-shadow: var(--ring);
+}
+
+.textarea-input {
+  width: 100%;
+  padding: 9px 11px;
+  font-family: inherit;
+  font-size: 13px;
+  background: #fff;
+  border: 1px solid var(--n-125);
+  border-radius: 7px;
+  outline: none;
+  resize: vertical;
+}
+
+.tab-strip {
+  display: flex;
+  gap: 22px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--n-100);
+}
+
+.tab {
+  padding: 0 2px 9px;
+  color: var(--n-350);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+}
+
+.tab--on {
+  color: var(--n-800);
+  font-weight: 600;
+  border-bottom-color: var(--n-800);
+}
+
+.empty-state {
+  padding: 22px 16px;
+  text-align: center;
+  background: var(--n-25);
+  border: 1px dashed var(--n-200);
+  border-radius: var(--r-control);
+}
+
+.empty-state__title {
+  color: var(--n-600);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.empty-state__body {
+  margin-top: 4px;
+  color: var(--n-450);
+  font-size: 11.5px;
+  line-height: 1.45;
+}

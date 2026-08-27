@@ -1,0 +1,291 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgb(41 37 36 / 35%);
+  animation: fade-in 0.18s ease-out;
+}
+
+.sheet {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  width: var(--sheet-w);
+  background: #fff;
+  border-left: 1px solid var(--n-125);
+  box-shadow: var(--sh-sheet);
+  animation: sheet-in 0.24s var(--ease-sheet);
+}
+
+/* The who's-booking gate blurs the sheet behind it rather than covering it. */
+.sheet--gated {
+  filter: blur(3px);
+  pointer-events: none;
+}
+
+.sheet__accent {
+  flex: 0 0 auto;
+  height: 6px;
+}
+
+.sheet__header {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 22px;
+  border-bottom: 1px solid var(--n-70);
+}
+
+.sheet__title {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.sheet__brand {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  padding: 4px 10px;
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--primary-tint);
+  border: 1px solid var(--primary-border);
+  border-radius: var(--r-pill);
+}
+
+.sheet__booked-by {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 4px 10px 4px 4px;
+  background: #fff;
+  border: 1px solid var(--n-125);
+  border-radius: var(--r-pill);
+  cursor: pointer;
+}
+
+.sheet__booked-by:hover {
+  background: var(--n-25);
+}
+
+.sheet__booked-by-name {
+  color: var(--n-800);
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Focused programmatically on page change, so it takes no focus ring of its own. */
+.sheet__body:focus {
+  outline: none;
+}
+
+.sheet__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 0;
+  padding: 20px 22px 24px;
+  overflow-y: auto;
+}
+
+.sheet__footer {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 22px 16px;
+  background: var(--n-15);
+  border-top: 1px solid var(--n-70);
+}
+
+.sheet__footer-msg {
+  font-size: 11.5px;
+  color: var(--n-350);
+}
+
+.sheet__footer-msg--warn {
+  color: var(--danger-text);
+}
+
+.sheet__footer-msg--ok {
+  color: var(--success);
+}
+
+.sheet__footer-actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* ---- who's booking gate ---- */
+
+.who {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 75;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--sheet-w);
+  padding: 24px;
+  background: rgb(255 255 255 / 55%);
+  animation: fade-in 0.15s ease-out;
+}
+
+.who__card {
+  width: 400px;
+  max-width: 100%;
+  padding: 22px 24px 24px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: var(--sh-dialog);
+  animation: pop-in 0.2s var(--ease-sheet);
+}
+
+.who__title {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.who__sub {
+  margin-top: 4px;
+  color: var(--n-500);
+  font-size: 13px;
+}
+
+.who__list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.who__row {
+  display: flex;
+  gap: 13px;
+  align-items: center;
+  width: 100%;
+  padding: 11px 13px;
+  text-align: left;
+  background: #fff;
+  border: 1px solid var(--n-125);
+  border-radius: 9px;
+  cursor: pointer;
+}
+
+.who__row:hover {
+  background: #f8fbfd;
+  border-color: var(--primary);
+}
+
+.who__name {
+  display: block;
+  overflow: hidden;
+  color: var(--n-800);
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.who__role {
+  display: block;
+  margin-top: 1px;
+  overflow: hidden;
+  color: var(--n-500);
+  font-size: 11.5px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.who__cancel {
+  width: 100%;
+  height: 36px;
+  margin-top: 16px;
+  color: var(--n-500);
+  font-size: 13px;
+  font-weight: 500;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+/* ---- centred dialogs ---- */
+
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 65;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgb(41 37 36 / 40%);
+  animation: fade-in 0.15s ease-out;
+}
+
+.dialog-backdrop--complete {
+  z-index: 80;
+  background: rgb(41 37 36 / 45%);
+}
+
+.dialog {
+  max-width: 100%;
+  padding: 22px 24px 20px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: var(--sh-modal);
+  animation: pop-in 0.2s var(--ease-sheet);
+}
+
+.dialog__head {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.dialog__title {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.dialog__sub {
+  margin-top: 4px;
+  color: var(--n-500);
+  font-size: 13px;
+}
+
+.dialog__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  color: var(--n-500);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.dialog__actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 22px;
+}

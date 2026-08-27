@@ -1,0 +1,738 @@
+.grid {
+  flex: 1;
+  overflow: auto;
+  background: var(--canvas);
+}
+
+.grid__inner {
+  position: relative;
+}
+
+/* ---- sticky column headers ---- */
+
+.grid__head {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  background: #fff;
+  border-bottom: 1px solid var(--n-125);
+  box-shadow: var(--sh-header);
+}
+
+.grid__head-gutter {
+  flex: 0 0 var(--gutter);
+  width: var(--gutter);
+  border-right: 1px solid var(--n-70);
+}
+
+.col-head {
+  position: relative;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 9px;
+  border-right: 1px solid var(--n-70);
+}
+
+/* ---- week view: a day, divided into the fitters filtered on ---- */
+
+.day-group {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--n-150);
+}
+
+.day-group--today {
+  background: var(--primary-tint);
+}
+
+.day-group--past {
+  background: var(--n-15);
+}
+
+.day-group__head {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  padding: 6px 9px;
+}
+
+/* One row of fitters under the day they belong to. */
+.day-group__fitters {
+  display: flex;
+  border-top: 1px solid var(--n-100);
+}
+
+.fitter-head {
+  position: relative;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  min-width: 0;
+  padding: 4px 8px 5px;
+  border-right: 1px solid var(--n-70);
+}
+
+.fitter-head:last-child {
+  border-right: none;
+}
+
+.fitter-head__name {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--n-700);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.col-head__title {
+  overflow: hidden;
+  color: var(--n-800);
+  font-family: var(--font-display);
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.15;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.col-head__title--today {
+  color: var(--primary);
+}
+
+.col-head__title--past {
+  color: var(--n-350);
+}
+
+.col-head__sub {
+  overflow: hidden;
+  color: var(--n-400);
+  font-size: 10px;
+  line-height: 1.2;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.col-head__shift {
+  flex: 0 0 auto;
+  color: var(--n-600);
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.col-head__resize {
+  position: absolute;
+  top: 0;
+  right: -3px;
+  bottom: 0;
+  z-index: 22;
+  width: 7px;
+  cursor: col-resize;
+}
+
+.col-head__resize:hover {
+  background: rgb(2 132 199 / 18%);
+}
+
+/* ---- grid body ---- */
+
+.grid__body {
+  position: relative;
+  display: flex;
+  padding-top: 11px;
+}
+
+.gutter {
+  flex: 0 0 var(--gutter);
+  width: var(--gutter);
+  background: var(--canvas);
+  border-right: 1px solid var(--grid-rule);
+}
+
+.gutter__hour {
+  position: relative;
+  height: var(--hour-px);
+}
+
+.gutter__label {
+  position: absolute;
+  top: -8px;
+  right: 8px;
+  padding: 0 2px;
+  color: var(--n-500);
+  font-size: 10.5px;
+  font-weight: 600;
+  background: var(--canvas);
+}
+
+.grid__cols {
+  position: relative;
+  display: flex;
+  flex: 1;
+}
+
+.sched-col--day-end {
+  border-right-color: var(--n-150);
+}
+
+.sched-col {
+  position: relative;
+  background-image: repeating-linear-gradient(
+    var(--grid-fill) 0,
+    var(--grid-fill) 63px,
+    var(--grid-rule) 63px,
+    var(--grid-rule) 64px
+  );
+  background-size: 100% var(--hour-px);
+  border-right: 1px solid var(--n-70);
+}
+
+/* Shift and break bands sit deliberately far behind the blocks so they can
+   never be mistaken for a booking. */
+.band {
+  position: absolute;
+  right: 3px;
+  left: 3px;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.band--shift {
+  background: rgb(255 255 255 / 55%);
+  border: 1px solid rgb(120 113 108 / 14%);
+  border-radius: var(--r-control);
+}
+
+.band--break {
+  background: repeating-linear-gradient(45deg, rgb(120 113 108 / 6%) 0 6px, transparent 6px 12px);
+  border-top: 1px dashed rgb(120 113 108 / 22%);
+  border-bottom: 1px dashed rgb(120 113 108 / 22%);
+}
+
+.selection {
+  position: absolute;
+  right: 3px;
+  left: 2px;
+  z-index: 8;
+  display: flex;
+  align-items: flex-start;
+  padding: 4px 7px;
+  color: var(--primary-text);
+  font-size: 11px;
+  font-weight: 600;
+  background: rgb(2 132 199 / 14%);
+  border: 1.5px solid var(--primary);
+  border-radius: var(--r-control);
+  pointer-events: none;
+}
+
+/* Where a walk-in dragged out of the queue would land. */
+.ghost {
+  position: absolute;
+  right: 3px;
+  left: 2px;
+  z-index: 9;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 4px 7px;
+  overflow: hidden;
+  /* Opaque: it is frequently dragged over an existing block, and two sets of
+     text reading through each other is illegible. */
+  background: var(--primary-bg);
+  border: 1.5px dashed var(--primary);
+  border-radius: var(--r-control);
+  pointer-events: none;
+}
+
+.ghost__name {
+  overflow: hidden;
+  color: var(--primary-text);
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.ghost__time {
+  overflow: hidden;
+  color: var(--primary-text);
+  font-size: 11px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  opacity: 0.85;
+}
+
+.now-line {
+  position: absolute;
+  right: 0;
+  left: 0;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+}
+
+.now-line__dot {
+  width: 9px;
+  height: 9px;
+  margin-left: -4px;
+  background: var(--danger);
+  border-radius: 50%;
+  animation: now-pulse 2s infinite;
+}
+
+.now-line__rule {
+  flex: 1;
+  height: 2px;
+  background: var(--danger);
+}
+
+/* ---- appointment blocks ---- */
+
+.appt {
+  position: absolute;
+  z-index: 2;
+  padding: 4px 7px;
+  overflow: hidden;
+  border-top: 1px solid rgb(255 255 255 / 90%);
+  border-right: 1px solid rgb(255 255 255 / 90%);
+  border-bottom: 1px solid rgb(255 255 255 / 90%);
+  border-radius: var(--r-control);
+  box-shadow: 0 1px 3px rgb(41 37 36 / 14%);
+  cursor: grab;
+  user-select: none;
+}
+
+.appt--short {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  padding: 1px 6px;
+}
+
+.appt--conflict {
+  background-image: repeating-linear-gradient(45deg, rgb(225 29 72 / 9%) 0 7px, transparent 7px 14px);
+  border: 1px solid var(--danger);
+  border-left-width: 3px;
+  border-left-color: var(--danger);
+  box-shadow: 0 0 0 2px rgb(225 29 72 / 14%);
+}
+
+.appt--dragging {
+  z-index: 40;
+  opacity: 0.96;
+  box-shadow: 0 8px 20px rgb(41 37 36 / 22%);
+  cursor: grabbing;
+  transform: scale(1.015);
+}
+
+.appt__warn {
+  position: absolute;
+  top: 4px;
+  right: 5px;
+  display: inline-flex;
+  color: var(--danger);
+}
+
+.appt__time {
+  padding-right: 14px;
+  overflow: hidden;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.appt__time--one-line {
+  padding-right: 0;
+  font-size: 10.5px;
+  line-height: 1.1;
+}
+
+.appt__customer {
+  margin-top: 1px;
+  overflow: hidden;
+  font-size: 11.5px;
+  font-weight: 500;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+}
+
+.appt__service {
+  margin-top: 2px;
+  overflow: hidden;
+  font-size: 10.5px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  opacity: 0.85;
+}
+
+/* A booking worked by more than one fitter, drawn in every one of their columns.
+   The assisting copy opens the same booking but is rescheduled from the lead's. */
+.appt--assisting {
+  cursor: pointer;
+}
+
+.appt__team {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+  margin-top: 4px;
+  overflow: hidden;
+}
+
+.appt__team-label {
+  margin-left: 2px;
+  overflow: hidden;
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  opacity: 0.8;
+}
+
+/* Buffers read as protected time, not bookable work: hatched fill, dotted edge. */
+.buffer {
+  position: absolute;
+  z-index: 1;
+  padding: 1px 6px;
+  overflow: hidden;
+  font-size: 9.5px;
+  font-weight: 600;
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.buffer--before {
+  border-radius: 5px 5px 0 0;
+}
+
+.buffer--after {
+  border-radius: 0 0 5px 5px;
+}
+
+/* ---- overlap notice ---- */
+
+/*
+ * Informational only, so it floats above the grid rather than blocking it: no
+ * backdrop, no focus trap, and the schedule stays fully usable behind it.
+ */
+.overlap {
+  position: fixed;
+  bottom: 22px;
+  left: 50%;
+  z-index: 55;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  width: min(460px, calc(100vw - 44px));
+  padding: 14px 14px 14px 16px;
+  background: #fff;
+  border: 1px solid var(--danger-border);
+  border-radius: var(--r-input);
+  box-shadow: var(--sh-dialog);
+  transform: translateX(-50%);
+  animation: overlap-in 0.22s var(--ease-sheet);
+}
+
+@keyframes overlap-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 10px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.overlap__icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  color: var(--danger-text);
+  background: var(--danger-tint);
+  border-radius: 50%;
+}
+
+.overlap__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.overlap__title {
+  color: var(--n-950);
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.overlap__lede {
+  margin: 4px 0 0;
+  color: var(--n-600);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.overlap__lede b {
+  color: var(--n-950);
+  font-weight: 600;
+}
+
+.overlap__list {
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.overlap__list li {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 6px 10px;
+  background: var(--danger-tint);
+  border-radius: 5px;
+}
+
+.overlap__list li + li {
+  margin-top: 5px;
+}
+
+.overlap__name {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--danger-text);
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.overlap__time {
+  flex: 0 0 auto;
+  color: var(--danger-text);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* ---- walk-in queue ---- */
+
+.walkins {
+  display: flex;
+  flex: 0 0 244px;
+  flex-direction: column;
+  width: 244px;
+  background: #fff;
+  border-right: 1px solid var(--n-125);
+}
+
+.walkins--collapsed {
+  flex-basis: 40px;
+  width: 40px;
+}
+
+.walkins__head {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 8px;
+  align-items: center;
+  height: 42px;
+  padding: 0 8px 0 12px;
+  border-bottom: 1px solid var(--n-125);
+}
+
+.walkins__title {
+  flex: 1;
+  min-width: 0;
+  color: var(--n-800);
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.walkins__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--primary);
+  border-radius: var(--r-pill);
+}
+
+.walkins__btn {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  color: var(--n-500);
+  background: none;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.walkins__btn:hover {
+  color: var(--n-950);
+  background: var(--n-50);
+}
+
+/* Collapsed, the whole column is one button with the label turned on its side. */
+.walkins__rail {
+  display: flex;
+  flex: 1;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+  padding: 11px 0;
+  color: var(--n-500);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.walkins__rail:hover {
+  background: var(--n-25);
+}
+
+.walkins__rail-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--primary);
+  border-radius: var(--r-pill);
+}
+
+.walkins__rail-label {
+  color: var(--n-600);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  writing-mode: vertical-rl;
+}
+
+.walkins__list {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+  padding: 10px;
+  overflow-y: auto;
+}
+
+.walkins__empty {
+  padding: 18px 12px;
+  text-align: center;
+}
+
+.walkin {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 10px 11px;
+  text-align: left;
+  background: #fff;
+  border: 1px solid var(--n-125);
+  border-left: 3px solid var(--n-125);
+  border-radius: var(--r-control);
+  box-shadow: 0 1px 2px rgb(41 37 36 / 6%);
+  cursor: pointer;
+}
+
+.walkin:hover {
+  background: var(--n-25);
+  box-shadow: 0 2px 6px rgb(41 37 36 / 10%);
+}
+
+.walkin--dragging {
+  opacity: 0.5;
+  cursor: grabbing;
+}
+
+.walkin__head {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+}
+
+.walkin__name {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--n-950);
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.walkin__service {
+  align-self: flex-start;
+  max-width: 100%;
+  padding: 2px 7px;
+  overflow: hidden;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  border-radius: 5px;
+}
+
+.walkin__meta {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  justify-content: space-between;
+  color: var(--n-450);
+  font-size: 11px;
+}
+
+.walkin__source {
+  min-width: 0;
+  margin-top: -2px;
+  overflow: hidden;
+  color: var(--n-600);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.walkin__dur {
+  flex: 0 0 auto;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The date as well as the time: a queue entry can outlive the day it was made. */
+.walkin__stamp {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
+}
