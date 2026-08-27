@@ -73,8 +73,8 @@ viewsets, router) that this UI was tested against end to end.
     **Customer information** / **Staff information** / **Equipment** — each questionnaire with its
     own fields, terms and signature switch, and the copied-from-booking fields listed automatically.
   - **Workshop check-in** — the reduced flow: basics, duration, the customer and equipment
-    checkboxes (Name/Email/Phone, Brand/Model/Size/Colour, Notes), and a switch that reveals the
-    bookable services grouped by service group.
+    checkboxes (Name/Email/Phone, Brand/Model/Size/Colour, Notes), the equipment types the customer
+    may drop off, and a switch that reveals the bookable services grouped by service group.
 
 `/admin/notifications` — the message settings:
 

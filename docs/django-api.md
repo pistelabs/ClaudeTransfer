@@ -161,6 +161,8 @@ Notes:
 
 - `mode` is `work` (full booking) or `checkin` (workshop drop-off). Both modes post every field;
   the UI only shows the ones relevant to the selected mode.
+- `equipment_types` is used by both modes: on `work` it is the Equipment tab, on `checkin` it is
+  the equipment the customer may drop off. An empty list means "any type".
 - `fields` is one writable nested list covering all three questionnaires, split by `role`:
   `booking`, `customer`, `staff`. `copy_to_customer` applies to booking fields and mirrors the
   field onto the Customer information tab.

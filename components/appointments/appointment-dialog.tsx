@@ -545,6 +545,31 @@ function AppointmentForm({
                 </div>
               </div>
 
+              <div className="grid gap-2">
+                <Label>Equipment types</Label>
+                <p className="text-xs text-muted-foreground">
+                  What the customer can drop off on this appointment. Leave all unselected to accept
+                  any type.
+                </p>
+                {enabledEquipmentTypes.length === 0 ? (
+                  <p className="rounded-md border border-dashed px-4 py-6 text-center text-[13px] text-muted-foreground">
+                    No equipment types are enabled yet. Enable them under Equipment Types to offer
+                    them here.
+                  </p>
+                ) : (
+                  <div className="grid gap-2.5 sm:grid-cols-2">
+                    {enabledEquipmentTypes.map((equipmentType) => (
+                      <SelectableTile
+                        key={equipmentType.id}
+                        label={equipmentType.name}
+                        selected={draft.equipmentTypeIds.includes(equipmentType.id)}
+                        onSelect={() => toggleId("equipmentTypeIds", equipmentType.id)}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <div className="rounded-md bg-muted/60 p-3.5">
                 <CheckboxRow
                   id="checkin-notes"
