@@ -99,9 +99,6 @@ export function toService(dto: ServiceDto): Service {
     releaseCustomerSig: !!dto.release_customer_signature,
     releaseStaffSig: !!dto.release_staff_signature,
     completionConfirmationRequired: !!dto.completion_confirmation_required,
-    completionTerms: dto.completion_terms ?? "",
-    completionStaffSig: dto.completion_staff_signature ?? true,
-    completionSecondStaffSig: !!dto.completion_second_staff_signature,
     docketCount: dto.docket_count ?? 0,
     disabled: !!dto.is_hidden,
   }
@@ -130,9 +127,6 @@ export function fromServiceInput(groupId: string, input: ServiceInput): ServiceP
     release_customer_signature: input.releaseCustomerSig,
     release_staff_signature: input.releaseStaffSig,
     completion_confirmation_required: input.completionConfirmationRequired,
-    completion_terms: input.completionTerms,
-    completion_staff_signature: input.completionStaffSig,
-    completion_second_staff_signature: input.completionSecondStaffSig,
     docket_count: input.docketCount,
     is_hidden: input.disabled,
   }

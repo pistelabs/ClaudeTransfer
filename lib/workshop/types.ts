@@ -59,11 +59,8 @@ export interface ServiceInput {
   releaseTerms: string
   releaseCustomerSig: boolean
   releaseStaffSig: boolean
-  /** Staff confirmation on completion */
+  /** Staff sign the job off before it can be marked complete */
   completionConfirmationRequired: boolean
-  completionTerms: string
-  completionStaffSig: boolean
-  completionSecondStaffSig: boolean
   /** Dockets */
   docketCount: number
   /** Hidden from booking when true */

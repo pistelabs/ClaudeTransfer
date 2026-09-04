@@ -118,9 +118,6 @@ export function emptyServiceInput(): ServiceInput {
     releaseCustomerSig: true,
     releaseStaffSig: false,
     completionConfirmationRequired: false,
-    completionTerms: "",
-    completionStaffSig: true,
-    completionSecondStaffSig: false,
     docketCount: 1,
     disabled: false,
   }

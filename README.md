@@ -55,8 +55,8 @@ viewsets, router) that this UI was tested against end to end.
      multi-select option builder).
   6. **Waivers** — independent check-in and release waivers, each revealing its terms textarea and
      customer/staff signature checkboxes.
-  7. **Staff confirmation on completion** — a switch that reveals the completion declaration and
-     which signatures are needed to sign the job off (technician, plus an optional second check).
+  7. **Staff confirmation on completion** — a switch requiring staff to sign the job off before it
+     can be marked complete.
   8. **Dockets** — dockets-per-job stepper.
 
   Save is disabled until the name is filled; Escape and backdrop close without saving; the dialog

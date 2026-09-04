@@ -45,9 +45,6 @@ export interface ServiceDto {
   release_customer_signature: boolean
   release_staff_signature: boolean
   completion_confirmation_required: boolean
-  completion_terms: string
-  completion_staff_signature: boolean
-  completion_second_staff_signature: boolean
   docket_count: number
   is_hidden: boolean
   position: number
