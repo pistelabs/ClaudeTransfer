@@ -91,12 +91,6 @@ export function CheckoutColumn() {
                         </div>
                         <span className="overflow-hidden text-ellipsis whitespace-nowrap text-[11px] font-medium text-zinc-400">{meta}</span>
                       </div>
-                      <span
-                        className="mt-px whitespace-nowrap rounded-[6px] bg-app-bg px-[7px] py-0.5 text-[10.5px] font-semibold text-zinc-600"
-                        style={{ fontFamily: "ui-monospace, SF Mono, Menlo, monospace" }}
-                      >
-                        {jobIdLabel}-{i + 1}
-                      </span>
                       <div className="relative -mt-px">
                         {menuOpen && <div className="fixed inset-0 z-[8]" onClick={() => setItemMenuIdx(null)} />}
                         <button
@@ -151,7 +145,12 @@ export function CheckoutColumn() {
                       </div>
                     )}
                     <div className="flex items-center justify-between gap-2 border-t border-app-bg bg-surface-50 px-[11px] py-2">
-                      <span className="text-[10.5px] font-semibold uppercase tracking-wide text-zinc-400">Total</span>
+                      <span
+                        className="whitespace-nowrap rounded-[6px] bg-app-bg px-[7px] py-0.5 text-[10.5px] font-semibold text-zinc-600"
+                        style={{ fontFamily: "ui-monospace, SF Mono, Menlo, monospace" }}
+                      >
+                        {jobIdLabel}-{i + 1}
+                      </span>
                       {priceEditing ? (
                         <div className="flex items-center gap-1">
                           <span className="text-xs text-zinc-500">$</span>
@@ -178,7 +177,10 @@ export function CheckoutColumn() {
                           </button>
                         </div>
                       ) : (
-                        <span className="text-[13.5px] font-bold tracking-tight text-zinc-900">{money(price)}</span>
+                        <div className="flex items-baseline gap-1.5">
+                          <span className="text-[10.5px] font-semibold uppercase tracking-wide text-zinc-400">Total</span>
+                          <span className="text-[13.5px] font-bold tracking-tight text-zinc-900">{money(price)}</span>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -204,12 +206,6 @@ export function CheckoutColumn() {
                         {[nf.size, nf.colour].filter(Boolean).join(" · ") || "—"}
                       </span>
                     </div>
-                    <span
-                      className="mt-px whitespace-nowrap rounded-[6px] bg-app-bg px-[7px] py-0.5 text-[10.5px] font-semibold text-zinc-600"
-                      style={{ fontFamily: "ui-monospace, SF Mono, Menlo, monospace" }}
-                    >
-                      {jobIdLabel}-{checkoutCount}
-                    </span>
                   </div>
                   {nf.services.length > 0 ? (
                     <div className="flex flex-wrap gap-1 px-[11px] pb-2.5">
@@ -223,10 +219,18 @@ export function CheckoutColumn() {
                     </div>
                   )}
                   <div className="flex items-center justify-between gap-2 border-t border-app-bg bg-surface-50 px-[11px] py-2">
-                    <span className="text-[10.5px] font-semibold uppercase tracking-wide text-zinc-400">Total</span>
-                    <span className="text-[13.5px] font-bold tracking-tight text-zinc-900">
-                      {money(nf.services.reduce((a, n) => a + svcPrice(n, nf.serviceData), 0))}
+                    <span
+                      className="whitespace-nowrap rounded-[6px] bg-app-bg px-[7px] py-0.5 text-[10.5px] font-semibold text-zinc-600"
+                      style={{ fontFamily: "ui-monospace, SF Mono, Menlo, monospace" }}
+                    >
+                      {jobIdLabel}-{checkoutCount}
                     </span>
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="text-[10.5px] font-semibold uppercase tracking-wide text-zinc-400">Total</span>
+                      <span className="text-[13.5px] font-bold tracking-tight text-zinc-900">
+                        {money(nf.services.reduce((a, n) => a + svcPrice(n, nf.serviceData), 0))}
+                      </span>
+                    </div>
                   </div>
                 </div>
               )}
