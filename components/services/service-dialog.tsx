@@ -133,6 +133,7 @@ function ServiceForm({
         duration: parseInt(draft.duration, 10) || 0,
         terms: draft.terms.trim(),
         releaseTerms: draft.releaseTerms.trim(),
+        completionTerms: draft.completionTerms.trim(),
       })
     } finally {
       setSaving(false)
@@ -428,6 +429,58 @@ function ServiceForm({
               staffSig={draft.releaseStaffSig}
               onStaffSigChange={(checked) => set("releaseStaffSig", checked)}
             />
+          ) : null}
+        </section>
+
+        <Separator />
+
+        {/* Staff confirmation on completion */}
+        <section className="flex flex-col gap-4 py-6">
+          <SectionLabel>Staff confirmation on completion</SectionLabel>
+          <SwitchRow
+            id="completion-confirmation"
+            title="Require staff confirmation on completion"
+            description="Staff sign the work off before the job can be marked complete"
+            checked={draft.completionConfirmationRequired}
+            onCheckedChange={(checked) => set("completionConfirmationRequired", checked)}
+          />
+          {draft.completionConfirmationRequired ? (
+            <div className="grid gap-3 rounded-md bg-muted/60 p-3.5">
+              <div className="grid gap-2">
+                <Label htmlFor="completion-terms">Completion declaration</Label>
+                <Textarea
+                  id="completion-terms"
+                  rows={3}
+                  value={draft.completionTerms}
+                  placeholder="What the technician confirms — e.g. work carried out as specified and equipment checked"
+                  onChange={(event) => set("completionTerms", event.target.value)}
+                  className="bg-background"
+                />
+              </div>
+              <div>
+                <div className="mb-2 text-[13px] font-medium">Signatures required</div>
+                <div className="flex flex-wrap gap-5">
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="completion-staff-sig"
+                      checked={draft.completionStaffSig}
+                      onCheckedChange={(checked) => set("completionStaffSig", checked === true)}
+                    />
+                    <Label htmlFor="completion-staff-sig">Technician signature</Label>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="completion-second-staff-sig"
+                      checked={draft.completionSecondStaffSig}
+                      onCheckedChange={(checked) =>
+                        set("completionSecondStaffSig", checked === true)
+                      }
+                    />
+                    <Label htmlFor="completion-second-staff-sig">Second staff check</Label>
+                  </div>
+                </div>
+              </div>
+            </div>
           ) : null}
         </section>
 

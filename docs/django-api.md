@@ -87,6 +87,10 @@ Plain lists and DRF's paginated `{count, next, previous, results}` envelope are 
   "release_terms": "",
   "release_customer_signature": true,
   "release_staff_signature": false,
+  "completion_confirmation_required": true,
+  "completion_terms": "Work carried out as specified and equipment checked.",
+  "completion_staff_signature": true,
+  "completion_second_staff_signature": false,
   "docket_count": 1,
   "is_hidden": false
 }
@@ -97,6 +101,8 @@ Notes:
 - `price` is sent as a decimal string, matching DRF's `DecimalField` output.
 - `equipment_types` is a list of equipment-type PKs (many-to-many).
 - `standard_entries` holds codes: `din`, `snowboard_stance`.
+- `completion_*` covers the staff sign-off asked for when the job is finished; the terms and
+  signature flags only apply while `completion_confirmation_required` is true.
 - `required_fields` is a **writable nested** list: the server replaces the service's fields and their
   options with what is sent, using `position` for ordering. Existing rows include their `id`.
 - Responses echo the saved object; the UI replaces its local copy with the response.
@@ -257,6 +263,12 @@ class Service(models.Model):
     release_terms = models.TextField(blank=True)
     release_customer_signature = models.BooleanField(default=True)
     release_staff_signature = models.BooleanField(default=False)
+
+    # Staff sign-off before a job can be marked complete
+    completion_confirmation_required = models.BooleanField(default=False)
+    completion_terms = models.TextField(blank=True)
+    completion_staff_signature = models.BooleanField(default=True)
+    completion_second_staff_signature = models.BooleanField(default=False)
 
     docket_count = models.PositiveIntegerField(default=1)
     is_hidden = models.BooleanField(default=False)
