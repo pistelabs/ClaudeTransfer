@@ -52,22 +52,23 @@ function JobSummary({
   return (
             <section className="flex flex-col gap-2.5 rounded-[11px] border border-border bg-white p-4">
         <span className="text-[10.5px] font-bold uppercase tracking-wide text-zinc-400">Job summary</span>
-        <div className="flex items-baseline justify-between">
+        <div className="flex items-baseline justify-between gap-2">
           <span className="text-[13px] font-bold text-zinc-900">{jobId}</span>
-          <span className="text-[13px] font-bold text-zinc-900">{money(total)}</span>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-[10.5px] font-semibold uppercase tracking-wide text-zinc-400">Total</span>
+            <span className="text-[13px] font-bold text-zinc-900">{money(total)}</span>
+          </div>
         </div>
         <div className="flex flex-col gap-2">
-          {items.map((it, i) => (
+          {items.map((it, i) => {
+            const itemTotal = it.services.reduce((a, n) => a + svcPrice(n, it.serviceData), 0);
+            return (
             <div key={i} className="flex flex-col gap-2 rounded-[9px] border border-border bg-surface-50 p-3">
               {/* identity */}
               <div className="flex flex-wrap items-center gap-2">
                 <TypeBadge type={it.type} />
                 <span className="text-[13px] font-semibold text-zinc-900">{it.brand}</span>
                 <span className="text-[12.5px] text-zinc-500">{it.model}</span>
-                <div className="flex-1" />
-                <span className="text-[10.5px] font-semibold text-zinc-400">
-                  {items.length > 1 ? `${jobId}-${i + 1}` : jobId}
-                </span>
               </div>
               <Row label="Type" value={it.category} />
               <Row label="Size" value={it.size || "—"} />
@@ -128,8 +129,20 @@ function JobSummary({
                   )}
                 </div>
               )}
+
+              {/* this item's own reference, opposite what it costs */}
+              <div className="flex items-baseline justify-between gap-2 border-t border-app-bg pt-2">
+                <span className="text-[10.5px] font-semibold text-zinc-400">
+                  {items.length > 1 ? `${jobId}-${i + 1}` : jobId}
+                </span>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-[10.5px] font-semibold uppercase tracking-wide text-zinc-400">Total</span>
+                  <span className="text-[13px] font-bold tracking-tight text-zinc-900">{money(itemTotal)}</span>
+                </div>
+              </div>
             </div>
-          ))}
+            );
+          })}
         </div>
         <div className="flex flex-col gap-1.5 border-t border-app-bg pt-2.5">
           <Row label="Due date" value={due || "—"} />
