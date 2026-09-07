@@ -426,11 +426,8 @@
  * Informational only, so it floats above the grid rather than blocking it: no
  * backdrop, no focus trap, and the schedule stays fully usable behind it.
  */
+/* Placed by the Toaster now, so it only describes itself. */
 .overlap {
-  position: fixed;
-  bottom: 22px;
-  left: 50%;
-  z-index: 55;
   display: flex;
   gap: 12px;
   align-items: flex-start;
@@ -440,7 +437,6 @@
   border: 1px solid var(--danger-border);
   border-radius: var(--r-input);
   box-shadow: var(--sh-dialog);
-  transform: translateX(-50%);
   animation: overlap-in 0.22s var(--ease-sheet);
 }
 

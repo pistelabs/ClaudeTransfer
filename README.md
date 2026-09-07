@@ -29,24 +29,27 @@ network access. Offline the app still runs, just in a system sans-serif.
 - **Zustand** for the scheduler store. The screens share a lot of interdependent state
   (drag, selection, sheet steps, per-seat and per-customer answers), so it lives in one
   store rather than being threaded through props.
-- **Plain CSS** with design tokens as custom properties. The design specifies exact pixel
-  values (11.5px type, 34px controls, 64px hour rows), so hand-written CSS tracks it more
-  honestly than utility classes would.
-- **shadcn/ui component anatomy**, in `components/ui/primitives.tsx`. shadcn's own components
-  are Tailwind, which this build does not use, so the primitives reproduce their shape instead:
-  the same names and props (`Card`/`CardHeader`/`CardTitle`, `Button` with `variant` and `size`,
-  `Badge`, `Separator`, `Label`, `ButtonGroup`, `DropdownMenu`/`Popover` with `Trigger`,
-  `Content`, `Item`, `Label` and `Separator`), styled against the tokens. Triggers take
-  `asChild`, panels take `align` and `side`, and the roles match — `menu`/`menuitem` for a
-  dropdown, `dialog` for a popover. Dropping in the generated shadcn components later is a
-  like-for-like swap. Two Button variants go beyond shadcn's neutral palette because the design
-  asks for them: `pay` for the money-in green, `dark` for the near-black beside it.
+- **Plain CSS for the surfaces**, with design tokens as custom properties. The design
+  specifies exact pixel values (11.5px type, 34px controls, 64px hour rows) that no utility
+  scale carries, so the schedule, sheets and header stay hand-written. The components are
+  Tailwind; both read the same tokens.
+- **shadcn/ui on Radix**, one component per file in `components/ui`. Button, Badge, Card,
+  Separator, Label, DropdownMenu, Popover, Tabs, ToggleGroup, ButtonGroup and the Sonner
+  Toaster, written with `cva`, `cn()` and `data-slot` as shadcn writes them. The variant maps
+  are tuned to this design rather than shadcn's defaults — 34px controls at 13px, and the
+  studio's own `success`, `pay` and `dark` beside shadcn's set — which is what owning the files
+  is for.
+- **Tailwind v4**, imported layer by layer in `styles/index.css`. Everything Tailwind ships
+  sits in a cascade layer and the hand-written stylesheets stay unlayered, which beats layered
+  CSS whatever the specificity, so Preflight normalises what the components expect without
+  reaching into the pixel-specified CSS below.
 - **lucide-react** for icons.
 
 ## Layout
 
 ```
 src/
+  lib/utils.ts          cn() — clsx plus tailwind-merge, shadcn's class helper
   data/catalogue.ts     staff, services, questions, equipment types — the shop's catalogue
   data/seed.ts          seeded bookings, customers and captured records
   lib/time.ts           grid geometry and time formatting
@@ -58,9 +61,29 @@ src/
     schedule/           the grid: columns, bands, blocks, buffers, drag and selection
     booking/            new-appointment sheet and its steps, team meeting, new customer
     detail/             appointment detail sheet, its three tabs, complete dialog
-    ui/                 shadcn-shaped primitives, avatar, question field, hooks
+    ui/                 shadcn components, avatar, question field, hooks
   styles/               tokens plus one stylesheet per surface
 ```
+
+## One set of tokens, three ways of asking for them
+
+`styles/tokens.css` is the single source of colour, radius, shadow and geometry. It is named
+three times so that nothing can drift:
+
+1. the ramp itself — `--n-125`, `--primary`, `--hour-px` — which the 4,700 lines of
+   hand-written CSS reference directly, as they always have;
+2. shadcn's vocabulary aliased onto it, so `--border` *is* `--n-125` and `--background` *is*
+   `--white`, which is what the components read;
+3. an `@theme inline` block mapping those into the namespace Tailwind generates utilities
+   from, so `bg-background` resolves to the same value `var(--background)` does.
+
+Change a value once and the schedule grid and a shadcn Button move together.
+
+Two consequences worth knowing. Class names that collide with a Tailwind utility get both
+rules, so the schedule canvas is `.sched-grid` rather than `.grid` and the text field is
+`.input-text` rather than `.text-input` — `input` being a colour token makes `text-input` a
+real utility. And the app's own classes keep `--`/`__` modifiers, while anything a Radix
+component drives is styled off `data-state` instead.
 
 ## Where the data comes from
 
@@ -126,9 +149,13 @@ the "now" line and the Today/Upcoming/Past pills meaningful whenever you open it
   takes the whole outstanding balance against one, and stamps the time and who took it. It
   turns green when paid and amber while a link is outstanding.
 - **Escape takes the topmost layer only.** A menu or popover opened over a sheet or a dialog
-  closes on the first press; whatever it was covering closes on the next.
+  closes on the first press; whatever it was covering closes on the next. Radix dismisses its
+  own layer and flushes that synchronously, which would otherwise re-arm the sheet's handler
+  while the same keypress is still travelling, so the event carries whether a layer already
+  spent it.
 - **Closing out has three endings.** Send to POS keeps the button in the complete dialog; the
-  chevron beside it offers the other two. A payment link is sent and the booking is marked
+  chevron beside it opens the other two, and choosing to record an external payment swaps that
+  same popover for the form rather than opening a second layer over it. A payment link is sent and the booking is marked
   awaiting payment — the balance stays owing, because a link is not money. An external
   payment records what arrived some other way — bank transfer, cash, another terminal — and
   clears the balance like any other.

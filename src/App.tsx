@@ -5,6 +5,7 @@ import { WalkInColumn } from './components/schedule/WalkInColumn';
 import { NewAppointmentSheet } from './components/booking/NewAppointmentSheet';
 import { TeamMeetingDialog } from './components/booking/TeamMeetingDialog';
 import { AppointmentDetailSheet } from './components/detail/AppointmentDetailSheet';
+import { Toaster } from '@/components/ui/sonner';
 import { useScheduler } from './store/useScheduler';
 
 export default function App() {
@@ -22,7 +23,9 @@ export default function App() {
         </div>
       </main>
 
+      {/* raises its notices through the Toaster rather than rendering one itself */}
       <OverlapNotice />
+      <Toaster />
 
       {showAdd && <NewAppointmentSheet />}
       {showDetail && <AppointmentDetailSheet />}
