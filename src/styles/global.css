@@ -10,6 +10,9 @@ body,
   height: 100%;
   margin: 0;
   padding: 0;
+  /* The design's line heights are set per element against the browser default;
+     Preflight would otherwise impose 1.5 and stretch every stacked control. */
+  line-height: normal;
 }
 
 body {
@@ -185,7 +188,7 @@ button {
 .select-input:focus,
 .textarea-input:focus {
   border-color: var(--primary);
-  box-shadow: var(--ring);
+  box-shadow: var(--ring-shadow);
 }
 
 .textarea-input {

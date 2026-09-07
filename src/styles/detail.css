@@ -171,7 +171,7 @@
 
 .fitter-select__trigger:focus-visible {
   border-color: var(--primary);
-  box-shadow: var(--ring);
+  box-shadow: var(--ring-shadow);
   outline: none;
 }
 
@@ -408,7 +408,7 @@
   color: var(--primary-text);
   background: var(--primary-tint);
   border-color: var(--primary);
-  box-shadow: var(--ring);
+  box-shadow: var(--ring-shadow);
 }
 
 .party-note {
@@ -525,7 +525,7 @@
 
 .answer-input:focus {
   border-color: var(--primary);
-  box-shadow: var(--ring);
+  box-shadow: var(--ring-shadow);
 }
 
 .save-row {
@@ -579,7 +579,7 @@
 
 .equip__input:focus {
   border-color: var(--primary);
-  box-shadow: var(--ring);
+  box-shadow: var(--ring-shadow);
 }
 
 .equip__services {
@@ -766,7 +766,7 @@
 
 .equip-entry__input:focus {
   border-color: var(--primary);
-  box-shadow: var(--ring);
+  box-shadow: var(--ring-shadow);
 }
 
 /* ---- totals footer ---- */
@@ -1437,7 +1437,7 @@
 
 .charge-pill:focus-visible {
   outline: none;
-  box-shadow: var(--ring);
+  box-shadow: var(--ring-shadow);
 }
 
 .workshop__price--included {

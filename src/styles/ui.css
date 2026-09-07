@@ -173,7 +173,7 @@
 }
 
 .button:focus-visible {
-  box-shadow: var(--ring);
+  box-shadow: var(--ring-shadow);
 }
 
 .button:disabled {

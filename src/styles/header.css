@@ -64,7 +64,7 @@
 .search__input:focus {
   background: #fff;
   border-color: var(--primary);
-  box-shadow: var(--ring);
+  box-shadow: var(--ring-shadow);
 }
 
 .search__clear {
@@ -224,6 +224,9 @@
   top: calc(100% + 8px);
   left: 50%;
   z-index: 60;
+  /* The month grid is seven equal columns with nothing intrinsic to hold them
+     open, so the popover states its own width rather than shrink-wrapping. */
+  width: 287px;
   padding: 10px;
   background: #fff;
   border: 1px solid var(--n-125);

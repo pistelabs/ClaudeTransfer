@@ -584,7 +584,7 @@
 
 .cust-search__input:focus {
   border-color: var(--primary);
-  box-shadow: var(--ring);
+  box-shadow: var(--ring-shadow);
 }
 
 .cust-drop {
@@ -759,7 +759,7 @@
 
 .q-option--on {
   border-color: var(--primary);
-  box-shadow: var(--ring);
+  box-shadow: var(--ring-shadow);
 }
 
 .q-option__icon {
@@ -837,7 +837,7 @@
 
 .meeting__who-btn--on {
   border-color: var(--primary);
-  box-shadow: var(--ring);
+  box-shadow: var(--ring-shadow);
 }
 
 .meeting__who-name {
@@ -872,7 +872,7 @@
 
 .nc__input:focus {
   border-color: var(--primary);
-  box-shadow: var(--ring);
+  box-shadow: var(--ring-shadow);
 }
 
 .nc__channel {

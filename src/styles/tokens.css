@@ -80,7 +80,7 @@
   --sh-sheet: -18px 0 50px rgb(41 37 36 / 22%);
   --sh-dialog: 0 18px 50px rgb(41 37 36 / 18%);
   --sh-modal: 0 24px 60px rgb(0 0 0 / 28%);
-  --ring: 0 0 0 3px rgb(2 132 199 / 12%);
+  --ring-shadow: 0 0 0 3px rgb(2 132 199 / 12%);
 
   /* geometry */
   --hour-px: 64px;
@@ -90,4 +90,84 @@
 
   /* motion */
   --ease-sheet: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/**
+ * shadcn's vocabulary, pointed at the ramp above.
+ *
+ * shadcn components ask for semantic names — background, border, muted,
+ * destructive — while the hand-written CSS asks for positions on the ramp.
+ * These aliases are the whole join: one set of values, named twice, so a
+ * shadcn Button and the schedule grid cannot drift apart.
+ *
+ * `--success`, `--warning` and `--pay` have no counterpart in shadcn's palette;
+ * they are ours, and the extra Button variants are built on them.
+ */
+:root {
+  --background: var(--white);
+  --foreground: var(--n-950);
+
+  --card: var(--white);
+  --card-foreground: var(--n-950);
+  --popover: var(--white);
+  --popover-foreground: var(--n-950);
+
+  --primary-foreground: var(--white);
+
+  --secondary: var(--n-70);
+  --secondary-foreground: var(--n-800);
+
+  --muted: var(--n-60);
+  --muted-foreground: var(--n-500);
+
+  --accent: var(--n-70);
+  --accent-foreground: var(--n-800);
+
+  --destructive: var(--danger);
+  --destructive-foreground: var(--white);
+
+  --border: var(--n-125);
+  --input: var(--n-125);
+  --ring: var(--primary);
+
+  --radius: var(--r-input);
+}
+
+/**
+ * The same values again, in the namespace Tailwind generates utilities from, so
+ * `bg-background` / `border-border` / `rounded-lg` resolve to exactly what
+ * `var(--background)` does in the hand-written CSS. `inline` keeps them as
+ * references rather than copies, so there is still only one source of truth.
+ */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-pay: var(--pay);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --font-sans: var(--font-ui);
+  --font-display: var(--font-display);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
 }
