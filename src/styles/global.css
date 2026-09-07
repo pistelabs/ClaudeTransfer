@@ -22,17 +22,10 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-input,
-select,
-button,
-textarea {
-  font-family: inherit;
-  color: inherit;
-}
-
-button {
-  font-family: inherit;
-}
+/* Form controls used to be told here to inherit font and colour. Preflight now
+   does exactly that, in the base layer, where a component's own `text-*` can
+   override it — stated again here it would be unlayered, outrank every utility,
+   and strip the colour off every filled Button. */
 
 ::-webkit-scrollbar {
   width: 10px;
