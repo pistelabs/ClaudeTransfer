@@ -2,7 +2,8 @@ import { Banknote, Check, Clock, CreditCard, Link2, Store, Wallet, X } from 'luc
 import { PAYMENT_METHODS, STAFF, paymentMethod } from '../../data/catalogue';
 import { formatMoney } from '../../lib/schedule';
 import { useScheduler } from '../../store/useScheduler';
-import { Badge, Popover, PopoverContent, PopoverTrigger } from '../ui/primitives';
+import { Badge } from '@/components/ui/badge';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import type { PaymentMethod } from '../../types';
 import type { DetailInfo } from './useDetail';
 

@@ -11,7 +11,10 @@ import {
 } from '../../data/catalogue';
 import { useScheduler } from '../../store/useScheduler';
 import type { EquipItem } from '../../types';
-import { Badge, Button, Card, CardAction, CardContent, CardHeader, CardTitle, Label } from '../ui/primitives';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
 import { PartyPills } from './PartyPills';
 import type { DetailInfo } from './useDetail';
 

@@ -1,6 +1,6 @@
 import { TriangleAlert, X } from 'lucide-react';
 import { useScheduler } from '../../store/useScheduler';
-import { Button } from '../ui/primitives';
+import { Button } from '@/components/ui/button';
 import { useEscape } from '../ui/hooks';
 
 /**

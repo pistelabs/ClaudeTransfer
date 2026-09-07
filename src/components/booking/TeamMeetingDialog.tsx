@@ -3,7 +3,9 @@ import { STAFF } from '../../data/catalogue';
 import { weekAt } from '../../lib/dates';
 import { useScheduler } from '../../store/useScheduler';
 import { Avatar } from '../ui/Avatar';
-import { Badge, Button, Label } from '../ui/primitives';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 import { useEscape } from '../ui/hooks';
 
 const LENGTHS = [

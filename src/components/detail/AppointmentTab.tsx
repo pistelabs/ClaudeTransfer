@@ -4,7 +4,10 @@ import { checkInLabel } from '../../lib/schedule';
 import { durationLabel, rangeLabel } from '../../lib/time';
 import { useScheduler } from '../../store/useScheduler';
 import { Avatar } from '../ui/Avatar';
-import { Badge, Button, Card, CardContent, CardHeader, CardTitle, DataRow } from '../ui/primitives';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { DataRow } from '@/components/ui/data-row';
 import { FitterTeam } from './FitterTeam';
 import type { DetailInfo } from './useDetail';
 

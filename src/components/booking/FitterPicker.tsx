@@ -5,7 +5,7 @@ import { slotOpen, slotsFor } from '../../lib/schedule';
 import { parseTime } from '../../lib/time';
 import { useScheduler } from '../../store/useScheduler';
 import { Avatar } from '../ui/Avatar';
-import { Label } from '../ui/primitives';
+import { Label } from '@/components/ui/label';
 import { useEscape, useOutsideClick } from '../ui/hooks';
 
 const ROW_H = 52;

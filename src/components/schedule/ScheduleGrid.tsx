@@ -327,10 +327,10 @@ export function ScheduleGrid() {
     !isWeek && weekOffset === 0 && selDay === TODAY_IDX && nowMin >= GRID_START_MIN && nowMin <= GRID_END_MIN;
 
   return (
-    <div className="grid" ref={scrollerRef}>
-      <div className="grid__inner" style={{ width: gridWidth }}>
-        <div className={`grid__head${splitWeek ? ' grid__head--split' : ''}`}>
-          <div className="grid__head-gutter" />
+    <div className="sched-grid" ref={scrollerRef}>
+      <div className="sched-grid__inner" style={{ width: gridWidth }}>
+        <div className={`sched-grid__head${splitWeek ? ' sched-grid__head--split' : ''}`}>
+          <div className="sched-grid__head-gutter" />
 
           {isWeek
             ? dayGroups.map((g) => {
@@ -411,7 +411,7 @@ export function ScheduleGrid() {
               })}
         </div>
 
-        <div className="grid__body">
+        <div className="sched-grid__body">
           <div className="gutter">
             {hourLabels().map((label) => (
               <div className="gutter__hour" key={label}>
@@ -420,7 +420,7 @@ export function ScheduleGrid() {
             ))}
           </div>
 
-          <div className="grid__cols">
+          <div className="sched-grid__cols">
             {leaves.map((leaf, i) => {
               const width = widthOf(leaf);
               const selected = sel?.col === leaf.key ? sel : null;

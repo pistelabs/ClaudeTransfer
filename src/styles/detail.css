@@ -561,8 +561,8 @@
   }
 }
 
-.equip__grid .label,
-.equip-entry__fields .label {
+.equip__grid [data-slot='label'],
+.equip-entry__fields [data-slot='label'] {
   margin-bottom: 6px;
 }
 
@@ -1205,10 +1205,39 @@
 
 .pos-menu {
   width: 296px;
+  /* a popover has no padding of its own; the rows need the inset a menu gave them */
+  padding: 4px;
 }
 
-.pos-menu__item:hover {
+/* The two endings, as rows inside the popover. */
+.pos-menu__item {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+  padding: 9px 10px;
+  color: var(--n-800);
+  font-size: 13px;
+  text-align: left;
+  background: none;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.pos-menu__item:hover,
+.pos-menu__item:focus-visible {
   background: var(--primary-tint);
+  outline: none;
+}
+
+.pos-menu__title {
+  padding: 6px 7px 5px;
+  color: var(--n-400);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .pos-menu__icon {
@@ -1242,7 +1271,7 @@
   padding: 0 5px 4px;
 }
 
-.pos-menu__form .label {
+.pos-menu__form [data-slot='label'] {
   display: block;
   margin-bottom: 6px;
 }

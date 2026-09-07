@@ -3,22 +3,20 @@ import { Banknote, ChevronDown, CreditCard, Link2 } from 'lucide-react';
 import { EXTERNAL_SOURCES } from '../../data/catalogue';
 import { formatMoney } from '../../lib/schedule';
 import { useScheduler } from '../../store/useScheduler';
-import {
-  Button,
-  ButtonGroup,
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-  Label,
-} from '../ui/primitives';
+import { Button } from '@/components/ui/button';
+import { ButtonGroup } from '@/components/ui/button-group';
+import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import type { DetailInfo } from './useDetail';
 
 /**
  * Closing the appointment out. Sending it to the POS is the usual ending, so it
  * keeps the button; the two other endings — a payment link for somebody who is
  * leaving, and money that arrived some other way — sit behind the chevron.
+ *
+ * One popover rather than a menu that hands over to a form: recording an external
+ * payment needs a field and two buttons, which is a dialog's job, and a panel that
+ * swaps its own contents has no handoff between layers to get wrong.
  */
 export function PosActions({ detail }: { detail: DetailInfo }) {
   const open = useScheduler((s) => s.posMenu);
@@ -32,37 +30,42 @@ export function PosActions({ detail }: { detail: DetailInfo }) {
   const due = detail.totals.due;
 
   return (
-    <DropdownMenu
-      className="complete__pos"
-      open={open}
-      onOpenChange={(v) => {
-        if (!v) setSource(null);
-        return v ? toggle() : close();
-      }}
-    >
-      <ButtonGroup className="split-btn">
-        <Button size="lg" className="complete__action split-btn__main" onClick={finish}>
-          <CreditCard size={16} strokeWidth={2} />
-          Send to POS
-        </Button>
-        <DropdownMenuTrigger asChild>
-          <Button
-            size="lg"
-            className="split-btn__chevron"
-            title="Other payment options"
-            aria-label="Other payment options"
-          >
-            <ChevronDown size={15} strokeWidth={2.4} />
+    <div className="complete__pos">
+      <Popover
+        open={open}
+        onOpenChange={(v) => {
+          setSource(null);
+          return v ? toggle() : close();
+        }}
+      >
+        <ButtonGroup className="split-btn">
+          <Button size="lg" className="complete__action split-btn__main" onClick={finish}>
+            <CreditCard size={16} strokeWidth={2} />
+            Send to POS
           </Button>
-        </DropdownMenuTrigger>
-      </ButtonGroup>
+          <PopoverTrigger asChild>
+            <Button
+              size="lg"
+              className="split-btn__chevron"
+              title="Other payment options"
+              aria-label="Other payment options"
+            >
+              <ChevronDown size={15} strokeWidth={2.4} />
+            </Button>
+          </PopoverTrigger>
+        </ButtonGroup>
 
-      <DropdownMenuContent align="end" side="top" className="pos-menu">
+        <PopoverContent
+          align="end"
+          side="top"
+          className="pos-menu"
+          aria-label={source === null ? 'Other payment options' : 'External payment'}
+        >
           {source === null ? (
             <>
-              <DropdownMenuLabel>Other payment options</DropdownMenuLabel>
+              <div className="pos-menu__title">Other payment options</div>
 
-              <DropdownMenuItem className="pos-menu__item" onClick={() => sendLink(due)}>
+              <button className="pos-menu__item" type="button" onClick={() => sendLink(due)}>
                 <span className="pos-menu__icon">
                   <Link2 size={16} strokeWidth={2} />
                 </span>
@@ -72,9 +75,9 @@ export function PosActions({ detail }: { detail: DetailInfo }) {
                     {formatMoney(due)} to pay — the booking waits until it clears
                   </span>
                 </span>
-              </DropdownMenuItem>
+              </button>
 
-              <DropdownMenuItem className="pos-menu__item" onClick={() => setSource(EXTERNAL_SOURCES[0])}>
+              <button className="pos-menu__item" type="button" onClick={() => setSource(EXTERNAL_SOURCES[0])}>
                 <span className="pos-menu__icon">
                   <Banknote size={16} strokeWidth={2} />
                 </span>
@@ -82,11 +85,11 @@ export function PosActions({ detail }: { detail: DetailInfo }) {
                   <span className="pos-menu__name">Add external payment</span>
                   <span className="pos-menu__sub">Money taken outside the shop’s tills</span>
                 </span>
-              </DropdownMenuItem>
+              </button>
             </>
           ) : (
             <div className="pos-menu__form">
-              <DropdownMenuLabel>External payment</DropdownMenuLabel>
+              <div className="pos-menu__title">External payment</div>
               <Label htmlFor="pos-source">Where it came from</Label>
               <select
                 className="equip__input"
@@ -116,7 +119,8 @@ export function PosActions({ detail }: { detail: DetailInfo }) {
               </div>
             </div>
           )}
-      </DropdownMenuContent>
-    </DropdownMenu>
+        </PopoverContent>
+      </Popover>
+    </div>
   );
 }

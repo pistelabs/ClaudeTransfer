@@ -22,7 +22,25 @@ export function useOutsideClick<T extends HTMLElement>(active: boolean, onOutsid
   return ref;
 }
 
-/** Escape closes the topmost layer. */
+/**
+ * Marks an Escape keypress as already spent on a Radix layer. Set by the
+ * DropdownMenu and Popover content wrappers, read below.
+ */
+const HANDLED = Symbol.for('bootfit.escapeHandled');
+
+export function markEscapeHandled(e: KeyboardEvent) {
+  (e as KeyboardEvent & { [HANDLED]?: boolean })[HANDLED] = true;
+}
+
+/**
+ * Escape closes the topmost layer.
+ *
+ * A Radix menu or popover over a sheet dismisses itself on the same keypress and
+ * flushes that state change synchronously, which re-enables the sheet's own
+ * handler while the event is still travelling. So the event itself carries
+ * whether a layer already consumed it, rather than the sheet trying to work it
+ * out from state that has moved on.
+ */
 export function useEscape(active: boolean, onEscape: () => void) {
   const handler = useRef(onEscape);
   handler.current = onEscape;
@@ -30,7 +48,9 @@ export function useEscape(active: boolean, onEscape: () => void) {
   useEffect(() => {
     if (!active) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') handler.current();
+      if (e.key !== 'Escape') return;
+      if ((e as KeyboardEvent & { [HANDLED]?: boolean })[HANDLED]) return;
+      handler.current();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);

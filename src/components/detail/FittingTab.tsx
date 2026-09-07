@@ -5,7 +5,10 @@ import { useScheduler } from '../../store/useScheduler';
 import type { Answers, QuestionField } from '../../types';
 import { Avatar } from '../ui/Avatar';
 import { Field } from '../ui/Field';
-import { Badge, Button, Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle, Label } from '../ui/primitives';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
 import { PartyPills } from './PartyPills';
 import type { DetailInfo } from './useDetail';
 

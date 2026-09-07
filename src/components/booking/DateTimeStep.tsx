@@ -5,7 +5,8 @@ import { monthCells, monthLabel, weekAt } from '../../lib/dates';
 import { bufferClashesFor, slotsFor } from '../../lib/schedule';
 import { durationLabel, fmtTime, parseTime } from '../../lib/time';
 import { MAX_DURATION, MIN_DURATION, useScheduler } from '../../store/useScheduler';
-import { Button, Label } from '../ui/primitives';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 import { FitterPicker } from './FitterPicker';
 
 const WEEKDAYS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];

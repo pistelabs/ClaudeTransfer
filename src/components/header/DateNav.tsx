@@ -1,7 +1,7 @@
 import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
 import { dateKeyOf, monthCells, monthLabel, weekAt } from '../../lib/dates';
 import { TODAY_IDX, useScheduler } from '../../store/useScheduler';
-import { Button } from '../ui/primitives';
+import { Button } from '@/components/ui/button';
 import { useEscape, useOutsideClick } from '../ui/hooks';
 
 const WEEKDAYS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];

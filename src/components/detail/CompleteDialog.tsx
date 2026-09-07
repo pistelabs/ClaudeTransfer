@@ -1,7 +1,8 @@
 import { Check, ChevronLeft, FileText, Minus, Wrench, X } from 'lucide-react';
 import { useScheduler, type SchedulerStore } from '../../store/useScheduler';
 import { Avatar } from '../ui/Avatar';
-import { Badge, Button } from '../ui/primitives';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { useEscape } from '../ui/hooks';
 import { PosActions } from './PosActions';
 import type { DetailInfo } from './useDetail';

@@ -3,17 +3,12 @@ import { STAFF } from '../../data/catalogue';
 import { formatBookedAt, initialsOf } from '../../lib/dates';
 import { useScheduler } from '../../store/useScheduler';
 import { Avatar } from '../ui/Avatar';
-import {
-  Badge,
-  Button,
-  ButtonGroup,
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-  Separator,
-} from '../ui/primitives';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { ButtonGroup } from '@/components/ui/button-group';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Separator } from '@/components/ui/separator';
+import type { BadgeVariant } from '@/components/ui/badge';
 import { useEscape } from '../ui/hooks';
 import { AppointmentTab } from './AppointmentTab';
 import { CompleteDialog } from './CompleteDialog';
@@ -21,7 +16,6 @@ import { EquipmentTab } from './EquipmentTab';
 import { FittingTab } from './FittingTab';
 import { PaymentControl } from './PaymentControl';
 import { useDetail } from './useDetail';
-import type { BadgeVariant } from '../ui/primitives';
 import type { BookingSource, CheckInSource, DetailTab } from '../../types';
 
 const TAB_LABELS = ['Appointment', 'Fitting', 'Equipment'];
@@ -181,12 +175,12 @@ export function AppointmentDetailSheet() {
               </ButtonGroup>
 
               <DropdownMenuContent align="end" side="top" className="appt-menu">
-                <DropdownMenuItem onClick={rescheduleAppt}>
+                <DropdownMenuItem onSelect={rescheduleAppt}>
                   <CalendarCheck size={16} strokeWidth={2} color="var(--n-600)" />
                   Reschedule
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem variant="destructive" onClick={deleteAppt}>
+                <DropdownMenuItem variant="destructive" onSelect={deleteAppt}>
                   <Trash2 size={16} strokeWidth={2} />
                   Delete appointment
                 </DropdownMenuItem>

@@ -10,7 +10,7 @@ import {
   type SchedulerStore,
 } from '../../store/useScheduler';
 import { Avatar } from '../ui/Avatar';
-import { Button } from '../ui/primitives';
+import { Button } from '@/components/ui/button';
 import { useEscape } from '../ui/hooks';
 import { CustomerStep } from './CustomerStep';
 import { DateTimeStep, DurationStepper } from './DateTimeStep';

@@ -1,6 +1,7 @@
 import { Mail, MessageCircle, X } from 'lucide-react';
 import { useScheduler } from '../../store/useScheduler';
-import { Button, Label } from '../ui/primitives';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 import { useEscape } from '../ui/hooks';
 
 export function NewCustomerDialog() {

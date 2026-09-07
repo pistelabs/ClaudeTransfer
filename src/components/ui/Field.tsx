@@ -8,7 +8,7 @@ interface FieldProps {
 }
 
 /** Renders one backend-defined question as a text input or a select. */
-export function Field({ field, value, onChange, className = 'text-input' }: FieldProps) {
+export function Field({ field, value, onChange, className = 'input-text' }: FieldProps) {
   if (field.kind === 'select') {
     return (
       <select className={className} value={value} onChange={(e) => onChange(e.target.value)}>

@@ -9,7 +9,8 @@ import {
 } from '../../store/useScheduler';
 import type { QuestionnaireMode } from '../../types';
 import { Field } from '../ui/Field';
-import { Badge, Label } from '../ui/primitives';
+import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label';
 import { CustomerSearch } from './CustomerSearch';
 
 const QUESTIONNAIRE_OPTIONS: { k: QuestionnaireMode; label: string; sub: string }[] = [
