@@ -949,7 +949,7 @@
   border-radius: var(--r-control);
 }
 
-.duration__btn.button--size-icon {
+.duration__btn[data-slot='button'] {
   width: 28px;
   height: 28px;
   border-radius: 5px;

@@ -6,6 +6,8 @@ import { checkInLabel, partyOf, slotOpen } from '../../lib/schedule';
 import { GRID_END_MIN, durationLabel, minsAtOffset } from '../../lib/time';
 import { useScheduler } from '../../store/useScheduler';
 import { Avatar } from '../ui/Avatar';
+import { cn } from '@/lib/utils';
+import { walkInVariants } from './variants';
 
 /** Pointer movement under this many px is treated as a click, not a drag. */
 const JITTER = 4;
@@ -145,7 +147,8 @@ export function WalkInColumn() {
             const names = partyOf(w);
             return (
               <button
-                className={`walkin${dragId === w.id ? ' walkin--dragging' : ''}`}
+                className={cn(walkInVariants({ dragging: dragId === w.id }))}
+                data-slot="walk-in"
                 type="button"
                 key={w.id}
                 title="Click to open, or drag onto a column to book in"

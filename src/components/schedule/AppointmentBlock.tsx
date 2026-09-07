@@ -4,7 +4,9 @@ import { STAFF, TYPES } from '../../data/catalogue';
 import { durToPx, fmtTime, minsToPx, rangeLabel } from '../../lib/time';
 import { fittersOf, partyOf } from '../../lib/schedule';
 import type { LaidOutAppt } from '../../types';
+import { cn } from '@/lib/utils';
 import { Avatar } from '../ui/Avatar';
+import { appointmentVariants, bufferVariants } from './variants';
 
 interface Props {
   appt: LaidOutAppt;
@@ -33,7 +35,8 @@ function BufferBand({ appt, side }: { appt: LaidOutAppt; side: 'before' | 'after
   const from = side === 'before' ? appt.st - mins : appt.st + appt.du;
   return (
     <div
-      className={`buffer buffer--${side}`}
+      className={cn(bufferVariants({ side }))}
+      data-slot="buffer"
       style={{
         ...laneBox(appt),
         top: minsToPx(from),
@@ -58,16 +61,6 @@ export function AppointmentBlock({ appt, conflict, dragging, assisting, onMouseD
   const team = fittersOf(appt);
   const teamNames = team.map((i) => STAFF[i].name).join(' and ');
 
-  const className = [
-    'appt',
-    short ? 'appt--short' : '',
-    conflict ? 'appt--conflict' : '',
-    dragging ? 'appt--dragging' : '',
-    assisting ? 'appt--assisting' : '',
-  ]
-    .filter(Boolean)
-    .join(' ');
-
   const tip = conflict
     ? `⚠ Double-booked — ${appt.c} · ${rangeLabel(appt.st, appt.st + appt.du)}`
     : assisting
@@ -81,7 +74,8 @@ export function AppointmentBlock({ appt, conflict, dragging, assisting, onMouseD
       <BufferBand appt={appt} side="before" />
       <BufferBand appt={appt} side="after" />
       <div
-        className={className}
+        className={cn(appointmentVariants({ short, conflict, dragging, assisting }))}
+        data-slot="appointment"
         role="button"
         tabIndex={0}
         title={tip}

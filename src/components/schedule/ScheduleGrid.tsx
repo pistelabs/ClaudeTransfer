@@ -17,6 +17,13 @@ import { TODAY_IDX, useScheduler } from '../../store/useScheduler';
 import type { Appointment, LaidOutAppt } from '../../types';
 import { Avatar } from '../ui/Avatar';
 import { AppointmentBlock } from './AppointmentBlock';
+import { cn } from '@/lib/utils';
+import {
+  columnHeadTitleVariants,
+  dayGroupVariants,
+  gridHeadVariants,
+  scheduleColumnVariants,
+} from './variants';
 
 /** Below this width the shift-hours label is dropped so name and role keep priority. */
 const SHIFT_LABEL_MIN_WIDTH = 190;
@@ -329,7 +336,7 @@ export function ScheduleGrid() {
   return (
     <div className="sched-grid" ref={scrollerRef}>
       <div className="sched-grid__inner" style={{ width: gridWidth }}>
-        <div className={`sched-grid__head${splitWeek ? ' sched-grid__head--split' : ''}`}>
+        <div className={cn(gridHeadVariants({ split: splitWeek }))}>
           <div className="sched-grid__head-gutter" />
 
           {isWeek
@@ -337,13 +344,13 @@ export function ScheduleGrid() {
                 const width = groupWidth(g);
                 return (
                   <div
-                    className={`day-group${g.today ? ' day-group--today' : ''}${g.past ? ' day-group--past' : ''}`}
+                    className={cn(dayGroupVariants({ today: g.today, past: g.past }))}
                     key={g.d}
                     style={{ flex: `0 0 ${width}px`, width }}
                   >
                     <div className="day-group__head" title={g.fullSub}>
                       <span
-                        className={`col-head__title${g.today ? ' col-head__title--today' : ''}${g.past ? ' col-head__title--past' : ''}`}
+                        className={cn(columnHeadTitleVariants({ today: g.today, past: g.past }))}
                       >
                         {g.title}
                       </span>
@@ -436,7 +443,7 @@ export function ScheduleGrid() {
               const endsDay = isWeek && (leaves[i + 1]?.d ?? -1) !== leaf.d;
               return (
                 <div
-                  className={`sched-col${endsDay ? ' sched-col--day-end' : ''}`}
+                  className={cn(scheduleColumnVariants({ endsDay }))}
                   key={leaf.key}
                   data-schedcol={isWeek ? leaf.d : leaf.s}
                   data-schedday={leaf.d}

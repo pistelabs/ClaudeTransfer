@@ -1,3 +1,12 @@
+/* The Tabs root now sits between the sheet and its head/body, so it has to carry
+   the column layout the sheet used to give them directly. */
+.detail__tabs-root {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
 .detail__head {
   flex: 0 0 auto;
   padding: 18px 22px 0;
@@ -257,7 +266,7 @@
   cursor: pointer;
 }
 
-.detail__tab--on {
+.detail__tab[data-state='active'] {
   color: var(--n-950);
   font-weight: 600;
   border-bottom-color: var(--n-950);
@@ -1299,7 +1308,7 @@
   margin-top: 11px;
 }
 
-.pos-menu__form-actions .button {
+.pos-menu__form-actions [data-slot='button'] {
   flex: 1;
 }
 

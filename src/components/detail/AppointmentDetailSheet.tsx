@@ -17,6 +17,7 @@ import { FittingTab } from './FittingTab';
 import { PaymentControl } from './PaymentControl';
 import { useDetail } from './useDetail';
 import type { BookingSource, CheckInSource, DetailTab } from '../../types';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const TAB_LABELS = ['Appointment', 'Fitting', 'Equipment'];
 
@@ -81,6 +82,11 @@ export function AppointmentDetailSheet() {
         >
           <div className="sheet__accent" style={{ background: type.border }} />
 
+          <Tabs
+            className="detail__tabs-root"
+            value={String(activeTab)}
+            onValueChange={(v) => setDetailTab(Number(v) as DetailTab)}
+          >
           <div className="detail__head">
             <div className="detail__title-row">
               <div className="detail__heading">
@@ -116,27 +122,33 @@ export function AppointmentDetailSheet() {
               </Button>
             </div>
 
-            <div className="detail__tabs" role="tablist">
+            <TabsList className="detail__tabs">
               {tabs.map((label, i) => (
-                <button
-                  className={`detail__tab${i === activeTab ? ' detail__tab--on' : ''}`}
-                  type="button"
-                  role="tab"
-                  aria-selected={i === activeTab}
-                  key={label}
-                  onClick={() => setDetailTab(i as DetailTab)}
-                >
+                <TabsTrigger className="detail__tab" value={String(i)} key={label}>
                   {label}
-                </button>
+                </TabsTrigger>
               ))}
-            </div>
+            </TabsList>
           </div>
 
-          <div className="detail__body">
-            {activeTab === 0 && <AppointmentTab detail={detail} />}
-            {activeTab === 1 && !isMeeting && <FittingTab detail={detail} />}
-            {activeTab === 2 && !isMeeting && <EquipmentTab detail={detail} />}
-          </div>
+          {/* Each panel is mounted only while selected: the tabs hold live forms,
+              and keeping the other two alive would keep their state and their
+              scroll position alongside. */}
+          <TabsContent className="detail__body" value="0">
+            <AppointmentTab detail={detail} />
+          </TabsContent>
+          {!isMeeting && (
+            <TabsContent className="detail__body" value="1">
+              <FittingTab detail={detail} />
+            </TabsContent>
+          )}
+          {!isMeeting && (
+            <TabsContent className="detail__body" value="2">
+              <EquipmentTab detail={detail} />
+            </TabsContent>
+          )}
+
+          </Tabs>
 
           <div className="totals">
             <div style={{ flex: '0 0 auto' }}>

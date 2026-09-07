@@ -6,6 +6,7 @@ import { DateNav } from './DateNav';
 import { GlobalSearch } from './GlobalSearch';
 import { StaffFilter } from './StaffFilter';
 import { useOutsideClick } from '../ui/hooks';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
 export function HeaderBar() {
   const view = useScheduler((s) => s.view);
@@ -52,24 +53,22 @@ export function HeaderBar() {
           </span>
         )}
 
-        <div className="view-toggle" role="group" aria-label="Calendar view">
-          <button
-            className={`view-toggle__btn${isWeek ? '' : ' view-toggle__btn--on'}`}
-            type="button"
-            aria-pressed={!isWeek}
-            onClick={() => setView('day')}
-          >
+        <ToggleGroup
+          className="view-toggle"
+          type="single"
+          value={isWeek ? 'week' : 'day'}
+          aria-label="Calendar view"
+          // a segmented control always has one of the two chosen; ignore a
+          // deselecting click rather than leaving the schedule with no view
+          onValueChange={(v) => v && setView(v as 'day' | 'week')}
+        >
+          <ToggleGroupItem className="view-toggle__btn" value="day">
             Day
-          </button>
-          <button
-            className={`view-toggle__btn${isWeek ? ' view-toggle__btn--on' : ''}`}
-            type="button"
-            aria-pressed={isWeek}
-            onClick={() => setView('week')}
-          >
+          </ToggleGroupItem>
+          <ToggleGroupItem className="view-toggle__btn" value="week">
             Week
-          </button>
-        </div>
+          </ToggleGroupItem>
+        </ToggleGroup>
 
         <StaffFilter />
 
