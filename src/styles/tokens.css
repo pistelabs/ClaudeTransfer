@@ -36,17 +36,23 @@
   --app-bg: #f4f3f1;
 
   /* semantic */
-  --primary: #0284c7;
-  --primary-hover: #0369a1;
+  /* Sky 700 and Green 700 rather than the 600s: both carry white text, and at
+     600 that was 4.1:1 and 3.3:1 — under the 4.5:1 AA needs for small text. One
+     step down each ramp clears it (5.93:1 and 5.02:1) without changing the hue.
+     The hovers move down with them so they stay a step darker than the base. */
+  --primary: #0369a1;
+  --primary-hover: #075985;
   --primary-tint: #f0f9ff;
   --primary-border: #bae6fd;
   --primary-text: #075985;
   --primary-bg: #e0f2fe;
 
+  /* Teal 600 stays: it only ever fills a tick or a dot, and non-text marks are
+     held to 3:1, which it passes at 3.74:1. */
   --success: #0d9488;
   /* the money-in green of the payment banner's primary action */
-  --pay: #16a34a;
-  --pay-hover: #15803d;
+  --pay: #15803d;
+  --pay-hover: #166534;
   --success-tint: #ccfbf1;
   --success-border: #99f6e4;
   --success-text: #115e59;
@@ -80,7 +86,7 @@
   --sh-sheet: -18px 0 50px rgb(41 37 36 / 22%);
   --sh-dialog: 0 18px 50px rgb(41 37 36 / 18%);
   --sh-modal: 0 24px 60px rgb(0 0 0 / 28%);
-  --ring-shadow: 0 0 0 3px rgb(2 132 199 / 12%);
+  --ring-shadow: 0 0 0 3px rgb(3 105 161 / 12%);
 
   /* geometry */
   --hour-px: 64px;

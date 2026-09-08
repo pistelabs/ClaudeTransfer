@@ -52,10 +52,10 @@
  */
 @keyframes button-ready {
   from {
-    box-shadow: 0 0 0 0 rgb(2 132 199 / 50%);
+    box-shadow: 0 0 0 0 rgb(3 105 161 / 50%);
   }
   to {
-    box-shadow: 0 0 0 9px rgb(2 132 199 / 0%);
+    box-shadow: 0 0 0 9px rgb(3 105 161 / 0%);
   }
 }
 
