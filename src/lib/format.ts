@@ -1,9 +1,5 @@
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
-
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
+// `cn` now lives in lib/utils, where shadcn's components expect to find it.
+export { cn } from "./utils";
 
 export function initials(name: string): string {
   const parts = (name || "").trim().split(/\s+/).filter(Boolean);
