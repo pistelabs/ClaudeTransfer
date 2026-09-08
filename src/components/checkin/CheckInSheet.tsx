@@ -19,7 +19,9 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
+import { Textarea } from "@/components/ui/textarea";
 
 export function CheckInSheet() {
   const newOpen = useAppStore((s) => s.newOpen);
@@ -114,29 +116,29 @@ export function CheckInSheet() {
                   </div>
                   <div className="flex flex-1 flex-col gap-1.5">
                     <span className="text-muted-foreground text-[11px]">Pickup</span>
-                    <select
-                      value={nf.pickup}
-                      onChange={(e) => patchNf({ pickup: e.target.value })}
-                      className="focus:border-sky h-[38px] w-full cursor-pointer rounded-[9px] border px-2.5 text-[13px] outline-none focus:shadow-[0_0_0_3px_rgba(2,132,199,0.14)]"
-                    >
-                      <option value="">Select time</option>
-                      {slots.map((t) => (
-                        <option key={t} value={t}>
-                          {t}
-                        </option>
-                      ))}
-                    </select>
+                    <Select value={nf.pickup || undefined} onValueChange={(v) => patchNf({ pickup: v })}>
+                      <SelectTrigger className="w-full bg-white">
+                        <SelectValue placeholder="Select time" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {slots.map((t) => (
+                          <SelectItem key={t} value={t}>
+                            {t}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
               </div>
 
               <div className="flex flex-col gap-1.5">
                 <span className="text-muted-foreground text-[10.5px] font-bold tracking-wide uppercase">Notes</span>
-                <textarea
+                <Textarea
                   value={nf.notes}
                   onChange={(e) => patchNf({ notes: e.target.value })}
                   placeholder="Any notes for this job..."
-                  className="focus:border-sky min-h-[72px] w-full resize-y rounded-[9px] border px-3 py-2.5 text-[13px] leading-relaxed outline-none focus:shadow-[0_0_0_3px_rgba(2,132,199,0.14)]"
+                  className="min-h-[72px] resize-y bg-white"
                 />
               </div>
             </div>

@@ -1,6 +1,8 @@
 import { Check } from "lucide-react";
 import { useAppStore } from "../../store/useAppStore";
 import { TypeBadge } from "../Pills";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 export function EquipmentReAddPanel() {
   const nf = useAppStore((s) => s.nf);
@@ -31,28 +33,33 @@ export function EquipmentReAddPanel() {
               <div
                 key={i}
                 onClick={() => toggleCustEquip(eq)}
-                className="flex cursor-pointer items-center gap-[9px] rounded-[9px] border p-[9px_11px]"
-                style={{ background: on ? "#f0fdf4" : "#ffffff", borderColor: on ? "#86efac" : "#e4e4e7", boxShadow: on ? "0 0 0 1px #86efac" : "none" }}
+                className={cn(
+                  "flex cursor-pointer items-center gap-[9px] rounded-lg border px-3 py-2.5",
+                  on ? "border-emerald-300 bg-emerald-50 ring-1 ring-emerald-300" : "bg-white",
+                )}
               >
                 <TypeBadge type={eq.type} />
                 {/* Long names truncate rather than shoving the "Added" tag past the border. */}
                 <div className="flex min-w-0 flex-1 items-center gap-[9px]">
-                  <span className="truncate text-[13px] font-semibold text-zinc-900">{eq.brand}</span>
-                  <span className="truncate text-xs text-zinc-500">{eq.model}</span>
-                  <span className="flex-shrink-0 text-xs font-medium text-zinc-400">{eq.size}</span>
+                  <span className="truncate text-[13px] font-semibold">{eq.brand}</span>
+                  <span className="text-muted-foreground truncate text-xs">{eq.model}</span>
+                  <span className="text-muted-foreground shrink-0 text-xs font-medium">{eq.size}</span>
                 </div>
                 {/* Below this width there is no room for the tag at all, so the green
                     highlight alone carries the "added" state. */}
                 {on && (
-                  <span className="hidden items-center gap-1 whitespace-nowrap rounded-full border border-[#86efac] bg-[#dcfce7] px-2 py-0.5 text-[10.5px] font-bold tracking-wide text-[#15803d] @min-[290px]:inline-flex">
+                  <Badge
+                    variant="outline"
+                    className="hidden gap-1 rounded-full border-emerald-300 bg-emerald-100 text-[10.5px] font-bold tracking-wide text-emerald-700 @min-[290px]:inline-flex"
+                  >
                     <Check size={11} strokeWidth={3} />
                     Added
-                  </span>
+                  </Badge>
                 )}
                 {/* Tracking code, pinned to the right edge as plain text. Dropped once the
                     panel is too narrow to carry it. */}
                 {eq.code && (
-                  <span className="hidden flex-shrink-0 text-[10px] font-semibold tracking-wide text-zinc-400 @min-[240px]:inline">
+                  <span className="text-muted-foreground hidden shrink-0 text-[10px] font-semibold tracking-wide @min-[240px]:inline">
                     {eq.code}
                   </span>
                 )}

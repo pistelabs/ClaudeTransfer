@@ -4,6 +4,14 @@ import { useAppStore, nextJobIdStr } from "../../store/useAppStore";
 import { ServicePill, TypeBadge } from "../Pills";
 import { svcPrice } from "../../lib/serviceCatalog";
 import { money } from "../../lib/format";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 
 function itemPrice(services: string[], serviceData: Record<string, { quote?: string }>, priceOverride?: number | string | null): number {
   const base = services.reduce((a, n) => a + svcPrice(n, serviceData), 0);
@@ -91,47 +99,35 @@ export function CheckoutColumn() {
                         </div>
                         <span className="overflow-hidden text-ellipsis whitespace-nowrap text-[11px] font-medium text-zinc-400">{meta}</span>
                       </div>
-                      <div className="relative -mt-px">
-                        {menuOpen && <div className="fixed inset-0 z-[8]" onClick={() => setItemMenuIdx(null)} />}
-                        <button
-                          onClick={() => setItemMenuIdx(menuOpen ? null : i)}
-                          className="relative z-[9] flex h-[26px] w-[26px] items-center justify-center rounded-[7px] text-zinc-400 hover:bg-app-bg hover:text-zinc-900"
-                        >
-                          <MoreVertical size={15} />
-                        </button>
-                        {menuOpen && (
-                          <div className="absolute right-0 top-[30px] z-10 min-w-[158px] rounded-[9px] border border-border bg-white p-[5px] shadow-[0_12px_32px_rgba(0,0,0,0.16)]">
-                            <button
-                              onClick={() => swapToEditor(i)}
-                              className="flex h-[34px] w-full items-center gap-[9px] rounded-[6px] px-2.5 text-left text-[12.5px] font-medium text-zinc-900 hover:bg-app-bg"
-                            >
-                              <Pencil size={14} />
-                              Edit equipment
-                            </button>
-                            <button
-                              onClick={() => {
-                                setPriceDraft(String(price));
-                                setPriceEditIdx(i);
-                                setItemMenuIdx(null);
-                              }}
-                              className="flex h-[34px] w-full items-center gap-[9px] rounded-[7px] px-2.5 text-left text-[12.5px] font-medium text-zinc-900 hover:bg-app-bg"
-                            >
-                              <Wallet size={14} />
-                              Adjust price
-                            </button>
-                            <button
-                              onClick={() => {
-                                setItemMenuIdx(null);
-                                removeItem(i);
-                              }}
-                              className="flex h-[34px] w-full items-center gap-[9px] rounded-[7px] px-2.5 text-left text-[12.5px] font-medium text-red hover:bg-[#fef2f2]"
-                            >
-                              <Trash2 size={14} />
-                              Remove equipment
-                            </button>
-                          </div>
-                        )}
-                      </div>
+                      <DropdownMenu
+                        open={menuOpen}
+                        onOpenChange={(o) => setItemMenuIdx(o ? i : null)}
+                      >
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="text-muted-foreground -mt-px size-7">
+                            <MoreVertical />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="min-w-[158px]">
+                          <DropdownMenuItem onSelect={() => swapToEditor(i)}>
+                            <Pencil />
+                            Edit equipment
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onSelect={() => {
+                              setPriceDraft(String(price));
+                              setPriceEditIdx(i);
+                            }}
+                          >
+                            <Wallet />
+                            Adjust price
+                          </DropdownMenuItem>
+                          <DropdownMenuItem variant="destructive" onSelect={() => removeItem(i)}>
+                            <Trash2 />
+                            Remove equipment
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                     {it.services.length > 0 ? (
                       <div className="flex flex-wrap gap-1 px-[11px] pb-2.5">
@@ -153,8 +149,8 @@ export function CheckoutColumn() {
                       </span>
                       {priceEditing ? (
                         <div className="flex items-center gap-1">
-                          <span className="text-xs text-zinc-500">$</span>
-                          <input
+                          <span className="text-muted-foreground text-xs">$</span>
+                          <Input
                             value={priceDraft}
                             onChange={(e) => setPriceDraft(e.target.value)}
                             onBlur={() => {
@@ -163,18 +159,18 @@ export function CheckoutColumn() {
                             }}
                             autoFocus
                             placeholder="0.00"
-                            className="h-[26px] w-16 rounded-[6px] border border-sky px-1.5 text-xs font-semibold outline-none"
-                            style={{ boxShadow: "0 0 0 3px rgba(2,132,199,0.14)" }}
+                            className="h-7 w-16 px-1.5 text-xs font-semibold md:text-xs"
                           />
-                          <button
+                          <Button
+                            size="icon"
+                            className="size-7"
                             onClick={() => {
                               setItemPriceOverride(i, priceDraft);
                               setPriceEditIdx(null);
                             }}
-                            className="flex h-[26px] w-[26px] items-center justify-center rounded-[6px] bg-sky text-white"
                           >
-                            <Check size={13} strokeWidth={3} />
-                          </button>
+                            <Check strokeWidth={3} />
+                          </Button>
                         </div>
                       ) : (
                         <div className="flex items-baseline gap-1.5">
@@ -245,47 +241,17 @@ export function CheckoutColumn() {
           <span className="text-[19px] font-extrabold tracking-tight text-ink">{money(total)}</span>
         </div>
         {editId ? (
-          <button
-            onClick={createJob}
-            disabled={!canSubmit}
-            className="h-[42px] rounded-[9px] text-[13.5px] font-semibold"
-            style={{
-              color: canSubmit ? "#ffffff" : "#c4c4c8",
-              background: canSubmit ? "#0284c7" : "#f4f4f5",
-              border: canSubmit ? "1px solid #0284c7" : "1px solid #e4e4e7",
-              cursor: canSubmit ? "pointer" : "not-allowed",
-            }}
-          >
+          <Button onClick={createJob} disabled={!canSubmit} size="lg">
             Save Changes
-          </button>
+          </Button>
         ) : (
           <>
-            <button
-              onClick={createJob}
-              disabled={!canSubmit}
-              className="h-[42px] rounded-[9px] text-[13.5px] font-semibold"
-              style={{
-                color: canSubmit ? "#ffffff" : "#c4c4c8",
-                background: canSubmit ? "#0284c7" : "#f4f4f5",
-                border: canSubmit ? "1px solid #0284c7" : "1px solid #e4e4e7",
-                cursor: canSubmit ? "pointer" : "not-allowed",
-              }}
-            >
+            <Button onClick={createJob} disabled={!canSubmit} size="lg">
               Create and Pay Later
-            </button>
-            <button
-              onClick={createJob}
-              disabled={!canSubmit}
-              className="h-[42px] rounded-[9px] text-[13.5px] font-semibold"
-              style={{
-                color: canSubmit ? "#0369a1" : "#c4c4c8",
-                background: "#ffffff",
-                border: canSubmit ? "1px solid #93c5fd" : "1px solid #e4e4e7",
-                cursor: canSubmit ? "pointer" : "not-allowed",
-              }}
-            >
+            </Button>
+            <Button onClick={createJob} disabled={!canSubmit} size="lg" variant="outline">
               Create and Pay Now
-            </button>
+            </Button>
           </>
         )}
       </div>
