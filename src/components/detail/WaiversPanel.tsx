@@ -10,7 +10,7 @@ export function WaiversPanel({ job }: { job: Job }) {
   const order: WaiverKind[] = ["check_in", "release"];
 
   return (
-    <div className="flex flex-col gap-[11px] rounded-[11px] border border-border bg-white p-4">
+    <div className="flex flex-col gap-[11px] rounded-xl border bg-white p-4">
       <span className="text-[13.5px] font-semibold tracking-tight">Waivers</span>
       <div className="flex flex-col gap-1.5">
         {order.map((kind) => {
@@ -19,10 +19,10 @@ export function WaiversPanel({ job }: { job: Job }) {
             return (
               <div
                 key={kind}
-                className="flex items-center gap-2.5 rounded-[9px] border border-dashed border-border px-3 py-2.5"
+                className="flex items-center gap-2.5 rounded-lg border border-dashed px-3 py-2.5"
               >
-                <FileText size={15} className="flex-shrink-0 text-zinc-350" />
-                <span className="text-[12.5px] text-zinc-400">
+                <FileText size={15} className="text-muted-foreground shrink-0" />
+                <span className="text-muted-foreground text-[12.5px]">
                   {WAIVER_LABEL[kind]} — added once the equipment is collected
                 </span>
               </div>
@@ -34,21 +34,18 @@ export function WaiversPanel({ job }: { job: Job }) {
               href={w.url}
               target="_blank"
               rel="noreferrer"
-              className="group flex items-center gap-2.5 rounded-[9px] border border-border bg-surface-50 px-3 py-2.5 transition-colors hover:border-border-hover hover:bg-app-bg"
+              className="group bg-surface-50 hover:border-border-hover hover:bg-accent flex items-center gap-2.5 rounded-lg border px-3 py-2.5 transition-colors"
             >
-              <div
-                className="flex h-[26px] w-[26px] flex-shrink-0 items-center justify-center rounded-[6px]"
-                style={{ background: "#fef2f2", border: "1px solid #fecaca", color: "#dc2626" }}
-              >
+              <div className="flex size-[26px] shrink-0 items-center justify-center rounded-md border border-red-200 bg-red-50 text-red-600">
                 <FileText size={14} />
               </div>
               <div className="flex min-w-0 flex-1 flex-col leading-tight">
-                <span className="text-[12.5px] font-semibold text-zinc-900">{WAIVER_LABEL[kind]}</span>
-                <span className="truncate text-[10.5px] text-zinc-400">
+                <span className="text-[12.5px] font-semibold">{WAIVER_LABEL[kind]}</span>
+                <span className="text-muted-foreground truncate text-[10.5px]">
                   {w.fileName} · signed {w.signedAt} · {w.signedBy}
                 </span>
               </div>
-              <ExternalLink size={14} className="flex-shrink-0 text-zinc-400 group-hover:text-zinc-700" />
+              <ExternalLink size={14} className="text-muted-foreground group-hover:text-foreground shrink-0" />
             </a>
           );
         })}

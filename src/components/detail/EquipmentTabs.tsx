@@ -1,6 +1,7 @@
 import type { Job } from "../../types";
 import { TypeBadge } from "../Pills";
 import { STAGE_DEFS } from "../../store/useAppStore";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface Props {
   job: Job;
@@ -13,46 +14,31 @@ export function EquipmentTabs({ job, activeTab, onSelect }: Props) {
   const many = job.equipment.length > 3;
 
   return (
-    <div className="flex flex-nowrap items-end gap-1 overflow-hidden">
-      {job.equipment.map((eq, i) => {
-        const on = i === activeTab;
-        const showId = !many || on;
-        return (
-          <div
-            key={i}
-            onClick={() => onSelect(i)}
-            className="relative z-[1] flex min-w-0 cursor-pointer items-center rounded-t-[10px] border-solid transition-colors"
-            style={{
-              gap: many ? 6 : 8,
-              flex: many ? "1 1 0" : "0 1 auto",
-              padding: many ? "9px 10px" : "9px 15px",
-              borderColor: "#e4e4e7",
-              borderWidth: on ? "1px 1px 0 1px" : "1px",
-              marginBottom: on ? -1 : 0,
-              background: on ? "#ffffff" : "#f8f8f9",
-              zIndex: on ? 3 : 1,
-            }}
-          >
-            <TypeBadge type={eq.type} />
-            <span
-              title={eq.workStatus}
-              className="h-[6px] w-[6px] flex-shrink-0 rounded-full"
-              style={{ background: STAGE_DEFS.find((d) => d.key === eq.stage)?.dot || "#a1a1aa" }}
-            />
-            <span
-              className="ml-1.5 overflow-hidden text-ellipsis whitespace-nowrap text-[12.5px] font-semibold tracking-tight"
-              style={{ color: on ? "#18181b" : "#71717a" }}
-            >
-              {eq.brand} {eq.model}
-            </span>
-            {showId && (
-              <span className="ml-1.5 whitespace-nowrap text-[10px] font-semibold text-zinc-400">
-                {multi ? `${job.id}-${i + 1}` : job.id}
+    <Tabs value={String(activeTab)} onValueChange={(v) => onSelect(Number(v))} className="mb-2">
+      <TabsList className="h-auto w-full justify-start p-1">
+        {job.equipment.map((eq, i) => {
+          const on = i === activeTab;
+          const showId = !many || on;
+          return (
+            <TabsTrigger key={i} value={String(i)} className="min-w-0 gap-1.5 px-2.5 py-1.5">
+              <TypeBadge type={eq.type} />
+              <span
+                title={eq.workStatus}
+                className="size-1.5 shrink-0 rounded-full"
+                style={{ background: STAGE_DEFS.find((d) => d.key === eq.stage)?.dot || "#a1a1aa" }}
+              />
+              <span className="overflow-hidden text-[12.5px] font-semibold tracking-tight text-ellipsis whitespace-nowrap">
+                {eq.brand} {eq.model}
               </span>
-            )}
-          </div>
-        );
-      })}
-    </div>
+              {showId && (
+                <span className={on ? "text-muted-foreground text-[10px] font-semibold" : "sr-only"}>
+                  {multi ? `${job.id}-${i + 1}` : job.id}
+                </span>
+              )}
+            </TabsTrigger>
+          );
+        })}
+      </TabsList>
+    </Tabs>
   );
 }

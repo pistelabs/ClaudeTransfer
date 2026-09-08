@@ -1,26 +1,36 @@
-import { Check } from "lucide-react";
 import { serviceColor, serviceDisplayLabel } from "../lib/serviceCatalog";
 import { avatarColor, initials } from "../lib/format";
 import type { EquipmentType } from "../types";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
+/** Service badges are colour-coded per service, so their palette comes from the catalog
+ * rather than the theme — the colour is what makes them scannable across a busy board. */
 export function ServicePill({ name, size = "sm" }: { name: string; size?: "sm" | "md" }) {
   const [bg, fg, border] = serviceColor(name);
   const big = size === "md";
   return (
-    <span
-      className={big ? "inline-flex items-center rounded-[7px] px-[11px] py-1 text-[12.5px] font-semibold" : "inline-flex items-center whitespace-nowrap rounded-[6px] px-[7px] py-px text-[10px] font-semibold leading-[1.5]"}
-      style={{ background: bg, color: fg, border: `1px solid ${border}` }}
+    <Badge
+      variant="outline"
+      className={cn(
+        "font-semibold",
+        big ? "rounded-md px-2.5 py-1 text-[12.5px]" : "rounded-[6px] px-[7px] py-px text-[10px] leading-[1.5]",
+      )}
+      style={{ background: bg, color: fg, borderColor: border }}
     >
       {serviceDisplayLabel(name)}
-    </span>
+    </Badge>
   );
 }
 
 export function TypeBadge({ type }: { type: EquipmentType }) {
   return (
-    <span className="inline-flex items-center whitespace-nowrap rounded-[5px] border border-border bg-app-bg px-[6px] py-px text-[9px] font-semibold leading-[1.5] tracking-wide text-zinc-500">
+    <Badge
+      variant="secondary"
+      className="text-muted-foreground rounded-[5px] border px-1.5 py-px text-[9px] leading-[1.5] font-semibold tracking-wide"
+    >
       {type}
-    </span>
+    </Badge>
   );
 }
 
@@ -35,12 +45,13 @@ export function StatusPill({ status }: { status?: string | null }) {
   const d = STATUS_DEFS[status];
   if (!d) return null;
   return (
-    <span
-      className="inline-flex items-center whitespace-nowrap rounded-[5px] px-[6px] py-px text-[9px] font-bold leading-[1.5] tracking-wide"
-      style={{ background: d.bg, color: d.fg, border: `1px solid ${d.bd}` }}
+    <Badge
+      variant="outline"
+      className="rounded-[5px] px-1.5 py-px text-[9px] leading-[1.5] font-bold tracking-wide"
+      style={{ background: d.bg, color: d.fg, borderColor: d.bd }}
     >
       {d.label}
-    </span>
+    </Badge>
   );
 }
 
@@ -54,21 +65,16 @@ export function cardTint(status?: string | null): [string, string] {
 export function Avatar({ name, size = 34 }: { name: string; size?: number }) {
   return (
     <div
-      className="flex flex-shrink-0 items-center justify-center rounded-full font-bold text-white"
-      style={{ width: size, height: size, background: avatarColor(name), fontSize: size <= 26 ? 10 : 12, letterSpacing: "0.02em" }}
+      className="flex shrink-0 items-center justify-center rounded-full font-bold text-white"
+      style={{
+        width: size,
+        height: size,
+        background: avatarColor(name),
+        fontSize: size <= 26 ? 10 : 12,
+        letterSpacing: "0.02em",
+      }}
     >
       {initials(name)}
-    </div>
-  );
-}
-
-export function CheckedBox({ on }: { on: boolean }) {
-  return (
-    <div
-      className="flex h-[18px] w-[18px] flex-shrink-0 items-center justify-center rounded-[5px] border-2"
-      style={{ background: on ? "#0284c7" : "#ffffff", borderColor: on ? "#0284c7" : "#d4d4d8" }}
-    >
-      {on && <Check size={11} strokeWidth={3} color="#fff" />}
     </div>
   );
 }

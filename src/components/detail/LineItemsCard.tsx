@@ -5,6 +5,17 @@ import { deriveLineItems } from "../../data/build";
 import { useAppStore } from "../../store/useAppStore";
 import { canPickStatus, isEquipmentLocked, lockCountdownMs, STATUS_FLOW } from "../../lib/statusFlow";
 import { money } from "../../lib/format";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Progress } from "@/components/ui/progress";
+import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 
 interface Props {
   job: Job;
@@ -34,22 +45,17 @@ export function LineItemsCard({ job, activeTab }: Props) {
   const pct = total ? Math.round((done / total) * 100) : 0;
 
   return (
-    <div
-      className="relative z-[1] flex flex-col gap-3.5 border border-border bg-white p-4"
-      style={{ borderRadius: activeTab === 0 ? "0 11px 11px 11px" : "11px" }}
-    >
+    <div className="relative z-[1] flex flex-col gap-3.5 rounded-xl border bg-white p-4">
       {(archived || countdown != null) && (
         <div
-          className="flex items-center gap-2 rounded-[9px] border px-3 py-2 text-[12px]"
-          style={
-            archived
-              ? { background: "#f4f4f5", borderColor: "#e4e4e7", color: "#52525b" }
-              : { background: "#f0fdf4", borderColor: "#bbf7d0", color: "#15803d" }
-          }
+          className={cn(
+            "flex items-center gap-2 rounded-lg border px-3 py-2 text-[12px]",
+            archived ? "bg-muted text-zinc-600" : "border-emerald-200 bg-emerald-50 text-emerald-700",
+          )}
         >
           {archived ? <Lock size={13} /> : <Check size={13} strokeWidth={3} />}
           <span className="font-semibold">{archived ? "Collected · archived" : "Collected"}</span>
-          <span style={{ opacity: 0.85 }}>
+          <span className="opacity-85">
             {archived
               ? "This equipment is locked — its status and services can no longer be changed."
               : `Locks in ${Math.ceil((countdown as number) / 1000)}s — undo now if this was a mistake.`}
@@ -58,7 +64,7 @@ export function LineItemsCard({ job, activeTab }: Props) {
       )}
 
       {/* Status bar — reflects this tab's own equipment, independent of its siblings */}
-      <div className="flex gap-0.5 rounded-[9px] border border-border bg-app-bg p-[3px]">
+      <div className="bg-muted flex gap-0.5 rounded-lg border p-[3px]">
         {STATUS_FLOW.map((st) => {
           const active = eq.workStatus === st.label;
           // On hold, only the "resume work" options are selectable — services have to be
@@ -76,14 +82,14 @@ export function LineItemsCard({ job, activeTab }: Props) {
                     ? "Resolve the pending hold first — set this item back to Checked-in or In progress"
                     : undefined
               }
-              className="flex h-[30px] flex-1 items-center justify-center whitespace-nowrap rounded-[7px] px-1 text-[11.5px] transition-colors"
-              style={{
-                fontWeight: active ? 600 : 500,
-                color: active ? st.color : locked ? "#c4c4c8" : "#71717a",
-                background: active ? "#ffffff" : "transparent",
-                boxShadow: active ? "0 1px 2px rgba(0,0,0,0.09)" : "none",
-                cursor: locked ? "not-allowed" : "pointer",
-              }}
+              className={cn(
+                "flex h-[30px] flex-1 items-center justify-center rounded-md px-1 text-[11.5px] font-medium whitespace-nowrap transition-colors",
+                active && "bg-background font-semibold shadow-sm",
+                !active && !locked && "text-muted-foreground hover:text-foreground",
+                locked && "text-muted-foreground/50 cursor-not-allowed",
+              )}
+              // The active step is tinted with its own stage colour, which is data.
+              style={active ? { color: st.color } : undefined}
             >
               {st.label}
             </button>
@@ -98,8 +104,8 @@ export function LineItemsCard({ job, activeTab }: Props) {
           <span className="text-[12.5px] font-semibold text-zinc-900">{done} of {total} Complete</span>
         </div>
         <div className="flex-1" />
-        <div className="flex h-[34px] items-center gap-1.5 rounded-lg border border-border bg-white px-2.5">
-          <span className="text-[11.5px] text-zinc-400">Loc</span>
+        <div className="flex h-[34px] items-center gap-1.5 rounded-md border bg-white px-2.5">
+          <span className="text-muted-foreground text-[11.5px]">Loc</span>
           <input
             value={loc}
             onChange={(e) => {
@@ -108,48 +114,42 @@ export function LineItemsCard({ job, activeTab }: Props) {
             }}
             placeholder="—"
             disabled={archived}
-            className="w-[52px] border-none bg-transparent text-[12.5px] font-semibold text-zinc-900 outline-none disabled:cursor-not-allowed disabled:text-zinc-400"
+            className="disabled:text-muted-foreground w-[52px] border-none bg-transparent text-[12.5px] font-semibold outline-none disabled:cursor-not-allowed"
           />
         </div>
-        <div className="relative">
-          {progressMenuOpen && <div className="fixed inset-0 z-[5]" onClick={closeProgressMenu} />}
-          <button
-            onClick={toggleProgressMenu}
-            title="More"
-            className="relative z-[6] flex h-[34px] w-[34px] items-center justify-center rounded-lg border border-border bg-white text-zinc-500 hover:bg-app-bg hover:text-zinc-900"
-          >
-            <MoreVertical size={16} />
-          </button>
-          {progressMenuOpen && (
-            <div className="absolute right-0 top-[38px] z-[7] min-w-[140px] rounded-[10px] border border-border bg-white p-[5px] shadow-[0_12px_32px_rgba(0,0,0,0.16)]">
-              <button
-                onClick={() => openEditJob(job.id)}
-                disabled={isJobLocked(job.id)}
-                title={isJobLocked(job.id) ? "This job is archived and can no longer be edited" : undefined}
-                className="flex h-9 w-full items-center gap-[9px] rounded-[7px] px-2.5 text-left text-[13px] font-medium text-zinc-900 hover:bg-app-bg disabled:cursor-not-allowed disabled:text-zinc-400 disabled:hover:bg-transparent"
-              >
-                Edit
-              </button>
-            </div>
-          )}
-        </div>
+        <DropdownMenu open={progressMenuOpen} onOpenChange={(o) => (o ? toggleProgressMenu() : closeProgressMenu())}>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="icon" title="More" className="text-muted-foreground size-[34px]">
+              <MoreVertical />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="min-w-[140px]">
+            <DropdownMenuItem
+              onSelect={() => openEditJob(job.id)}
+              disabled={isJobLocked(job.id)}
+              title={isJobLocked(job.id) ? "This job is archived and can no longer be edited" : undefined}
+            >
+              Edit
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Progress bar */}
-      <div className="h-1 overflow-hidden rounded-full bg-app-bg">
-        <div
-          className="h-full rounded-full transition-[width]"
-          style={{ width: `${pct}%`, background: pct === 100 ? "#16a34a" : "#18181b" }}
-        />
-      </div>
+      <Progress
+        value={pct}
+        className={cn("h-1", pct === 100 && "[&>[data-slot=progress-indicator]]:bg-green-600")}
+      />
 
       {/* Line items */}
       <div className="flex flex-col gap-2">
         {lineItems.map((li, idx) => (
           <div
             key={li.name + idx}
-            className="flex items-center gap-3 rounded-[10px] border p-[12px_14px]"
-            style={{ background: li.done ? "#f6fef9" : "#fafafa", borderColor: li.done ? "#bbf7d0" : "#f0f0f1" }}
+            className={cn(
+              "flex items-center gap-3 rounded-lg border px-3.5 py-3",
+              li.done ? "border-emerald-200 bg-emerald-50/40" : "bg-surface-50",
+            )}
           >
             <div className="flex min-w-0 flex-1 flex-col gap-[5px]">
               <div className="flex items-baseline gap-2">
@@ -177,10 +177,10 @@ export function LineItemsCard({ job, activeTab }: Props) {
                       className="block h-11 w-11 cursor-zoom-in rounded-[7px] border border-border object-cover"
                     />
                   ))}
-                  <span className="inline-flex items-center gap-1 rounded-[6px] border border-[#fde68a] bg-[#fffbeb] px-2 py-0.5 text-[11px] font-semibold text-[#b45309]">
-                    <AlertTriangle size={12} />
+                  <Badge variant="outline" className="gap-1 border-amber-200 bg-amber-50 text-[11px] text-amber-700">
+                    <AlertTriangle />
                     Damage · {li.photos.length} photo{li.photos.length === 1 ? "" : "s"}
-                  </span>
+                  </Badge>
                 </div>
               )}
             </div>
@@ -188,54 +188,52 @@ export function LineItemsCard({ job, activeTab }: Props) {
               onClick={() => toggleLineItemDone(job.id, activeTab, idx)}
               disabled={archived}
               title={archived ? "Archived — services can no longer be changed" : li.done ? "Mark incomplete" : "Mark complete"}
-              className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full transition-colors"
-              style={{
-                color: li.done ? "#ffffff" : "#c4c4c8",
-                background: li.done ? "#16a34a" : "#ffffff",
-                border: li.done ? "1px solid #16a34a" : "2px solid #d4d4d8",
-                cursor: archived ? "not-allowed" : "pointer",
-                opacity: archived ? 0.75 : 1,
-              }}
+              className={cn(
+                "flex size-9 shrink-0 items-center justify-center rounded-full border transition-colors",
+                li.done
+                  ? "border-green-600 bg-green-600 text-white"
+                  : "text-muted-foreground/60 border-2 border-zinc-300 bg-white",
+                archived && "cursor-not-allowed opacity-75",
+              )}
             >
               <Check size={19} strokeWidth={3} />
             </button>
           </div>
         ))}
         {total === 0 && (
-          <div className="flex flex-col items-center gap-2.5 rounded-[10px] border border-dashed border-border py-5">
-            <span className="text-xs text-zinc-400">No services added at drop-off</span>
-            <button
-              onClick={() => openEditJob(job.id)}
-              className="flex h-[34px] items-center gap-[7px] rounded-lg bg-sky px-3.5 text-[12.5px] font-semibold text-white hover:bg-sky-hover"
-            >
-              <Plus size={14} strokeWidth={2.4} />
+          <div className="flex flex-col items-center gap-2.5 rounded-lg border border-dashed py-5">
+            <span className="text-muted-foreground text-xs">No services added at drop-off</span>
+            <Button size="sm" onClick={() => openEditJob(job.id)}>
+              <Plus strokeWidth={2.4} />
               Add services
-            </button>
+            </Button>
           </div>
         )}
       </div>
 
       {/* Collection + Notes */}
-      <div className="flex gap-2.5 border-t border-app-bg pt-3">
-        <div className="flex w-[150px] flex-shrink-0 flex-col gap-[3px]">
-          <span className="text-xs font-semibold text-zinc-900">Collection</span>
+      <div className="border-app-bg flex gap-2.5 border-t pt-3">
+        <div className="flex w-[150px] shrink-0 flex-col gap-[3px]">
+          <span className="text-xs font-semibold">Collection</span>
           <div className="flex gap-3.5">
             <div className="flex flex-col leading-tight">
-              <span className="text-[10px] font-semibold uppercase tracking-wide text-zinc-400">Due</span>
-              <span className="text-[12.5px] font-semibold" style={{ color: job.status === "late" ? "#dc2626" : "#18181b" }}>
+              <span className="text-muted-foreground text-[10px] font-semibold tracking-wide uppercase">Due</span>
+              <span
+                className={cn("text-[12.5px] font-semibold", job.status === "late" && "text-destructive")}
+              >
                 {job.due}
               </span>
             </div>
             <div className="flex flex-col leading-tight">
-              <span className="text-[10px] font-semibold uppercase tracking-wide text-zinc-400">Pickup</span>
-              <span className="text-[12.5px] font-semibold text-zinc-900">{job.pickup}</span>
+              <span className="text-muted-foreground text-[10px] font-semibold tracking-wide uppercase">Pickup</span>
+              <span className="text-[12.5px] font-semibold">{job.pickup}</span>
             </div>
           </div>
         </div>
-        <div className="w-px bg-app-bg" />
+        <Separator orientation="vertical" />
         <div className="flex min-w-0 flex-1 flex-col gap-[3px]">
-          <span className="text-xs font-semibold text-zinc-900">Notes</span>
-          <span className="text-[12.5px] leading-relaxed" style={{ color: job.notes ? "#3f3f46" : "#a1a1aa" }}>
+          <span className="text-xs font-semibold">Notes</span>
+          <span className={cn("text-[12.5px] leading-relaxed", job.notes ? "text-zinc-700" : "text-muted-foreground")}>
             {job.notes || "No notes"}
           </span>
         </div>

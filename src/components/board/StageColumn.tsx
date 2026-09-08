@@ -6,6 +6,9 @@ import type { Stage } from "../../types";
 import { filterJobs, jobToRows, sortByDropoff, sortByDue } from "../../lib/boardSelectors";
 import { JobEntry } from "./JobEntry";
 import { hexA } from "../../lib/format";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 interface Props {
   stageKey: Stage;
@@ -51,9 +54,9 @@ export function StageColumn({ stageKey, label, dot }: Props) {
 
   if (collapsed) {
     return (
-      <section
-        style={{ order, width: 52, flexShrink: 0, opacity: isColDrag ? 0.4 : 1, borderTop: `3px solid ${dot}` }}
-        className="relative flex flex-col overflow-hidden rounded-xl border border-border bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04)]"
+      <Card
+        style={{ order, width: 52, opacity: isColDrag ? 0.4 : 1, borderTopWidth: 3, borderTopColor: dot }}
+        className="relative shrink-0 gap-0 overflow-hidden py-0"
         onDragOver={handleReorderDragOver}
       >
         <div
@@ -68,52 +71,62 @@ export function StageColumn({ stageKey, label, dot }: Props) {
           title="Expand"
           className="flex flex-1 cursor-pointer flex-col items-center gap-2.5 py-3"
         >
-          <span className="h-2 w-2 flex-shrink-0 rounded-[3px]" style={{ background: dot }} />
-          <span className="rounded-full bg-app-bg px-[7px] py-px text-[11px] font-semibold text-zinc-500">{rows.length}</span>
+          <span className="size-2 shrink-0 rounded-[3px]" style={{ background: dot }} />
+          <Badge variant="secondary" className="rounded-full px-[7px] tabular-nums">
+            {rows.length}
+          </Badge>
           <span
-            className="whitespace-nowrap text-xs font-semibold tracking-wide text-zinc-700"
+            className="text-xs font-semibold tracking-wide whitespace-nowrap text-zinc-700"
             style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
           >
             {label}
           </span>
         </div>
-      </section>
+      </Card>
     );
   }
 
   return (
-    <section
+    <Card
       style={{
         order,
         width,
-        flexShrink: 0,
         opacity: isColDrag ? 0.4 : 1,
-        borderColor: isOver ? dot : "#e4e4e7",
+        // Stage colour is data, so the top edge and the drag-over highlight stay inline.
+        // All four sides use longhand: mixing `borderColor` with `borderTopColor` makes React
+        // warn about shorthand/longhand conflicts on re-render.
         borderTopColor: dot,
+        borderRightColor: isOver ? dot : undefined,
+        borderBottomColor: isOver ? dot : undefined,
+        borderLeftColor: isOver ? dot : undefined,
         borderTopWidth: 3,
-        boxShadow: isOver ? `0 0 0 3px ${hexA(dot, 0.12)}` : "0 1px 2px rgba(0,0,0,0.04)",
+        boxShadow: isOver ? `0 0 0 3px ${hexA(dot, 0.12)}` : undefined,
       }}
-      className="relative flex flex-col overflow-hidden rounded-xl border bg-white transition-shadow"
+      className="relative shrink-0 gap-0 overflow-hidden py-0 transition-shadow"
       onDragOver={handleReorderDragOver}
     >
       <div
         draggable
         onDragStart={() => setColDragKey(stageKey)}
         onDragEnd={() => setColDragKey(null)}
-        className="flex h-11 flex-shrink-0 cursor-grab items-center gap-[9px] border-b border-app-bg pl-3 pr-2"
+        className="border-app-bg flex h-11 shrink-0 cursor-grab items-center gap-[9px] border-b pr-2 pl-3"
       >
-        <GripVertical size={13} color="#c4c4c8" />
-        <span className="h-2 w-2 flex-shrink-0 rounded-[3px]" style={{ background: dot }} />
-        <span className="text-[12.5px] font-semibold leading-[1.15] tracking-tight">{label}</span>
-        <span className="rounded-full bg-app-bg px-2 py-px text-[11px] font-semibold leading-[1.6] text-zinc-500">{rows.length}</span>
+        <GripVertical size={13} className="text-muted-foreground" />
+        <span className="size-2 shrink-0 rounded-[3px]" style={{ background: dot }} />
+        <span className="text-[12.5px] leading-[1.15] font-semibold tracking-tight">{label}</span>
+        <Badge variant="secondary" className="rounded-full tabular-nums">
+          {rows.length}
+        </Badge>
         <div className="flex-1" />
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => toggleCollapse(stageKey)}
           title="Collapse"
-          className="flex h-[26px] w-[26px] flex-shrink-0 items-center justify-center rounded-[7px] text-zinc-400 hover:bg-app-bg hover:text-zinc-900"
+          className="text-muted-foreground size-[26px] shrink-0"
         >
-          <ChevronLeft size={15} />
-        </button>
+          <ChevronLeft />
+        </Button>
       </div>
       <div
         onDragOver={(e) => {
@@ -133,7 +146,7 @@ export function StageColumn({ stageKey, label, dot }: Props) {
         className="flex flex-1 flex-col gap-2 overflow-y-auto p-[10px] transition-colors"
       >
         {rows.length === 0 && (
-          <div className="flex h-20 items-center justify-center rounded-[10px] border border-dashed border-border text-[11.5px] text-zinc-350">
+          <div className="text-muted-foreground flex h-20 items-center justify-center rounded-[10px] border border-dashed text-[11.5px]">
             Drop jobs here
           </div>
         )}
@@ -147,8 +160,8 @@ export function StageColumn({ stageKey, label, dot }: Props) {
           e.stopPropagation();
           startColResize(stageKey, e.clientX, width);
         }}
-        className="absolute right-0 top-0 z-[8] h-full w-[7px] cursor-col-resize"
+        className="absolute top-0 right-0 z-[8] h-full w-[7px] cursor-col-resize"
       />
-    </section>
+    </Card>
   );
 }

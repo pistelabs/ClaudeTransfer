@@ -4,6 +4,8 @@ import { useAppStore } from "../../store/useAppStore";
 import { filterJobs, jobToRows, sortByDue } from "../../lib/boardSelectors";
 import { JobEntry } from "./JobEntry";
 import { hexA } from "../../lib/format";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 
 export function CheckedInEquipmentPanel() {
   const jobs = useAppStore((s) => s.jobs);
@@ -48,17 +50,19 @@ export function CheckedInEquipmentPanel() {
   };
 
   return (
-    <section
+    <Card
       style={{
         order,
         width,
-        flexShrink: 0,
         borderTopWidth: 3,
+        // Longhand on every side — see the note in StageColumn.
         borderTopColor: "#2563eb",
-        borderColor: isOver ? "#2563eb" : "#e4e4e7",
-        boxShadow: isOver ? `0 0 0 3px ${hexA("#2563eb", 0.12)}` : "0 1px 2px rgba(0,0,0,0.04)",
+        borderRightColor: isOver ? "#2563eb" : undefined,
+        borderBottomColor: isOver ? "#2563eb" : undefined,
+        borderLeftColor: isOver ? "#2563eb" : undefined,
+        boxShadow: isOver ? `0 0 0 3px ${hexA("#2563eb", 0.12)}` : undefined,
       }}
-      className="relative flex flex-col overflow-hidden rounded-xl border bg-white transition-shadow"
+      className="relative shrink-0 gap-0 overflow-hidden py-0 transition-shadow"
       onDragOver={(e) => {
         if (colDragKey && colDragKey !== "table") {
           e.preventDefault();
@@ -70,23 +74,25 @@ export function CheckedInEquipmentPanel() {
         draggable
         onDragStart={() => setColDragKey("table")}
         onDragEnd={() => setColDragKey(null)}
-        className="flex h-11 flex-shrink-0 cursor-grab items-center gap-[9px] border-b border-app-bg pl-3 pr-2"
+        className="border-app-bg flex h-11 shrink-0 cursor-grab items-center gap-[9px] border-b pr-2 pl-3"
       >
-        <GripVertical size={13} color="#c4c4c8" />
-        <span className="h-2 w-2 flex-shrink-0 rounded-[3px]" style={{ background: "#2563eb" }} />
-        <span className="text-[12.5px] font-semibold leading-[1.15] tracking-tight">Checked in Equipment</span>
-        <span className="rounded-full bg-app-bg px-2 py-px text-[11px] font-semibold leading-[1.6] text-zinc-500">{rows.length}</span>
+        <GripVertical size={13} className="text-muted-foreground" />
+        <span className="size-2 shrink-0 rounded-[3px]" style={{ background: "#2563eb" }} />
+        <span className="text-[12.5px] leading-[1.15] font-semibold tracking-tight">Checked in Equipment</span>
+        <Badge variant="secondary" className="rounded-full tabular-nums">
+          {rows.length}
+        </Badge>
         <div className="flex-1" />
       </div>
 
       {wide ? (
         <>
-          <div className="flex flex-shrink-0 gap-3 border-b border-app-bg px-[14px] py-[9px] text-[10.5px] font-semibold uppercase tracking-wide text-zinc-400">
-            <span className="w-[90px] flex-shrink-0">Job</span>
+          <div className="border-app-bg text-muted-foreground flex shrink-0 gap-3 border-b px-3.5 py-2 text-[10.5px] font-semibold tracking-wide uppercase">
+            <span className="w-[90px] shrink-0">Job</span>
             <span className="min-w-0 flex-[1.2]">Equipment</span>
             <span className="min-w-0 flex-1">Services</span>
-            <span className="w-[110px] flex-shrink-0">Customer</span>
-            <span className="w-[60px] flex-shrink-0">Due</span>
+            <span className="w-[110px] shrink-0">Customer</span>
+            <span className="w-[60px] shrink-0">Due</span>
           </div>
           <div
             onDragOver={onBodyDragOver}
@@ -97,7 +103,7 @@ export function CheckedInEquipmentPanel() {
             className="flex-1 overflow-y-auto transition-colors"
           >
             {rows.length === 0 && (
-              <div className="m-[10px] flex h-20 items-center justify-center rounded-[10px] border border-dashed border-border text-[11.5px] text-zinc-350">
+              <div className="text-muted-foreground m-[10px] flex h-20 items-center justify-center rounded-[10px] border border-dashed text-[11.5px]">
                 Drop equipment here
               </div>
             )}
@@ -116,7 +122,7 @@ export function CheckedInEquipmentPanel() {
           className="flex flex-1 flex-col gap-2 overflow-y-auto p-[10px] transition-colors"
         >
           {rows.length === 0 && (
-            <div className="flex h-20 items-center justify-center rounded-[10px] border border-dashed border-border text-[11.5px] text-zinc-350">
+            <div className="text-muted-foreground flex h-20 items-center justify-center rounded-[10px] border border-dashed text-[11.5px]">
               Drop equipment here
             </div>
           )}
@@ -132,8 +138,8 @@ export function CheckedInEquipmentPanel() {
           e.stopPropagation();
           startColResize("table", e.clientX, width);
         }}
-        className="absolute right-0 top-0 z-[8] h-full w-[7px] cursor-col-resize"
+        className="absolute top-0 right-0 z-[8] h-full w-[7px] cursor-col-resize"
       />
-    </section>
+    </Card>
   );
 }

@@ -2,8 +2,17 @@ import { useEffect, useRef, useState } from "react";
 import { Filter, Landmark, Plus, Search } from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
 import { EQUIPMENT_CATEGORIES } from "../types";
-import { CheckedBox } from "./Pills";
 import { useBarcodeScanner } from "../lib/useBarcodeScanner";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 
 export function Header() {
   const query = useAppStore((s) => s.query);
@@ -38,79 +47,67 @@ export function Header() {
   const filterActive = filterCats.length > 0;
 
   return (
-    <header className="z-10 flex h-[60px] flex-shrink-0 items-center gap-4 border-b border-border bg-white px-5">
+    <header className="z-10 flex h-[60px] shrink-0 items-center gap-4 border-b bg-white px-5">
       <span className="text-sm font-semibold tracking-tight">Workshop Jobs</span>
-      <div className="flex items-center gap-1.5 rounded-full border border-[#bfdbfe] bg-[#eff6ff] px-[11px] py-1">
-        <Landmark size={12} color="#0284c7" strokeWidth={2} />
-        <span className="whitespace-nowrap text-[12.5px] font-semibold text-sky-hover">City Skis</span>
-      </div>
+      <Badge variant="outline" className="gap-1.5 rounded-full border-sky-200 bg-sky-50 text-[12.5px] text-sky-700">
+        <Landmark strokeWidth={2} />
+        City Skis
+      </Badge>
 
       <div className="relative ml-2 w-[280px]">
-        <Search size={15} strokeWidth={2} color="#71717a" className="pointer-events-none absolute left-[10px] top-1/2 -translate-y-1/2" />
-        <input
+        <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
+        <Input
           ref={searchRef}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search job #, customer, equipment or scan a barcode..."
-          className="h-9 w-full rounded-lg border border-border bg-white pl-8 pr-3 text-[13px] text-ink outline-none focus:border-zinc-400 focus:shadow-[0_0_0_3px_rgba(161,161,170,0.15)]"
+          className="bg-white pl-8"
         />
       </div>
 
       <div className="flex-1" />
 
-      <div className="relative">
-        {filterOpen && <div className="fixed inset-0 z-20" onClick={closeFilter} />}
-        <button
-          onClick={toggleFilterOpen}
-          className="relative z-[21] flex h-9 items-center gap-[7px] rounded-lg border px-[13px] text-[13px] font-medium hover:bg-app-bg"
-          style={{
-            color: filterActive ? "#0369a1" : "#09090b",
-            background: filterActive ? "#eff6ff" : "#ffffff",
-            borderColor: filterActive ? "#bfdbfe" : "#e4e4e7",
-          }}
-        >
-          <Filter size={14} />
-          Filter
-          {filterActive && (
-            <span className="flex min-w-[17px] items-center justify-center rounded-full bg-sky px-1 text-[10px] font-bold leading-[17px] text-white">
-              {filterCats.length}
-            </span>
-          )}
-        </button>
-        {filterOpen && (
-          <div className="absolute right-0 top-[42px] z-[22] w-[210px] rounded-[10px] border border-border bg-white p-1.5 shadow-[0_12px_32px_rgba(0,0,0,0.16)]">
-            <div className="flex items-center justify-between px-2 pb-2 pt-1.5">
-              <span className="text-[11px] font-bold uppercase tracking-wide text-zinc-400">Equipment type</span>
-              {filterActive && (
-                <button onClick={clearFilter} className="text-[11px] font-semibold text-sky-hover">
-                  Clear
-                </button>
-              )}
+      <DropdownMenu open={filterOpen} onOpenChange={(o) => (o ? toggleFilterOpen() : closeFilter())}>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="outline"
+            className={filterActive ? "border-sky-200 bg-sky-50 text-sky-700 hover:bg-sky-100" : undefined}
+          >
+            <Filter />
+            Filter
+            {filterActive && (
+              <Badge className="bg-sky size-[17px] rounded-full p-0 text-[10px] text-white tabular-nums">
+                {filterCats.length}
+              </Badge>
+            )}
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-[210px]">
+          <DropdownMenuLabel className="flex items-center justify-between pb-2">
+            <span className="text-muted-foreground text-[11px] font-bold tracking-wide uppercase">Equipment type</span>
+            {filterActive && (
+              <button onClick={clearFilter} className="text-sky-hover text-[11px] font-semibold">
+                Clear
+              </button>
+            )}
+          </DropdownMenuLabel>
+          {EQUIPMENT_CATEGORIES.map((cat) => (
+            <div
+              key={cat}
+              onClick={() => toggleFilterCat(cat)}
+              className="hover:bg-accent flex cursor-pointer items-center gap-[9px] rounded-sm px-2 py-[7px]"
+            >
+              <Checkbox checked={filterCats.includes(cat)} />
+              <span className="text-[12.5px] font-medium">{cat}</span>
             </div>
-            {EQUIPMENT_CATEGORIES.map((cat) => {
-              const on = filterCats.includes(cat);
-              return (
-                <div
-                  key={cat}
-                  onClick={() => toggleFilterCat(cat)}
-                  className="flex cursor-pointer items-center gap-[9px] rounded-[7px] px-2 py-[7px] hover:bg-app-bg"
-                >
-                  <CheckedBox on={on} />
-                  <span className="text-[12.5px] font-medium text-zinc-900">{cat}</span>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
 
-      <button
-        onClick={openNew}
-        className="flex h-9 items-center gap-[7px] rounded-lg bg-sky px-[15px] text-[13px] font-semibold text-white hover:bg-sky-hover"
-      >
-        <Plus size={15} strokeWidth={2.2} />
+      <Button onClick={openNew}>
+        <Plus strokeWidth={2.2} />
         New
-      </button>
+      </Button>
     </header>
   );
 }
