@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { Check, ChevronDown, Landmark, Plus, X } from "lucide-react";
+import { Check, ChevronDown, Landmark, Plus } from "lucide-react";
 import { useAppStore } from "../../store/useAppStore";
 import { Avatar } from "../Pills";
 import { CustomerSearch } from "./CustomerSearch";
@@ -11,6 +10,16 @@ import { CheckoutColumn } from "./CheckoutColumn";
 import { StaffSelectorModal } from "./StaffSelectorModal";
 import { WaiverModal } from "./WaiverModal";
 import { pickupSlots } from "../../lib/serviceCatalog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
 
 export function CheckInSheet() {
   const newOpen = useAppStore((s) => s.newOpen);
@@ -23,72 +32,67 @@ export function CheckInSheet() {
   const patchNf = useAppStore((s) => s.patchNf);
   const addAnotherItem = useAppStore((s) => s.addAnotherItem);
 
-  const [staffMenuOpen, setStaffMenuOpen] = useState(false);
-
-  if (!newOpen) return null;
-
   const title = editId ? `Edit ${editId}` : "Check in New Equipment";
   const slots = pickupSlots();
 
   return (
-    <div className="animate-sheet-fade fixed inset-0 z-40" style={{ background: "rgba(9,9,11,0.45)" }} onClick={closeNew}>
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="animate-sheet-slide absolute bottom-0 right-0 top-0 flex w-[1060px] max-w-[97vw] flex-col overflow-hidden border-l border-border bg-white"
-        style={{ boxShadow: "-12px 0 40px rgba(0,0,0,0.18)" }}
+    <Sheet open={newOpen} onOpenChange={(open) => !open && closeNew()}>
+      <SheetContent
+        side="right"
+        // The sheet is a form: focusing a field on open would put barcode scans into it.
+        onOpenAutoFocus={(e) => e.preventDefault()}
+        className="w-[1060px] gap-0 p-0 sm:max-w-[97vw]"
       >
         <StaffSelectorModal />
         <WaiverModal />
 
         {/* Header */}
-        <div className="flex flex-shrink-0 items-center gap-3 border-b border-app-bg px-5 py-[18px]">
-          <span className="text-base font-bold tracking-tight">{title}</span>
-          <div className="flex items-center gap-1.5 rounded-full border border-[#bfdbfe] bg-[#eff6ff] px-[11px] py-1">
-            <Landmark size={12} color="#0284c7" />
-            <span className="whitespace-nowrap text-xs font-semibold text-sky-hover">City Skis</span>
-          </div>
+        <div className="border-app-bg flex shrink-0 items-center gap-3 border-b px-5 py-4">
+          <SheetTitle className="text-base tracking-tight">{title}</SheetTitle>
+          <SheetDescription className="sr-only">
+            Build a job by adding a customer, equipment and services.
+          </SheetDescription>
+          <Badge variant="outline" className="gap-1.5 rounded-full border-sky-200 bg-sky-50 text-sky-700">
+            <Landmark className="size-3" />
+            City Skis
+          </Badge>
           <div className="flex-1" />
-          <div className="relative">
-            {staffMenuOpen && <div className="fixed inset-0 z-[44]" onClick={() => setStaffMenuOpen(false)} />}
-            <button
-              onClick={() => setStaffMenuOpen((v) => !v)}
-              title="Change staff member"
-              className="relative z-[45] flex h-[34px] items-center gap-2 rounded-full border border-border bg-white py-[3px] pl-[3px] pr-2.5 hover:bg-app-bg"
-            >
-              <Avatar name={activeStaff || "?"} size={28} />
-              <span className="whitespace-nowrap text-[12.5px] font-semibold text-zinc-900">{activeStaff}</span>
-              <ChevronDown size={13} color="#a1a1aa" />
-            </button>
-            {staffMenuOpen && (
-              <div className="absolute right-0 top-10 z-[46] min-w-[212px] rounded-[11px] border border-border bg-white p-[5px] shadow-[0_12px_32px_rgba(0,0,0,0.16)]">
-                <div className="px-[9px] pb-1 pt-1.5 text-[10.5px] font-bold uppercase tracking-wide text-zinc-400">Serving as</div>
-                {staffList.map((name) => (
-                  <div
-                    key={name}
-                    onClick={() => {
-                      setStaff(name);
-                      setStaffMenuOpen(false);
-                    }}
-                    className="flex cursor-pointer items-center gap-2.5 rounded-lg p-[7px_9px] hover:bg-app-bg"
-                  >
-                    <Avatar name={name} size={28} />
-                    <span className="flex-1 text-[13px] font-medium text-zinc-900">{name}</span>
-                    {name === activeStaff && <Check size={15} strokeWidth={2.6} color="#0284c7" />}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-          <button onClick={closeNew} className="flex h-[30px] w-[30px] flex-shrink-0 items-center justify-center rounded-lg text-zinc-500 hover:bg-app-bg hover:text-ink">
-            <X size={17} />
-          </button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                title="Change staff member"
+                className="h-9 gap-2 rounded-full py-0.5 pr-2.5 pl-0.5"
+              >
+                <Avatar name={activeStaff || "?"} size={28} />
+                <span className="text-sm font-semibold">{activeStaff}</span>
+                <ChevronDown className="text-muted-foreground" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="min-w-[212px]">
+              <DropdownMenuLabel className="text-muted-foreground text-xs tracking-wide uppercase">
+                Serving as
+              </DropdownMenuLabel>
+              {staffList.map((name) => (
+                <DropdownMenuItem key={name} onSelect={() => setStaff(name)} className="gap-2.5">
+                  <Avatar name={name} size={28} />
+                  <span className="flex-1 text-sm font-medium">{name}</span>
+                  {name === activeStaff && <Check className="text-sky size-4" strokeWidth={2.6} />}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+          {/* SheetContent supplies its own close button, positioned top-right. */}
+          <div className="w-6 shrink-0" />
         </div>
 
         <div className="flex min-h-0 flex-1">
           <div className="flex min-h-0 flex-1 flex-col">
-            <div className="flex flex-1 flex-col gap-[22px] overflow-y-auto bg-surface-50 p-5">
+            <div className="bg-surface-50 flex flex-1 flex-col gap-[22px] overflow-y-auto p-5">
               <div className="flex flex-col gap-[11px]">
-                <span className="text-[10.5px] font-bold uppercase tracking-wide text-zinc-400">Customer Details</span>
+                <span className="text-muted-foreground text-[10.5px] font-bold tracking-wide uppercase">
+                  Customer Details
+                </span>
                 <CustomerSearch />
               </div>
 
@@ -100,18 +104,20 @@ export function CheckInSheet() {
               <ServicesSection />
 
               <div className="flex flex-col gap-[11px]">
-                <span className="text-[10.5px] font-bold uppercase tracking-wide text-zinc-400">Collection</span>
+                <span className="text-muted-foreground text-[10.5px] font-bold tracking-wide uppercase">
+                  Collection
+                </span>
                 <div className="flex gap-2.5">
                   <div className="flex flex-1 flex-col gap-1.5">
-                    <span className="text-[11px] text-zinc-500">Due date</span>
+                    <span className="text-muted-foreground text-[11px]">Due date</span>
                     <DueDatePicker />
                   </div>
                   <div className="flex flex-1 flex-col gap-1.5">
-                    <span className="text-[11px] text-zinc-500">Pickup</span>
+                    <span className="text-muted-foreground text-[11px]">Pickup</span>
                     <select
                       value={nf.pickup}
                       onChange={(e) => patchNf({ pickup: e.target.value })}
-                      className="h-[38px] w-full cursor-pointer rounded-[9px] border border-border px-2.5 text-[13px] outline-none focus:border-sky focus:shadow-[0_0_0_3px_rgba(2,132,199,0.14)]"
+                      className="focus:border-sky h-[38px] w-full cursor-pointer rounded-[9px] border px-2.5 text-[13px] outline-none focus:shadow-[0_0_0_3px_rgba(2,132,199,0.14)]"
                     >
                       <option value="">Select time</option>
                       {slots.map((t) => (
@@ -125,36 +131,27 @@ export function CheckInSheet() {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <span className="text-[10.5px] font-bold uppercase tracking-wide text-zinc-400">Notes</span>
+                <span className="text-muted-foreground text-[10.5px] font-bold tracking-wide uppercase">Notes</span>
                 <textarea
                   value={nf.notes}
                   onChange={(e) => patchNf({ notes: e.target.value })}
                   placeholder="Any notes for this job..."
-                  className="min-h-[72px] w-full resize-y rounded-[9px] border border-border px-3 py-2.5 text-[13px] leading-relaxed outline-none focus:border-sky focus:shadow-[0_0_0_3px_rgba(2,132,199,0.14)]"
+                  className="focus:border-sky min-h-[72px] w-full resize-y rounded-[9px] border px-3 py-2.5 text-[13px] leading-relaxed outline-none focus:shadow-[0_0_0_3px_rgba(2,132,199,0.14)]"
                 />
               </div>
             </div>
 
-            <div className="flex-shrink-0 border-t border-border bg-white p-4">
-              <button
-                onClick={addAnotherItem}
-                disabled={!nf.brand.trim()}
-                className="flex h-11 w-full items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-[15px] text-[13px] font-semibold text-white"
-                style={{
-                  background: nf.brand.trim() ? "#0284c7" : "#bae6fd",
-                  cursor: nf.brand.trim() ? "pointer" : "not-allowed",
-                  boxShadow: nf.brand.trim() ? "0 1px 2px rgba(2,132,199,0.35)" : "none",
-                }}
-              >
-                <Plus size={14} strokeWidth={2.4} />
+            <div className="shrink-0 border-t bg-white p-4">
+              <Button onClick={addAnotherItem} disabled={!nf.brand.trim()} size="lg" className="w-full">
+                <Plus strokeWidth={2.4} />
                 Add Equipment to Job
-              </button>
+              </Button>
             </div>
           </div>
 
           <CheckoutColumn />
         </div>
-      </div>
-    </div>
+      </SheetContent>
+    </Sheet>
   );
 }

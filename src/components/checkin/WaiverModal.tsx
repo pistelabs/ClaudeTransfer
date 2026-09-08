@@ -7,6 +7,18 @@ import { computeDin as computeDinFn, groupFields, SERVICE_DEFS, svcPrice } from 
 import { money } from "../../lib/format";
 import { Avatar, ServicePill, TypeBadge } from "../Pills";
 import { SignaturePad } from "./SignaturePad";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
@@ -246,31 +258,30 @@ export function WaiverModal() {
 
   const canContinue = agreed && !!custSignature;
 
-  if (!waiverOpen) return null;
-
   return (
-    <div className="animate-sheet-fade absolute inset-0 z-[60] flex items-center justify-center p-6" style={{ background: "rgba(9,9,11,0.45)" }}>
-      <div
-        className="animate-sheet-pop flex max-h-full w-full max-w-[560px] flex-col overflow-hidden rounded-[14px] border border-border bg-white"
-        style={{ boxShadow: "0 24px 60px rgba(0,0,0,0.28)" }}
+    <Dialog open={waiverOpen} onOpenChange={(open) => !open && close()}>
+      <DialogContent
+        showCloseButton={false}
+        className="flex max-h-[calc(100vh-3rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-[560px]"
       >
         {/* Header */}
-        <div className="flex flex-shrink-0 items-center gap-2.5 border-b border-app-bg px-5 py-4">
-          <div
-            className="flex h-[34px] w-[34px] flex-shrink-0 items-center justify-center rounded-[9px]"
-            style={{ background: "#fef2f2", border: "1px solid #fecaca", color: "#dc2626" }}
-          >
+        <DialogHeader className="border-app-bg flex-row shrink-0 items-center gap-2.5 space-y-0 border-b px-5 py-4 text-left">
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-red-200 bg-red-50 text-red-600">
             {step === 1 ? <FileText size={17} /> : <PenLine size={17} />}
           </div>
           <div className="flex min-w-0 flex-col">
-            <span className="text-[15px] font-bold tracking-tight">{step === 1 ? "Check-in waiver" : "Staff signature"}</span>
-            <span className="text-xs text-zinc-500">
+            <DialogTitle className="text-[15px] tracking-tight">
+              {step === 1 ? "Check-in waiver" : "Staff signature"}
+            </DialogTitle>
+            <DialogDescription className="text-xs">
               {step === 1 ? `Customer to review and sign for ${jobId}` : `Staff to countersign ${jobId}`}
-            </span>
+            </DialogDescription>
           </div>
           <div className="flex-1" />
-          <span className="flex-shrink-0 rounded-full bg-app-bg px-2.5 py-1 text-[11px] font-semibold text-zinc-500">Step {step} of 2</span>
-        </div>
+          <Badge variant="secondary" className="shrink-0 rounded-full">
+            Step {step} of 2
+          </Badge>
+        </DialogHeader>
 
         <div className="flex-1 overflow-y-auto bg-surface-50 p-5">
           {step === 1 ? (
@@ -287,17 +298,18 @@ export function WaiverModal() {
                     </li>
                   ))}
                 </ol>
-                <label className="mt-1 flex cursor-pointer items-start gap-2.5 rounded-[9px] border border-border bg-surface-50 p-3">
-                  <input
-                    type="checkbox"
+                <Label
+                  htmlFor="waiver-agree"
+                  className="bg-surface-50 mt-1 items-start gap-2.5 rounded-md border p-3 text-[12.5px] leading-relaxed font-medium"
+                >
+                  <Checkbox
+                    id="waiver-agree"
                     checked={agreed}
-                    onChange={(e) => setAgreed(e.target.checked)}
-                    className="mt-px h-4 w-4 flex-shrink-0 accent-[#0284c7]"
+                    onCheckedChange={(v) => setAgreed(v === true)}
+                    className="mt-px"
                   />
-                  <span className="text-[12.5px] font-medium leading-relaxed text-zinc-900">
-                    The customer has read and agreed to the terms above.
-                  </span>
-                </label>
+                  The customer has read and agreed to the terms above.
+                </Label>
               </section>
 
               <CustomerBlock name={nf.customer} email={nf.email} phone={nf.phone} />
@@ -358,53 +370,36 @@ export function WaiverModal() {
         </div>
 
         {/* Actions */}
-        <div className="flex flex-shrink-0 items-center gap-2.5 border-t border-border bg-white px-5 py-3.5">
+        <DialogFooter className="flex-row shrink-0 items-center gap-2.5 border-t bg-white px-5 py-3.5 sm:justify-start">
           {step === 2 && (
-            <button
-              onClick={back}
-              className="flex h-10 items-center gap-1.5 rounded-[9px] border border-border bg-white px-3.5 text-[13px] font-medium text-zinc-900 hover:bg-app-bg"
-            >
-              <ArrowLeft size={15} />
+            <Button variant="outline" onClick={back}>
+              <ArrowLeft />
               Back
-            </button>
+            </Button>
           )}
-          <button onClick={close} className="h-10 rounded-[9px] px-3.5 text-[13px] font-medium text-zinc-500 hover:text-ink">
+          <Button variant="ghost" onClick={close}>
             Cancel
-          </button>
+          </Button>
           <div className="flex-1" />
           {step === 1 ? (
-            <button
+            <Button
               onClick={next}
               disabled={!canContinue}
               title={!agreed ? "Confirm the terms have been read" : !custSignature ? "The customer needs to sign" : undefined}
-              className="h-10 rounded-[9px] px-5 text-[13px] font-semibold"
-              style={{
-                color: canContinue ? "#ffffff" : "#c4c4c8",
-                background: canContinue ? "#0284c7" : "#f4f4f5",
-                border: canContinue ? "1px solid #0284c7" : "1px solid #e4e4e7",
-                cursor: canContinue ? "pointer" : "not-allowed",
-              }}
             >
               Continue
-            </button>
+            </Button>
           ) : (
-            <button
+            <Button
               onClick={() => staffSignature && custSignature && sign(staffSignature, custSignature)}
               disabled={!staffSignature}
-              className="flex h-10 items-center gap-2 rounded-[9px] px-5 text-[13px] font-semibold"
-              style={{
-                color: staffSignature ? "#ffffff" : "#c4c4c8",
-                background: staffSignature ? "#16a34a" : "#f4f4f5",
-                border: staffSignature ? "1px solid #16a34a" : "1px solid #e4e4e7",
-                cursor: staffSignature ? "pointer" : "not-allowed",
-              }}
             >
-              <Check size={15} strokeWidth={3} />
+              <Check strokeWidth={3} />
               Sign and check in
-            </button>
+            </Button>
           )}
-        </div>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

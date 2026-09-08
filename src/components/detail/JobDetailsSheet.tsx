@@ -1,4 +1,3 @@
-import { X } from "lucide-react";
 import { useAppStore } from "../../store/useAppStore";
 import { Avatar } from "../Pills";
 import { EquipmentTabs } from "./EquipmentTabs";
@@ -7,6 +6,8 @@ import { UpdatesPanel } from "./UpdatesPanel";
 import { WaiversPanel } from "./WaiversPanel";
 import { PaymentBar } from "./PaymentBar";
 import { HoldPromptModal, PayModals, ReadyPromptModal, ResolvePendingModal } from "./DetailModals";
+import { Badge } from "@/components/ui/badge";
+import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
 
 export function JobDetailsSheet() {
   const selectedId = useAppStore((s) => s.selectedId);
@@ -23,52 +24,49 @@ export function JobDetailsSheet() {
   const isOverdue = job.status === "late";
 
   return (
-    <div className="animate-sheet-fade fixed inset-0 z-40" style={{ background: "rgba(9,9,11,0.45)" }} onClick={closeDetail}>
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="animate-sheet-slide absolute bottom-0 right-0 top-0 flex w-[680px] max-w-[94vw] flex-col overflow-hidden border-l border-border bg-white"
-        style={{ boxShadow: "-12px 0 40px rgba(0,0,0,0.18)" }}
+    <Sheet open onOpenChange={(open) => !open && closeDetail()}>
+      <SheetContent
+        side="right"
+        onOpenAutoFocus={(e) => e.preventDefault()}
+        className="w-[680px] gap-0 p-0 sm:max-w-[94vw]"
       >
         {/* Header */}
-        <div className="flex flex-shrink-0 flex-wrap items-center gap-2.5 border-b border-app-bg px-[18px] py-4">
+        <div className="border-app-bg flex shrink-0 flex-wrap items-center gap-2.5 border-b px-[18px] py-4 pr-12">
           <div className="flex min-w-0 flex-col gap-1">
             {/* Stacked so the label doesn't crowd the id, which is long now. */}
-            <span className="text-[10.5px] font-semibold uppercase tracking-wide text-zinc-400">Job ID</span>
-            <span className="-mt-0.5 whitespace-nowrap text-base font-bold tracking-tight">{job.id}</span>
+            <span className="text-muted-foreground text-[10.5px] font-semibold tracking-wide uppercase">Job ID</span>
+            <SheetTitle className="-mt-0.5 text-base tracking-tight whitespace-nowrap">{job.id}</SheetTitle>
+            <SheetDescription className="sr-only">
+              Job details for {job.customer}: equipment, services, updates and payment.
+            </SheetDescription>
             {isOverdue && (
-              <span className="inline-flex w-fit items-center gap-[5px] whitespace-nowrap rounded-full border border-[#fecaca] bg-[#fef2f2] px-[9px] py-[3px] text-[10.5px] font-bold tracking-wide text-red">
+              <Badge variant="outline" className="w-fit rounded-full border-red-200 bg-red-50 text-red-600">
                 OVERDUE
-              </span>
+              </Badge>
             )}
           </div>
-          <div
+          <button
             onClick={() => editCustomerByName(job.customer, job.email, job.phone)}
             title="Edit customer details"
-            className="flex min-w-0 cursor-pointer items-center gap-[9px] rounded-full border border-border bg-surface-100 py-[5px] pl-[5px] pr-[13px] hover:bg-[#f0f0f1]"
+            className="bg-surface-100 hover:bg-accent focus-visible:border-ring focus-visible:ring-ring/50 flex min-w-0 items-center gap-[9px] rounded-full border py-[5px] pr-[13px] pl-[5px] text-left outline-none focus-visible:ring-[3px]"
           >
             <Avatar name={job.customer} size={34} />
             <div className="flex min-w-0 flex-col leading-[1.3]">
-              <span className="whitespace-nowrap text-[12.5px] font-semibold text-zinc-900">{job.customer}</span>
-              <span className="max-w-[210px] overflow-hidden text-ellipsis whitespace-nowrap text-[11px] text-zinc-500">
+              <span className="text-[12.5px] font-semibold whitespace-nowrap">{job.customer}</span>
+              <span className="text-muted-foreground max-w-[210px] overflow-hidden text-[11px] text-ellipsis whitespace-nowrap">
                 {job.email} · {job.phone}
               </span>
             </div>
-          </div>
-          <div className="flex-1" />
-          <div className="flex flex-col rounded-lg border border-border bg-surface-100 px-3 py-1 leading-[1.25]">
-            <span className="whitespace-nowrap text-[11px] font-semibold text-zinc-900">{job.tech}</span>
-            <span className="whitespace-nowrap text-[10px] text-zinc-500">Checked in · {job.updatedAt}</span>
-          </div>
-          <button
-            onClick={closeDetail}
-            className="flex h-[30px] w-[30px] flex-shrink-0 items-center justify-center rounded-lg text-zinc-500 hover:bg-app-bg hover:text-ink"
-          >
-            <X size={17} />
           </button>
+          <div className="flex-1" />
+          <div className="bg-surface-100 flex flex-col rounded-lg border px-3 py-1 leading-[1.25]">
+            <span className="text-[11px] font-semibold whitespace-nowrap">{job.tech}</span>
+            <span className="text-muted-foreground text-[10px] whitespace-nowrap">Checked in · {job.updatedAt}</span>
+          </div>
         </div>
 
         {/* Body */}
-        <div className="flex flex-1 flex-col gap-4 overflow-y-auto bg-surface-50 p-[18px]">
+        <div className="bg-surface-50 flex flex-1 flex-col gap-4 overflow-y-auto p-[18px]">
           <div className="flex flex-col">
             <EquipmentTabs job={job} activeTab={activeTabIdx} onSelect={setActiveTab} />
             <LineItemsCard job={job} activeTab={activeTabIdx} />
@@ -83,7 +81,7 @@ export function JobDetailsSheet() {
         <ResolvePendingModal job={job} />
         <ReadyPromptModal />
         <PayModals job={job} />
-      </div>
-    </div>
+      </SheetContent>
+    </Sheet>
   );
 }
