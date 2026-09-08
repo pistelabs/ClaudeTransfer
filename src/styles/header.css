@@ -235,6 +235,19 @@
   transform: translateX(-50%);
 }
 
+/* In the header picker any date is selectable, including past ones — so they are
+   de-emphasised but still legible and still clickable, unlike the booking sheet's
+   calendar where a past date really is disabled. */
+.date-pop .calendar__cell--past {
+  color: var(--n-450);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.date-pop .calendar__cell--past:hover {
+  background: var(--n-25);
+}
+
 .date-pop__card {
   margin-top: 0;
   border: none;

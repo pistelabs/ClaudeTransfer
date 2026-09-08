@@ -205,7 +205,8 @@ body {
 
 .tab {
   padding: 0 2px 9px;
-  color: var(--n-350);
+  /* as .detail__tab, on the warm ramp this strip already sits on */
+  color: var(--n-500);
   font-size: 13px;
   font-weight: 500;
   white-space: nowrap;

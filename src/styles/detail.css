@@ -256,7 +256,9 @@
 .detail__tab {
   flex: 1;
   padding: 0 4px 10px;
-  color: var(--n-400);
+  /* the lightest neutral that still clears 4.5:1 on white — an unselected tab is
+     a label somebody has to read to know the tab is there */
+  color: var(--n-450);
   font-size: 12.5px;
   font-weight: 500;
   white-space: nowrap;
