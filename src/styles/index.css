@@ -1,0 +1,23 @@
+/**
+ * Tailwind is imported layer by layer rather than as one `@import "tailwindcss"`,
+ * because the order matters here.
+ *
+ * Everything Tailwind ships sits inside a cascade layer; the hand-written
+ * stylesheets below are unlayered, and unlayered CSS beats layered CSS whatever
+ * its specificity. So Preflight normalises the elements shadcn's components
+ * expect, without reaching into the 4,700 lines of pixel-specified CSS that the
+ * schedule, sheets and header depend on.
+ */
+@layer theme, base, components, utilities;
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/preflight.css' layer(base);
+@import 'tailwindcss/utilities.css' layer(utilities);
+
+@import './tokens.css';
+@import './global.css';
+@import './ui.css';
+@import './header.css';
+@import './schedule.css';
+@import './sheet.css';
+@import './booking.css';
+@import './detail.css';
