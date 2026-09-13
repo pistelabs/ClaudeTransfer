@@ -1,5 +1,5 @@
 import { CalendarCheck, CreditCard, EllipsisVertical, Globe, Trash2, X } from 'lucide-react';
-import { STAFF } from '../../data/catalogue';
+import { staffById } from '../../data/catalogue';
 import { formatBookedAt, initialsOf } from '../../lib/dates';
 import { useScheduler } from '../../store/useScheduler';
 import { Avatar } from '../ui/Avatar';
@@ -38,7 +38,7 @@ function describeSource(via: BookingSource | CheckInSource) {
   if (via === 'online') return { kind: 'online' as const, label: 'Online', initials: '', color: '' };
   if (via === 'walkin') return { kind: 'internal' as const, label: 'Walk in', initials: '', color: '' };
   if (via === 'internal') return { kind: 'internal' as const, label: 'Internal', initials: '', color: '' };
-  const staff = STAFF[via];
+  const staff = staffById(via);
   if (!staff) return { kind: 'internal' as const, label: 'Unknown', initials: '', color: '' };
   return { kind: 'staff' as const, label: staff.name, initials: staff.initials ?? initialsOf(staff.name), color: staff.dot };
 }

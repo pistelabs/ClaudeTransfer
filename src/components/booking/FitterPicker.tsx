@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
-import { STAFF } from '../../data/catalogue';
+import { STAFF, staffById } from '../../data/catalogue';
 import { slotOpen, slotsFor } from '../../lib/schedule';
 import { parseTime } from '../../lib/time';
 import { useScheduler } from '../../store/useScheduler';
@@ -31,11 +31,11 @@ export function FitterPicker() {
   // Escape closes the menu, not the whole sheet behind it
   useEscape(open, () => setStaffOpen(false));
 
-  const staffSel = form.staff;
+  const staffSel = form.staffId;
   const startMin = parseTime(form.time);
   const onTimeStep = svcStep === 'time';
 
-  const isFree = (si: number) =>
+  const isFree = (si: string) =>
     onTimeStep
       ? slotOpen(appts, si, form.day, startMin, form.dur, rescheduleId)
       : slotsFor(appts, si, form.day, form.dur, rescheduleId).some((x) => x.ok);
@@ -52,22 +52,22 @@ export function FitterPicker() {
     setStaffOpen(!open, flip);
   };
 
-  const selected = staffSel === null ? null : STAFF[staffSel];
+  const selected = staffSel === null ? null : (staffById(staffSel) ?? null);
 
   // Once a start time is chosen the list narrows to whoever can actually take it.
   // The current selection stays listed even if busy, so the trigger always matches
   // a row. Before that, every fitter is offered — a date alone constrains nothing.
-  const candidates = STAFF.map((s, si) => ({
-    idx: si,
+  const candidates = STAFF.map((s) => ({
+    idx: s.id,
     name: s.name,
     role: s.role,
     initials: s.initials,
     dot: s.dot,
-    free: isFree(si),
+    free: isFree(s.id),
   })).filter((r) => !timePicked || r.free || r.idx === staffSel);
 
   const rows = [
-    { idx: null as number | null, name: 'Unassigned', role: 'Any available staff member', initials: '?', dot: null as string | null, free: true },
+    { idx: null as string | null, name: 'Unassigned', role: 'Any available staff member', initials: '?', dot: null as string | null, free: true },
     ...candidates,
   ];
 

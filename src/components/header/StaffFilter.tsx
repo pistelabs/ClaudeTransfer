@@ -1,5 +1,5 @@
 import { Check, ChevronDown, Users } from 'lucide-react';
-import { STAFF } from '../../data/catalogue';
+import { STAFF, staffById } from '../../data/catalogue';
 import { useScheduler } from '../../store/useScheduler';
 import { Avatar } from '../ui/Avatar';
 import { useOutsideClick } from '../ui/hooks';
@@ -18,7 +18,7 @@ export function StaffFilter() {
   const label = showAll
     ? 'All staff'
     : staffFilter.length === 1
-      ? STAFF[staffFilter[0]].name
+      ? (staffById(staffFilter[0])?.name ?? 'Staff')
       : `${staffFilter.length} staff`;
 
   return (
@@ -45,15 +45,15 @@ export function StaffFilter() {
             <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: 'var(--n-800)' }}>All staff</span>
           </button>
 
-          {STAFF.map((s, si) => {
-            const on = staffFilter.includes(si);
+          {STAFF.map((s) => {
+            const on = staffFilter.includes(s.id);
             return (
               <div className="filter__line" key={s.name}>
                 <button
                   className={`filter__row${on ? ' filter__row--on' : ''}`}
                   type="button"
                   aria-pressed={on}
-                  onClick={() => toggleStaff(si)}
+                  onClick={() => toggleStaff(s.id)}
                 >
                   <span className={`checkbox${on ? ' checkbox--on' : ''}`}>
                     <Check size={11} strokeWidth={3.2} />
@@ -68,7 +68,7 @@ export function StaffFilter() {
                   className="filter__only"
                   type="button"
                   title="View only this staff member"
-                  onClick={() => onlyStaff(si)}
+                  onClick={() => onlyStaff(s.id)}
                 >
                   Only
                 </button>

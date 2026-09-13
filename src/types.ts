@@ -9,6 +9,12 @@ export interface ApptType {
 }
 
 export interface Staff {
+  /**
+   * Stable identity, and what a booking stores. The position in {@link STAFF} is
+   * a column on the grid, not who somebody is — reorder the list or let somebody
+   * leave and every historic booking would otherwise point at a different person.
+   */
+  id: string;
   name: string;
   role: string;
   dot: string;
@@ -25,14 +31,14 @@ export interface Appointment {
   d: number;
   /** weeks from the one containing today; absent means this week */
   w?: number;
-  /** staff index — the fitter whose column the booking sits in */
-  s: number;
+  /** the fitter leading it — whose column the booking is drawn in */
+  staffId: string;
   /**
    * Other fitters working the same booking alongside `s`. A big fit or a
    * multi-customer booking can need two pairs of hands, and each of them is
    * genuinely busy for the duration.
    */
-  assist?: number[];
+  assistIds?: string[];
   /** start, minutes from midnight */
   st: number;
   /** duration in minutes */
@@ -56,11 +62,11 @@ export interface Appointment {
 }
 
 /**
- * A staff index when a member of staff took the booking, `'online'` when the
+ * A staff id when a member of staff took the booking, `'online'` when the
  * customer booked themselves, `'internal'` for blocks nobody books (team
  * meetings), `'walkin'` for somebody who checked in at the portal on the day.
  */
-export type BookingSource = number | 'online' | 'internal' | 'walkin';
+export type BookingSource = string | 'online' | 'internal' | 'walkin';
 
 /**
  * Somebody waiting at the shop, checked in either at the portal or by a member
@@ -87,10 +93,10 @@ export interface WalkIn {
 
 /**
  * How somebody joined the check-in queue: `'self'` when they checked themselves
- * in at the portal, otherwise the index of the staff member who did it for them
- * at the desk.
+ * in at the portal, otherwise the id of the staff member who did it for them at
+ * the desk.
  */
-export type CheckInSource = number | 'self';
+export type CheckInSource = string | 'self';
 
 /** An appointment placed into a lane by the overlap packer. */
 export interface LaidOutAppt extends Appointment {
@@ -182,11 +188,11 @@ export interface ApptRecord {
   /** staff assessment answers, keyed by index in the party */
   staffByCustomer?: Record<number, Answers>;
   /**
-   * Which fitter recorded the staff assessment, keyed by index in the party.
+   * Which fitter recorded the staff assessment (their id), keyed by index in the party.
    * Only meaningful when more than one fitter is on the booking; absent means
    * the fitter whose column it sits in.
    */
-  assessedBy?: Record<number, number>;
+  assessedBy?: Record<number, string>;
   /** required-at-booking answers for the primary customer */
   details?: Answers;
   seats?: { customer: string; details: Answers }[];
@@ -206,7 +212,7 @@ export interface Payment {
   /** when it was recorded, `4:07 PM` */
   at: string;
   /** the staff member who took it */
-  by: number | null;
+  by: string | null;
   /** where an external payment came from */
   source?: string;
   /** a link has been sent but nothing has arrived yet */
@@ -301,7 +307,8 @@ export interface MeetingDraft {
   week: number;
   time: string;
   dur: number;
-  who: number[];
+  /** ids of everyone attending */
+  who: string[];
 }
 
 export interface BookingForm {
@@ -309,8 +316,8 @@ export interface BookingForm {
   dateKey: string;
   customer: string;
   type: TypeCode;
-  /** staff index, or null for unassigned */
-  staff: number | null;
+  /** the fitter it is booked with, or null for unassigned */
+  staffId: string | null;
   day: number;
   /** weeks from the one containing today */
   week: number;

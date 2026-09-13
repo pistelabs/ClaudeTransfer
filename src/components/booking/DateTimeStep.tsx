@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight, Info, Minus, Plus, RotateCcw, UserCheck } from 'lucide-react';
-import { STAFF, serviceById } from '../../data/catalogue';
+import { STAFF, serviceById, staffById } from '../../data/catalogue';
 import { monthCells, monthLabel, weekAt } from '../../lib/dates';
 import { bufferClashesFor, slotsFor } from '../../lib/schedule';
 import { durationLabel, fmtTime, parseTime } from '../../lib/time';
@@ -124,16 +124,25 @@ function TimeSlots() {
   const rescheduleId = useScheduler((s) => s.rescheduleId);
   const pickTime = useScheduler((s) => s.pickTime);
 
-  const staffSel = form.staff;
+  const staffSel = form.staffId;
   const dur = form.dur;
   const current = parseTime(form.time);
   const svc = serviceById(form.service);
-  const cand = { id: null, d: form.day, w: form.week, s: staffSel ?? 0, st: current, du: dur, bb: svc?.bb ?? 0, ba: svc?.ba ?? 0 };
+  const cand = {
+    id: null,
+    d: form.day,
+    w: form.week,
+    staffId: staffSel ?? STAFF[0].id,
+    st: current,
+    du: dur,
+    bb: svc?.bb ?? 0,
+    ba: svc?.ba ?? 0,
+  };
 
   const slots = slotsFor(appts, staffSel, form.day, dur, rescheduleId, form.week);
   const openCount = slots.filter((s) => s.ok).length;
   const day = weekAt(form.week)[form.day];
-  const who = staffSel === null ? 'any fitter' : STAFF[staffSel].name.split(' ')[0];
+  const who = staffSel === null ? 'any fitter' : (staffById(staffSel)?.name.split(' ')[0] ?? 'the fitter');
 
   const bufferHit = staffSel === null ? [] : bufferClashesFor(appts, cand);
 

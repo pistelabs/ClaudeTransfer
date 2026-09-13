@@ -69,11 +69,11 @@ export function AppointmentTab({ detail }: { detail: DetailInfo }) {
             {!isMeeting && !isWalkIn && (
               <DataRow
                 icon={<UserCog {...ICON} />}
-                label={appt.assist?.length ? `Bootfitters (${appt.assist.length + 1})` : 'Bootfitter'}
+                label={appt.assistIds?.length ? `Bootfitters (${appt.assistIds.length + 1})` : 'Bootfitter'}
                 control
                 full
               >
-                <FitterTeam lead={appt.s} assist={appt.assist ?? []} />
+                <FitterTeam lead={appt.staffId} assist={appt.assistIds ?? []} />
               </DataRow>
             )}
           </dl>

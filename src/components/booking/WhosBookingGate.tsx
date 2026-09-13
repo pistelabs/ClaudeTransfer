@@ -20,8 +20,8 @@ export function WhosBookingGate() {
         <div className="who__title">Who&rsquo;s booking this?</div>
         <div className="who__sub">Select your name to attach it to this appointment.</div>
         <div className="who__list">
-          {STAFF.map((s, si) => (
-            <button className="who__row" type="button" key={s.name} onClick={() => setBookedBy(si)}>
+          {STAFF.map((s) => (
+            <button className="who__row" type="button" key={s.name} onClick={() => setBookedBy(s.id)}>
               <Avatar initials={s.initials} color={s.dot} size={38} fontSize={13} />
               <span style={{ flex: 1, minWidth: 0 }}>
                 <span className="who__name">{s.name}</span>

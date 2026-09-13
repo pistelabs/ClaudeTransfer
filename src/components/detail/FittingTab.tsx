@@ -1,5 +1,5 @@
 import { Check } from 'lucide-react';
-import { FITTING_QUESTIONS, STAFF, STAFF_QUESTIONS } from '../../data/catalogue';
+import { FITTING_QUESTIONS, STAFF_QUESTIONS, staffById } from '../../data/catalogue';
 import { fittersOf } from '../../lib/schedule';
 import { useScheduler } from '../../store/useScheduler';
 import type { Answers, QuestionField } from '../../types';
@@ -41,7 +41,7 @@ export function FittingTab({ detail }: { detail: DetailInfo }) {
   // With more than one fitter on the booking, the assessment has to say which of
   // them made it — otherwise a shared record has no author.
   const team = fittersOf(appt);
-  const assessedBy = rec.assessedBy?.[custIdx] ?? appt.s;
+  const assessedBy = rec.assessedBy?.[custIdx] ?? appt.staffId;
   const showAuthor = !onCustomer && team.length > 1;
 
   return (
@@ -82,7 +82,7 @@ export function FittingTab({ detail }: { detail: DetailInfo }) {
               <Badge variant="success">
                 <Check size={12} strokeWidth={3} />
                 Saved {stamp}
-                {showAuthor && ` · ${STAFF[assessedBy].name}`}
+                {showAuthor && ` · ${staffById(assessedBy)?.name ?? ''}`}
               </Badge>
             </CardAction>
           )}
@@ -94,7 +94,8 @@ export function FittingTab({ detail }: { detail: DetailInfo }) {
               <Label>Recorded by</Label>
               <div className="assessed-by__options" role="radiogroup" aria-label="Recorded by">
                 {team.map((si) => {
-                  const s = STAFF[si];
+                  const s = staffById(si);
+                  if (!s) return null;
                   const on = si === assessedBy;
                   return (
                     <button

@@ -133,15 +133,15 @@ export function TeamMeetingDialog() {
           </div>
 
           <div className="meeting__who">
-            {STAFF.map((s, si) => {
-              const on = meeting.who.includes(si);
+            {STAFF.map((s) => {
+              const on = meeting.who.includes(s.id);
               return (
                 <button
                   className={`meeting__who-btn${on ? ' meeting__who-btn--on' : ''}`}
                   type="button"
                   key={s.name}
                   aria-pressed={on}
-                  onClick={() => toggleWho(si)}
+                  onClick={() => toggleWho(s.id)}
                 >
                   <Avatar initials={s.initials} color={s.dot} size={26} fontSize={10} />
                   <span className="meeting__who-name">{s.name}</span>

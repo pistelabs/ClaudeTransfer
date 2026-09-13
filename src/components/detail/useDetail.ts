@@ -1,4 +1,4 @@
-import { STAFF, TYPES, serviceFor } from '../../data/catalogue';
+import { STAFF, TYPES, serviceFor, staffById } from '../../data/catalogue';
 import { initialsOf } from '../../lib/dates';
 import { formatMoney, normalizeName, partyOf, priceValue } from '../../lib/schedule';
 import { TODAY_IDX, equipListOf, useScheduler, type SchedulerStore } from '../../store/useScheduler';
@@ -102,7 +102,7 @@ export function useDetail(): DetailInfo | null {
     (walkIn && {
       id: walkIn.id,
       d: 0,
-      s: 0,
+      staffId: STAFF[0].id,
       st: 0,
       du: walkIn.du,
       t: walkIn.t,
@@ -134,7 +134,7 @@ export function useDetail(): DetailInfo | null {
   const attendees = isMeeting
     ? store.appts
         .filter((x) => String(x.id).split('-')[0] === groupId)
-        .map((x) => STAFF[x.s].name)
+        .map((x) => staffById(x.staffId)?.name ?? '')
         .join(', ')
     : '';
 

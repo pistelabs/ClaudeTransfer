@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef } from 'react';
 import { CalendarDays, ChevronLeft, Mountain, TriangleAlert, UserCheck, X } from 'lucide-react';
-import { STAFF, STORE, serviceById } from '../../data/catalogue';
+import { STORE, serviceById, staffById } from '../../data/catalogue';
 import { weekAt } from '../../lib/dates';
 import { collisionsFor, slotsFor } from '../../lib/schedule';
 import { durationLabel, parseTime, rangeLabel } from '../../lib/time';
@@ -56,18 +56,25 @@ export function NewAppointmentSheet() {
 
   const onBook = sheetPage === 'book';
   const startMin = parseTime(form.time);
-  const slots = slotsFor(appts, form.staff, form.day, form.dur, rescheduleId, form.week);
+  const slots = slotsFor(appts, form.staffId, form.day, form.dur, rescheduleId, form.week);
   const slotValid = svcStep === 'time' && slots.some((s) => s.min === startMin && s.ok);
 
   // A clash warns rather than blocks — in-store staff may double-book deliberately.
   // A queue entry has no time, so it can't clash with anything.
   const clashes =
-    !queueAdd && svcStep === 'time' && form.staff !== null
-      ? collisionsFor(appts, { id: rescheduleId, d: form.day, w: form.week, s: form.staff, st: startMin, du: form.dur })
+    !queueAdd && svcStep === 'time' && form.staffId !== null
+      ? collisionsFor(appts, {
+          id: rescheduleId,
+          d: form.day,
+          w: form.week,
+          staffId: form.staffId,
+          st: startMin,
+          du: form.dur,
+        })
       : [];
   const clash = clashes.length > 0;
   const clashMsg = clash
-    ? `${STAFF[form.staff!].name.split(' ')[0]} already has ${clashes[0].c} at ${rangeLabel(
+    ? `${staffById(form.staffId!)?.name.split(' ')[0]} already has ${clashes[0].c} at ${rangeLabel(
         clashes[0].st,
         clashes[0].st + clashes[0].du,
       )}`
@@ -77,7 +84,7 @@ export function NewAppointmentSheet() {
   const canContinue = queueAdd ? !!form.service : !!form.service && svcStep === 'time' && slotValid;
   const missing = seatMissingTotal(store);
   const svc = serviceById(form.service);
-  const booker = bookedBy === null ? null : STAFF[bookedBy];
+  const booker = bookedBy === null ? null : staffById(bookedBy);
   const title = queueAdd ? 'Check in a walk-in' : rescheduleId ? 'Reschedule appointment' : 'New appointment';
 
   const bookMsg = !form.service
@@ -211,7 +218,7 @@ export function NewAppointmentSheet() {
                       <div>
                         <span className="summary__label">Fitter</span>
                         <span className="summary__value">
-                          {form.staff === null ? 'Unassigned' : STAFF[form.staff].name}
+                          {form.staffId === null ? 'Unassigned' : (staffById(form.staffId)?.name ?? 'Unassigned')}
                         </span>
                       </div>
                     </>

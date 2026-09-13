@@ -4,6 +4,7 @@ import {
   EQUIP_KINDS,
   REPEATABLE_SERVICES,
   STAFF,
+  staffIdAt,
   chargedByDefault,
   equipServiceGroups,
   requiredFields,
@@ -56,7 +57,7 @@ function freshForm(day: number, week = 0): BookingForm {
     dateKey: dateKeyOf(weekAt(week)[day].iso),
     customer: '',
     type: 'BF',
-    staff: null,
+    staffId: null,
     day,
     week,
     time: '09:00',
@@ -87,7 +88,8 @@ interface State {
   /** weeks from the one containing today; 0 is this week, negative is the past */
   weekOffset: number;
   appts: Appointment[];
-  staffFilter: number[];
+  /** ids of the fitters shown; empty means everybody */
+  staffFilter: string[];
   colW: Record<string, number>;
   drag: DragState | null;
   sel: SelectionState | null;
@@ -125,7 +127,8 @@ interface State {
   /** true once a specific start time has been chosen, not merely a date */
   timePicked: boolean;
   rescheduleId: string | null;
-  bookedBy: number | null;
+  /** id of the staff member who claimed the booking */
+  bookedBy: string | null;
   showWho: boolean;
   questionnaire: QuestionnaireMode;
   fitting: Answers;
@@ -185,8 +188,8 @@ interface Actions {
   setSearchOpen: (open: boolean) => void;
   toggleFilterMenu: () => void;
   closeFilterMenu: () => void;
-  toggleStaffFilter: (idx: number) => void;
-  onlyStaff: (idx: number) => void;
+  toggleStaffFilter: (id: string) => void;
+  onlyStaff: (id: string) => void;
   clearStaffFilter: () => void;
   toggleAddMenu: () => void;
   closeAddMenu: () => void;
@@ -207,7 +210,7 @@ interface Actions {
   setQueueAdd: (on: boolean) => void;
   closeAdd: () => void;
   startBooking: (day: number, staffIdx: number | null, mins: number, dur: number | null) => void;
-  setBookedBy: (idx: number) => void;
+  setBookedBy: (id: string) => void;
   showWhoGate: () => void;
   setSheetPage: (p: SheetPage) => void;
   setSvcTab: (key: string) => void;
@@ -215,7 +218,7 @@ interface Actions {
   pickDate: (dayIdx: number, key: string, week: number) => void;
   pickTime: (mins: number) => void;
   setDuration: (mins: number) => void;
-  setFormStaff: (idx: number | null) => void;
+  setFormStaff: (id: string | null) => void;
   setStaffOpen: (open: boolean, up?: boolean) => void;
   setMonthOffset: (fn: (n: number) => number) => void;
   setNote: (v: string) => void;
@@ -238,7 +241,7 @@ interface Actions {
   openMeeting: () => void;
   closeMeeting: () => void;
   setMeeting: (patch: Partial<MeetingDraft>) => void;
-  toggleMeetingWho: (idx: number) => void;
+  toggleMeetingWho: (id: string) => void;
   toggleMeetingAll: () => void;
   saveMeeting: () => void;
 
@@ -248,11 +251,11 @@ interface Actions {
   setDetailWho: (w: FittingSide) => void;
   setDetailCust: (i: number) => void;
   setDetailStaffOpen: (open: boolean) => void;
-  reassignFitter: (staffIdx: number) => void;
-  addFitter: (staffIdx: number) => void;
-  removeFitter: (staffIdx: number) => void;
+  reassignFitter: (staffId: string) => void;
+  addFitter: (staffId: string) => void;
+  removeFitter: (staffId: string) => void;
   setDetailAddFitterOpen: (open: boolean) => void;
-  setAssessedBy: (ci: number, staffIdx: number) => void;
+  setAssessedBy: (ci: number, staffId: string) => void;
   toggleApptMenu: () => void;
   closeApptMenu: () => void;
   checkIn: (key: string) => void;
@@ -342,7 +345,7 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
   newCust: { first: '', last: '', email: '', phone: '', channel: 'Email' },
 
   showMeeting: false,
-  meeting: { title: 'Team meeting', day: TODAY, week: 0, time: '08:30', dur: 30, who: [0, 1, 2, 3] },
+  meeting: { title: 'Team meeting', day: TODAY, week: 0, time: '08:30', dur: 30, who: STAFF.map((m) => m.id) },
 
   showDetail: false,
   detailId: null,
@@ -391,11 +394,11 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
   setSearchOpen: (searchOpen) => set({ searchOpen }),
   toggleFilterMenu: () => set((s) => ({ filterMenu: !s.filterMenu })),
   closeFilterMenu: () => set({ filterMenu: false }),
-  toggleStaffFilter: (idx) =>
+  toggleStaffFilter: (id) =>
     set((s) => ({
-      staffFilter: s.staffFilter.includes(idx) ? s.staffFilter.filter((x) => x !== idx) : s.staffFilter.concat(idx),
+      staffFilter: s.staffFilter.includes(id) ? s.staffFilter.filter((x) => x !== id) : s.staffFilter.concat(id),
     })),
-  onlyStaff: (idx) => set({ staffFilter: [idx], filterMenu: false }),
+  onlyStaff: (id) => set({ staffFilter: [id], filterMenu: false }),
   clearStaffFilter: () => set({ staffFilter: [], filterMenu: false }),
   toggleAddMenu: () => set((s) => ({ addMenu: !s.addMenu })),
   closeAddMenu: () => set({ addMenu: false }),
@@ -413,7 +416,7 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
       if (!d || !d.moved) return { drag: null };
 
       const moved = s.appts.find((a) => a.id === d.id);
-      const clashes = collisionsFor(s.appts, { id: d.id, d: d.d, w: s.weekOffset, s: d.s, st: d.st, du: d.du });
+      const clashes = collisionsFor(s.appts, { id: d.id, d: d.d, w: s.weekOffset, staffId: staffIdAt(d.s), st: d.st, du: d.du });
       const entry = (a: Appointment, st = a.st, du = a.du): OverlapEntry => ({
         id: a.id,
         customer: a.c,
@@ -422,7 +425,7 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
 
       return {
         drag: null,
-        appts: s.appts.map((a) => (a.id === d.id ? { ...a, d: d.d, w: s.weekOffset, s: d.s, st: d.st } : a)),
+        appts: s.appts.map((a) => (a.id === d.id ? { ...a, d: d.d, w: s.weekOffset, staffId: staffIdAt(d.s), st: d.st } : a)),
         overlapNotice:
           moved && clashes.length > 0
             ? {
@@ -465,7 +468,7 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
         id: 'u' + Date.now(),
         d,
         w: s.weekOffset,
-        s: staffIdx,
+        staffId: staffIdAt(staffIdx),
         st,
         du: w.du,
         t: w.t,
@@ -479,7 +482,7 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
         bookedVia: 'walkin',
       };
 
-      const clashes = collisionsFor(s.appts, { id: appt.id, d, w: s.weekOffset, s: staffIdx, st, du: w.du });
+      const clashes = collisionsFor(s.appts, { id: appt.id, d, w: s.weekOffset, staffId: staffIdAt(staffIdx), st, du: w.du });
       return {
         walkInDrag: null,
         walkIns: s.walkIns.filter((x) => x.id !== w.id),
@@ -649,10 +652,8 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
   pickTime: (mins) =>
     set((s) => {
       const form = { ...s.form, time: toTimeValue(mins) };
-      const free = STAFF.map((_, i) => i).filter((i) =>
-        slotOpen(s.appts, i, form.day, mins, form.dur, s.rescheduleId),
-      );
-      if (free.length === 1) form.staff = free[0];
+      const free = STAFF.filter((m) => slotOpen(s.appts, m.id, form.day, mins, form.dur, s.rescheduleId));
+      if (free.length === 1) form.staffId = free[0].id;
       return { form, timePicked: true };
     }),
 
@@ -700,7 +701,7 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
       const id = s.rescheduleId;
       set((st) => ({
         appts: st.appts.map((a) =>
-          a.id === id ? { ...a, d: f.day, s: f.staff === null ? a.s : f.staff, st: mins, du: f.dur } : a,
+          a.id === id ? { ...a, d: f.day, staffId: f.staffId ?? a.staffId, st: mins, du: f.dur } : a,
         ),
         showAdd: false,
         rescheduleId: null,
@@ -714,13 +715,12 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
     if (seatMissingTotal(s) > 0) return;
 
     const mins = parseTime(f.time);
-    if (!slotOpen(s.appts, f.staff, f.day, mins, f.dur, s.rescheduleId)) return;
+    if (!slotOpen(s.appts, f.staffId, f.day, mins, f.dur, s.rescheduleId)) return;
 
     // unassigned → hand it to the first fitter actually free for that slot
-    let si = f.staff;
+    let si = f.staffId;
     if (si === null) {
-      const found = STAFF.findIndex((_, i) => slotOpen(s.appts, i, f.day, mins, f.dur));
-      si = found === -1 ? 0 : found;
+      si = STAFF.find((m) => slotOpen(s.appts, m.id, f.day, mins, f.dur))?.id ?? STAFF[0].id;
     }
 
     const sv = serviceById(f.service);
@@ -731,7 +731,7 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
       id: 'u' + Date.now(),
       d: f.day,
       w: f.week,
-      s: si,
+      staffId: si,
       st: mins,
       du: f.dur,
       t: f.type,
@@ -872,16 +872,16 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
     set((s) => ({ addMenu: false, showMeeting: true, meeting: { ...s.meeting, day: s.selDay, week: s.weekOffset } })),
   closeMeeting: () => set({ showMeeting: false }),
   setMeeting: (patch) => set((s) => ({ meeting: { ...s.meeting, ...patch } })),
-  toggleMeetingWho: (idx) =>
+  toggleMeetingWho: (id) =>
     set((s) => ({
       meeting: {
         ...s.meeting,
-        who: s.meeting.who.includes(idx) ? s.meeting.who.filter((x) => x !== idx) : s.meeting.who.concat(idx),
+        who: s.meeting.who.includes(id) ? s.meeting.who.filter((x) => x !== id) : s.meeting.who.concat(id),
       },
     })),
   toggleMeetingAll: () =>
     set((s) => ({
-      meeting: { ...s.meeting, who: s.meeting.who.length === STAFF.length ? [] : STAFF.map((_, i) => i) },
+      meeting: { ...s.meeting, who: s.meeting.who.length === STAFF.length ? [] : STAFF.map((m) => m.id) },
     })),
   /** Writes one block per attendee, sharing a group id so they read as one meeting. */
   saveMeeting: () => {
@@ -893,7 +893,7 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
       id: `m${stamp}-${si}`,
       d: m.day,
       w: m.week,
-      s: si,
+      staffId: si,
       st: start,
       du: m.dur,
       t: 'MT',
@@ -917,21 +917,23 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
   setDetailCust: (detailCust) => set({ detailCust }),
   setDetailStaffOpen: (detailStaffOpen) => set({ detailStaffOpen }),
   /** Swaps the lead fitter. Anyone assisting stays, minus the new lead if they were on it. */
-  reassignFitter: (staffIdx) =>
+  reassignFitter: (staffId) =>
     set((s) => ({
       detailStaffOpen: false,
       appts: s.appts.map((a) =>
-        a.id === s.detailId ? { ...a, s: staffIdx, assist: (a.assist ?? []).filter((i) => i !== staffIdx) } : a,
+        a.id === s.detailId
+          ? { ...a, staffId, assistIds: (a.assistIds ?? []).filter((i) => i !== staffId) }
+          : a,
       ),
     })),
 
   /** Attaches a second pair of hands. They are then busy for the booking too. */
-  addFitter: (staffIdx) =>
+  addFitter: (staffId) =>
     set((s) => ({
       detailAddFitterOpen: false,
       appts: s.appts.map((a) => {
-        if (a.id !== s.detailId || a.s === staffIdx || a.assist?.includes(staffIdx)) return a;
-        return { ...a, assist: [...(a.assist ?? []), staffIdx] };
+        if (a.id !== s.detailId || a.staffId === staffId || a.assistIds?.includes(staffId)) return a;
+        return { ...a, assistIds: [...(a.assistIds ?? []), staffId] };
       }),
     })),
 
@@ -939,20 +941,20 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
    * Detaches an assisting fitter. Any assessment they were credited with falls
    * back to the lead rather than pointing at somebody no longer on the booking.
    */
-  removeFitter: (staffIdx) =>
+  removeFitter: (staffId) =>
     set((s) => {
       const id = s.detailId;
       if (!id) return s;
       const appt = s.appts.find((a) => a.id === id);
-      if (!appt || appt.s === staffIdx) return s;
+      if (!appt || appt.staffId === staffId) return s;
 
       const rec = s.records[id];
       const assessedBy = rec?.assessedBy;
       let records = s.records;
-      if (assessedBy && Object.values(assessedBy).includes(staffIdx)) {
+      if (assessedBy && Object.values(assessedBy).includes(staffId)) {
         const next = { ...assessedBy };
         for (const [ci, who] of Object.entries(next)) {
-          if (who === staffIdx) next[Number(ci)] = appt.s;
+          if (who === staffId) next[Number(ci)] = appt.staffId;
         }
         records = { ...s.records, [id]: { ...rec, assessedBy: next } };
       }
@@ -960,7 +962,7 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
       return {
         records,
         appts: s.appts.map((a) =>
-          a.id === id ? { ...a, assist: (a.assist ?? []).filter((i) => i !== staffIdx) } : a,
+          a.id === id ? { ...a, assistIds: (a.assistIds ?? []).filter((i) => i !== staffId) } : a,
         ),
       };
     }),
@@ -968,13 +970,13 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
   setDetailAddFitterOpen: (detailAddFitterOpen) => set({ detailAddFitterOpen }),
 
   /** Credits the staff assessment for one person on the booking to a named fitter. */
-  setAssessedBy: (ci, staffIdx) =>
+  setAssessedBy: (ci, staffId) =>
     set((s) => {
       const id = s.detailId;
       if (!id) return s;
       const rec = s.records[id] ?? {};
       return {
-        records: { ...s.records, [id]: { ...rec, assessedBy: { ...(rec.assessedBy ?? {}), [ci]: staffIdx } } },
+        records: { ...s.records, [id]: { ...rec, assessedBy: { ...(rec.assessedBy ?? {}), [ci]: staffId } } },
       };
     }),
   toggleApptMenu: () => set((s) => ({ apptMenu: !s.apptMenu })),
@@ -1035,7 +1037,7 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
         dateKey: dateKeyOf(weekAt(a.w ?? 0)[a.d].iso),
         customer: a.c,
         type: a.t,
-        staff: a.s,
+        staffId: a.staffId,
         day: a.d,
         week: a.w ?? 0,
         note: a.n || '',

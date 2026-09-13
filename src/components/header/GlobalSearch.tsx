@@ -1,5 +1,5 @@
 import { Search, X } from 'lucide-react';
-import { STAFF, TYPES } from '../../data/catalogue';
+import { TYPES, staffById } from '../../data/catalogue';
 import { initialsOf, weekAt } from '../../lib/dates';
 import { useScheduler } from '../../store/useScheduler';
 import { partyOf } from '../../lib/schedule';
@@ -76,7 +76,7 @@ export function GlobalSearch() {
                   <span className="search__name">{names.join(', ')}</span>
                   <span className="search__meta">
                     {type.label}&nbsp; · &nbsp;{weekAt(a.w ?? 0)[a.d].long} {weekAt(a.w ?? 0)[a.d].date}&nbsp; · &nbsp;
-                    {rangeLabel(a.st, a.st + a.du)}&nbsp; · &nbsp;{STAFF[a.s].name}
+                    {rangeLabel(a.st, a.st + a.du)}&nbsp; · &nbsp;{staffById(a.staffId)?.name}
                   </span>
                 </span>
                 <span className="search__ref">{a.id.toUpperCase()}</span>

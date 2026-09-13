@@ -24,11 +24,29 @@ export const STORE = { name: 'Alpine Bootfit', location: 'Chamonix' };
 
 /** shift = scheduled working window, brk = unpaid lunch, both in minutes from midnight. */
 export const STAFF: Staff[] = [
-  { name: 'Erik Lund', role: 'Master Bootfitter', dot: '#0284c7', initials: 'EL', shift: [510, 1050], brk: [750, 795] },
-  { name: 'Maya Torres', role: 'Bootfitter', dot: '#0d9488', initials: 'MT', shift: [540, 1080], brk: [780, 825] },
-  { name: 'Sven Holt', role: 'Alpine Tech', dot: '#7c3aed', initials: 'SH', shift: [510, 990], brk: [720, 765] },
-  { name: 'Priya Anand', role: 'Footbed Specialist', dot: '#e11d48', initials: 'PA', shift: [555, 1020], brk: [765, 810] },
+  { id: 'stf-erik-lund', name: 'Erik Lund', role: 'Master Bootfitter', dot: '#0284c7', initials: 'EL', shift: [510, 1050], brk: [750, 795] },
+  { id: 'stf-maya-torres', name: 'Maya Torres', role: 'Bootfitter', dot: '#0d9488', initials: 'MT', shift: [540, 1080], brk: [780, 825] },
+  { id: 'stf-sven-holt', name: 'Sven Holt', role: 'Alpine Tech', dot: '#7c3aed', initials: 'SH', shift: [510, 990], brk: [720, 765] },
+  { id: 'stf-priya-anand', name: 'Priya Anand', role: 'Footbed Specialist', dot: '#e11d48', initials: 'PA', shift: [555, 1020], brk: [765, 810] },
 ];
+
+/** Look somebody up by the id a booking stores. */
+export function staffById(id: string): Staff | undefined {
+  return STAFF.find((s) => s.id === id);
+}
+
+/**
+ * Which column on the grid a person occupies. A view concern: identity is the
+ * id, and this is only where it is drawn.
+ */
+export function staffIndexOf(id: string): number {
+  return STAFF.findIndex((s) => s.id === id);
+}
+
+/** The id of the person in a given column, for code that still works in columns. */
+export function staffIdAt(index: number): string {
+  return STAFF[index]?.id ?? STAFF[0].id;
+}
 
 /** Week view draws one shift band per day rather than per fitter. */
 export const SHOP_HOURS: [number, number] = [540, 1020];

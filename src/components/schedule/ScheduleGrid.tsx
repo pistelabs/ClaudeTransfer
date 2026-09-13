@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type MouseEvent } from 'react';
-import { SHOP_HOURS, STAFF } from '../../data/catalogue';
+import { SHOP_HOURS, STAFF, staffIdAt, staffIndexOf } from '../../data/catalogue';
 import { conflictIds, fittersOf, layout } from '../../lib/schedule';
 import {
   GRID,
@@ -111,12 +111,17 @@ export function ScheduleGrid() {
   // conflict styling track the pointer live.
   const effAppts: Appointment[] =
     drag && drag.moved
-      ? appts.map((a) => (a.id === drag.id ? { ...a, d: drag.d, s: drag.s, st: drag.st } : a))
+      ? appts.map((a) =>
+          a.id === drag.id ? { ...a, d: drag.d, staffId: staffIdAt(drag.s), st: drag.st } : a,
+        )
       : appts;
 
   const clash = conflictIds(effAppts);
   const showAllStaff = staffFilter.length === 0;
-  const visibleStaff = showAllStaff ? STAFF.map((_, i) => i) : [...staffFilter].sort((a, b) => a - b);
+  // Columns are positions; the filter names people. Resolve one to the other here.
+  const visibleStaff = showAllStaff
+    ? STAFF.map((_, i) => i)
+    : staffFilter.map(staffIndexOf).filter((i) => i >= 0).sort((a, b) => a - b);
   /**
    * A filtered week divides each day into a column per chosen fitter. Unfiltered
    * it would be twenty-eight columns of nothing much, so the whole team keeps
@@ -129,7 +134,7 @@ export function ScheduleGrid() {
   const apptsIn = (d: number, s: number | null) =>
     layout(
       effAppts.filter(
-        (a) => a.d === d && (a.w ?? 0) === weekOffset && (s === null ? true : fittersOf(a).includes(s)),
+        (a) => a.d === d && (a.w ?? 0) === weekOffset && (s === null ? true : fittersOf(a).includes(staffIdAt(s))),
       ),
     );
 
@@ -228,7 +233,17 @@ export function ScheduleGrid() {
     if (e.button !== 0) return;
     e.preventDefault();
     const rect = e.currentTarget.getBoundingClientRect();
-    setDrag({ id: a.id, grabDy: e.clientY - rect.top, d: a.d, s: a.s, st: a.st, du: a.du, moved: false, x0: e.clientX, y0: e.clientY });
+    setDrag({
+      id: a.id,
+      grabDy: e.clientY - rect.top,
+      d: a.d,
+      s: staffIndexOf(a.staffId),
+      st: a.st,
+      du: a.du,
+      moved: false,
+      x0: e.clientX,
+      y0: e.clientY,
+    });
   };
 
   /** Pressing empty grid space begins a custom time window. */
@@ -475,7 +490,7 @@ export function ScheduleGrid() {
                     // In an assisting fitter's column the block is a second view of
                     // the same booking: it opens, but it is rescheduled from the lead's
                     // column, so there is only ever one thing to drag.
-                    const lead = leaf.s === null || a.s === leaf.s;
+                    const lead = leaf.s === null || a.staffId === staffIdAt(leaf.s);
                     return (
                       <AppointmentBlock
                         key={a.id}

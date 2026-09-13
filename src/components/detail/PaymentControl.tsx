@@ -1,5 +1,5 @@
 import { Banknote, Check, Clock, CreditCard, Link2, Store, Wallet, X } from 'lucide-react';
-import { PAYMENT_METHODS, STAFF, paymentMethod } from '../../data/catalogue';
+import { PAYMENT_METHODS, paymentMethod, staffById } from '../../data/catalogue';
 import { formatMoney } from '../../lib/schedule';
 import { useScheduler } from '../../store/useScheduler';
 import { Badge } from '@/components/ui/badge';
@@ -31,7 +31,7 @@ export function PaymentControl({ totals }: { totals: DetailInfo['totals'] }) {
   const { payment, due } = totals;
   const method = payment ? paymentMethod(payment.method) : null;
   const Icon = payment ? METHOD_ICON[payment.method] : CreditCard;
-  const taker = payment && payment.by !== null ? STAFF[payment.by] : null;
+  const taker = payment && payment.by !== null ? staffById(payment.by) : null;
 
   return (
     <Popover open={open} onOpenChange={(v) => (v ? toggle() : close())}>

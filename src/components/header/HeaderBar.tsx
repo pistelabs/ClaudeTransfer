@@ -25,7 +25,7 @@ export function HeaderBar() {
   const addRef = useOutsideClick<HTMLDivElement>(addMenu, closeAddMenu);
 
   // Only conflicts inside the current view are worth badging.
-  const visible = staffFilter.length > 0 ? appts.filter((a) => staffFilter.includes(a.s)) : appts;
+  const visible = staffFilter.length > 0 ? appts.filter((a) => staffFilter.includes(a.staffId)) : appts;
   const inView = isWeek ? visible : visible.filter((a) => a.d === selDay);
   const clashing = conflictIds(inView).size;
   const pairs = Math.round(clashing / 2);

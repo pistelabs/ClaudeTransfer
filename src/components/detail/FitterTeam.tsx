@@ -1,5 +1,5 @@
 import { Check, ChevronDown, Plus, X } from 'lucide-react';
-import { STAFF } from '../../data/catalogue';
+import { STAFF, staffById } from '../../data/catalogue';
 import { useScheduler } from '../../store/useScheduler';
 import { Avatar } from '../ui/Avatar';
 import { useOutsideClick } from '../ui/hooks';
@@ -10,7 +10,7 @@ import { useOutsideClick } from '../ui/hooks';
  * pairs of hands, and everyone attached is busy for it, so the schedule draws
  * the block in each of their columns.
  */
-export function FitterTeam({ lead, assist }: { lead: number; assist: number[] }) {
+export function FitterTeam({ lead, assist }: { lead: string; assist: string[] }) {
   const open = useScheduler((s) => s.detailStaffOpen);
   const setOpen = useScheduler((s) => s.setDetailStaffOpen);
   const addOpen = useScheduler((s) => s.detailAddFitterOpen);
@@ -21,9 +21,9 @@ export function FitterTeam({ lead, assist }: { lead: number; assist: number[] })
 
   const leadRef = useOutsideClick<HTMLDivElement>(open, () => setOpen(false));
   const addRef = useOutsideClick<HTMLDivElement>(addOpen, () => setAddOpen(false));
-  const fitter = STAFF[lead];
+  const fitter = staffById(lead) ?? STAFF[0];
   const attached = [lead, ...assist];
-  const spare = STAFF.map((_, i) => i).filter((i) => !attached.includes(i));
+  const spare = STAFF.filter((m) => !attached.includes(m.id));
 
   return (
     <div className="fitter-team">
@@ -45,8 +45,8 @@ export function FitterTeam({ lead, assist }: { lead: number; assist: number[] })
 
         {open && (
           <div className="fitter-select__menu" role="listbox">
-            {STAFF.map((s, si) => {
-              const on = si === lead;
+            {STAFF.map((s) => {
+              const on = s.id === lead;
               return (
                 <button
                   className={`fitter-select__option${on ? ' fitter-select__option--on' : ''}`}
@@ -54,7 +54,7 @@ export function FitterTeam({ lead, assist }: { lead: number; assist: number[] })
                   role="option"
                   aria-selected={on}
                   key={s.name}
-                  onClick={() => reassign(si)}
+                  onClick={() => reassign(s.id)}
                 >
                   <Avatar initials={s.initials} color={s.dot} size={28} fontSize={10.5} />
                   <span className="fitter-select__text">
@@ -70,7 +70,8 @@ export function FitterTeam({ lead, assist }: { lead: number; assist: number[] })
       </div>
 
       {assist.map((si) => {
-        const s = STAFF[si];
+        const s = staffById(si);
+        if (!s) return null;
         return (
           <span className="fitter-chip" key={si}>
             <Avatar initials={s.initials} color={s.dot} size={24} fontSize={9.5} />
@@ -80,7 +81,7 @@ export function FitterTeam({ lead, assist }: { lead: number; assist: number[] })
               type="button"
               title={`Take ${s.name} off this booking`}
               aria-label={`Take ${s.name} off this booking`}
-              onClick={() => removeFitter(si)}
+              onClick={() => removeFitter(s.id)}
             >
               <X size={13} strokeWidth={2.4} />
             </button>
@@ -103,8 +104,7 @@ export function FitterTeam({ lead, assist }: { lead: number; assist: number[] })
 
           {addOpen && (
             <div className="fitter-select__menu fitter-select__menu--add" role="listbox">
-              {spare.map((si) => {
-                const s = STAFF[si];
+              {spare.map((s) => {
                 return (
                   <button
                     className="fitter-select__option"
@@ -112,7 +112,7 @@ export function FitterTeam({ lead, assist }: { lead: number; assist: number[] })
                     role="option"
                     aria-selected={false}
                     key={s.name}
-                    onClick={() => addFitter(si)}
+                    onClick={() => addFitter(s.id)}
                   >
                     <Avatar initials={s.initials} color={s.dot} size={28} fontSize={10.5} />
                     <span className="fitter-select__text">

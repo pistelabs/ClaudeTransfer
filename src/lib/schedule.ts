@@ -1,4 +1,4 @@
-import { STAFF } from '../data/catalogue';
+import { STAFF, staffById } from '../data/catalogue';
 import type { Appointment, CheckInSource, LaidOutAppt } from '../types';
 
 /**
@@ -41,13 +41,16 @@ export function layout(list: Appointment[]): LaidOutAppt[] {
  * assisting. Availability and conflicts are answered against this whole set —
  * an assisting fitter is as busy as the lead.
  */
-export function fittersOf(a: Pick<Appointment, 's' | 'assist'>): number[] {
-  return a.assist?.length ? [a.s, ...a.assist] : [a.s];
+export function fittersOf(a: Pick<Appointment, 'staffId' | 'assistIds'>): string[] {
+  return a.assistIds?.length ? [a.staffId, ...a.assistIds] : [a.staffId];
 }
 
 /** Do two bookings need any of the same fitter? */
-function sharesFitter(a: Pick<Appointment, 's' | 'assist'>, b: Pick<Appointment, 's' | 'assist'>): boolean {
-  if (!a.assist?.length && !b.assist?.length) return a.s === b.s;
+function sharesFitter(
+  a: Pick<Appointment, 'staffId' | 'assistIds'>,
+  b: Pick<Appointment, 'staffId' | 'assistIds'>,
+): boolean {
+  if (!a.assistIds?.length && !b.assistIds?.length) return a.staffId === b.staffId;
   const mine = fittersOf(a);
   return fittersOf(b).some((f) => mine.includes(f));
 }
@@ -74,9 +77,9 @@ export interface Candidate {
   d: number;
   /** the week the candidate sits in; absent means this week */
   w?: number;
-  s: number;
+  staffId: string;
   /** other fitters the candidate would also occupy */
-  assist?: number[];
+  assistIds?: string[];
   st: number;
   du: number;
   bb?: number;
@@ -113,24 +116,26 @@ export function bufferClashesFor(appts: Appointment[], cand: Candidate): Appoint
 }
 
 /**
- * Is the named fitter — or anyone, when `staffIdx` is null — free for this window?
+ * Is the named fitter — or anyone, when `staffId` is null — free for this window?
  * Checks the shift, the lunch break and existing bookings.
  */
 export function slotOpen(
   appts: Appointment[],
-  staffIdx: number | null,
+  staffId: string | null,
   dayIdx: number,
   start: number,
   dur: number,
   excludeId?: string | null,
   weekOffset = 0,
 ): boolean {
-  const list = staffIdx === null ? STAFF.map((_, i) => i) : [staffIdx];
-  return list.some((si) => {
-    const s = STAFF[si];
+  const list = staffId === null ? STAFF : STAFF.filter((s) => s.id === staffId);
+  return list.some((s) => {
     if (start < s.shift[0] || start + dur > s.shift[1]) return false;
     if (start < s.brk[1] && s.brk[0] < start + dur) return false;
-    return collisionsFor(appts, { id: excludeId ?? null, d: dayIdx, w: weekOffset, s: si, st: start, du: dur }).length === 0;
+    return (
+      collisionsFor(appts, { id: excludeId ?? null, d: dayIdx, w: weekOffset, staffId: s.id, st: start, du: dur })
+        .length === 0
+    );
   });
 }
 
@@ -142,18 +147,19 @@ export interface Slot {
 /** Every 15-minute start across the relevant shift, flagged with availability. */
 export function slotsFor(
   appts: Appointment[],
-  staffIdx: number | null,
+  staffId: string | null,
   dayIdx: number,
   dur: number,
   excludeId?: string | null,
   weekOffset = 0,
 ): Slot[] {
   const shifts = STAFF.map((s) => s.shift);
-  const from = staffIdx === null ? Math.min(...shifts.map((s) => s[0])) : shifts[staffIdx][0];
-  const to = staffIdx === null ? Math.max(...shifts.map((s) => s[1])) : shifts[staffIdx][1];
+  const own = staffId === null ? null : staffById(staffId)?.shift;
+  const from = own ? own[0] : Math.min(...shifts.map((s) => s[0]));
+  const to = own ? own[1] : Math.max(...shifts.map((s) => s[1]));
   const out: Slot[] = [];
   for (let t = from; t + dur <= to; t += 15) {
-    out.push({ min: t, ok: slotOpen(appts, staffIdx, dayIdx, t, dur, excludeId, weekOffset) });
+    out.push({ min: t, ok: slotOpen(appts, staffId, dayIdx, t, dur, excludeId, weekOffset) });
   }
   return out;
 }
@@ -164,7 +170,7 @@ export function slotsFor(
  */
 export function checkInLabel(by: CheckInSource): string {
   if (by === 'self') return 'Self check in';
-  return `${STAFF[by]?.name ?? 'Staff'} check in`;
+  return `${staffById(by)?.name ?? 'Staff'} check in`;
 }
 
 /** Every customer on a booking; single-customer bookings yield one name. */

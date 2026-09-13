@@ -67,7 +67,7 @@ export function WalkInColumn() {
         // A week column is a day, so it carries no fitter of its own: take the
         // first one actually free at that time, falling back to the first fitter
         // when nobody is.
-        const free = STAFF.findIndex((_, i) => slotOpen(appts, i, day, st, d.du));
+        const free = STAFF.findIndex((m) => slotOpen(appts, m.id, day, st, d.du));
         over = { d: day, s: isWeek ? Math.max(free, 0) : hit.idx, st };
       }
 

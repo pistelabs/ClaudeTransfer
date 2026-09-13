@@ -1,3 +1,4 @@
+import { staffIdAt } from './catalogue';
 import type { Appointment, ApptRecord, BookingSource, Customer, TypeCode, WalkIn } from '../types';
 
 /**
@@ -5,7 +6,13 @@ import type { Appointment, ApptRecord, BookingSource, Customer, TypeCode, WalkIn
  * shifted so it lands on today when the app boots (see {@link seedAppointments}).
  * Replace this whole module with the bookings API.
  */
-const BASE: Omit<Appointment, 'id' | 'bb' | 'ba' | 'bookedAt' | 'bookedVia'>[] = [
+type SeedRow = Omit<Appointment, 'id' | 'bb' | 'ba' | 'bookedAt' | 'bookedVia' | 'staffId' | 'assistIds'> & {
+  /** authored by column for legibility, resolved to a staff id below */
+  s: number;
+  assist?: number[];
+};
+
+const BASE: SeedRow[] = [
   // Tuesday (day 1) — busy
   { d: 1, s: 0, st: 540, du: 90, t: 'BF', c: 'Daniel Reyes', n: 'New Lange RX 120, narrow heel. Bring old boots.' },
   { d: 1, s: 0, st: 660, du: 45, t: 'HM', c: 'Lena Fischer', n: 'Heat mold liners, session 2.' },
@@ -62,7 +69,7 @@ function buffersFor(t: TypeCode): { bb: number; ba: number } {
  * by whichever staff member answered. Deterministic so the demo is stable.
  */
 function sourceFor(i: number, staffCount: number): BookingSource {
-  return i % 5 === 0 || i % 5 === 3 ? 'online' : i % staffCount;
+  return i % 5 === 0 || i % 5 === 3 ? 'online' : staffIdAt(i % staffCount);
 }
 
 /** Bookings are taken somewhere between a day and three weeks ahead. */
@@ -78,12 +85,15 @@ function bookedAtFor(i: number, dayIdx: number, now: Date): string {
 /** Shifts the seeded week so the busy Tuesday lands on today. */
 export function seedAppointments(todayIdx: number, staffCount = 4, now = new Date()): Appointment[] {
   const offset = (todayIdx - 1 + 7) % 7;
-  return BASE.map((a, i) => {
+  return BASE.map((row, i) => {
+    const { s, assist, ...a } = row;
     const d = (a.d + offset) % 7;
     return {
       ...a,
       d,
       id: 'b' + i,
+      staffId: staffIdAt(s),
+      ...(assist?.length ? { assistIds: assist.map(staffIdAt) } : {}),
       ...buffersFor(a.t),
       bookedAt: bookedAtFor(i, d, now),
       bookedVia: sourceFor(i, staffCount),
@@ -100,7 +110,7 @@ export function seedWalkIns(now = new Date()): WalkIn[] {
   const at = (minsAgo: number) => new Date(now.getTime() - minsAgo * 60000).toISOString();
   return [
     { id: 'w1', t: 'SH', c: 'Nora Whelan', n: 'Pressure over the navicular, left boot.', du: 45, checkedInAt: at(18), checkedInBy: 'self' },
-    { id: 'w2', t: 'HM', c: 'Felix Braun', n: 'Liners packed out after 30 days.', du: 45, checkedInAt: at(47), checkedInBy: 1 },
+    { id: 'w2', t: 'HM', c: 'Felix Braun', n: 'Liners packed out after 30 days.', du: 45, checkedInAt: at(47), checkedInBy: staffIdAt(1) },
     { id: 'w3', t: 'TU', c: 'Orla Byrne', n: 'Edges caught a rock, wants a tune before the weekend.', du: 45, checkedInAt: at(74), checkedInBy: 'self' },
   ];
 }
