@@ -11,8 +11,8 @@ import {
   serviceById,
 } from '../data/catalogue';
 import { SEED_CUSTOMERS, SEED_RECORDS, seedAppointments, seedWalkIns } from '../data/seed';
-import { dateKeyOf, monthOffsetOf, todayIndex, weekAt } from '../lib/dates';
-import { collisionsFor, partyOf, slotOpen } from '../lib/schedule';
+import { clearWeekCache, dateKeyOf, isoAt, monthOffsetOf, todayIndex, weekAt } from '../lib/dates';
+import { collisionsFor, movedTo, partyOf, placed, slotOpen } from '../lib/schedule';
 import { parseTime, rangeLabel, stampNow, toTimeValue } from '../lib/time';
 import type {
   Answers,
@@ -88,6 +88,8 @@ interface State {
   /** weeks from the one containing today; 0 is this week, negative is the past */
   weekOffset: number;
   appts: Appointment[];
+  /** which weekday is today; re-read when the date rolls over */
+  todayIdx: number;
   /** ids of the fitters shown; empty means everybody */
   staffFilter: string[];
   colW: Record<string, number>;
@@ -199,6 +201,8 @@ interface Actions {
   setDrag: (d: DragState | null) => void;
   commitDrag: () => void;
   dismissOverlapNotice: () => void;
+  /** The date has changed under an open tab: re-read today and re-place every booking. */
+  refreshToday: () => void;
   toggleWalkIns: () => void;
   startWalkInDrag: (id: string, x: number, y: number) => void;
   setWalkInDrag: (d: WalkInDrag | null) => void;
@@ -298,8 +302,9 @@ export type SchedulerStore = State & Actions;
 export const useScheduler = create<SchedulerStore>((set, get) => ({
   view: 'day',
   selDay: TODAY,
+  todayIdx: TODAY,
   weekOffset: 0,
-  appts: seedAppointments(TODAY),
+  appts: seedAppointments(TODAY).map((a) => placed(a)),
   staffFilter: [],
   colW: {},
   drag: null,
@@ -381,7 +386,19 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
       if (next > 6) return { selDay: 0, weekOffset: s.weekOffset + 1 };
       return { selDay: next };
     }),
-  goToday: () => set({ view: 'day', selDay: TODAY, weekOffset: 0, datePicker: false }),
+  goToday: () => set((s) => ({ view: 'day', selDay: s.todayIdx, weekOffset: 0, datePicker: false })),
+
+  /**
+   * Bookings store a moment; where that moment sits on the grid is relative to
+   * today, so when today moves the whole schedule has to be re-placed. Without
+   * this a tab left open overnight keeps drawing against yesterday.
+   */
+  refreshToday: () =>
+    set((s) => {
+      clearWeekCache();
+      const now = new Date();
+      return { todayIdx: todayIndex(now), appts: s.appts.map((a) => placed(a, now)) };
+    }),
 
   toggleDatePicker: () => set((s) => ({ datePicker: !s.datePicker, navMonth: 0, filterMenu: false, addMenu: false })),
   closeDatePicker: () => set({ datePicker: false }),
@@ -425,7 +442,9 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
 
       return {
         drag: null,
-        appts: s.appts.map((a) => (a.id === d.id ? { ...a, d: d.d, w: s.weekOffset, staffId: staffIdAt(d.s), st: d.st } : a)),
+        appts: s.appts.map((a) =>
+          a.id === d.id ? movedTo({ ...a, staffId: staffIdAt(d.s) }, { d: d.d, w: s.weekOffset, st: d.st }) : a,
+        ),
         overlapNotice:
           moved && clashes.length > 0
             ? {
@@ -466,6 +485,7 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
       const { d, s: staffIdx, st } = drag.over;
       const appt: Appointment = {
         id: 'u' + Date.now(),
+        startsAt: isoAt(d, s.weekOffset, st),
         d,
         w: s.weekOffset,
         staffId: staffIdAt(staffIdx),
@@ -701,7 +721,9 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
       const id = s.rescheduleId;
       set((st) => ({
         appts: st.appts.map((a) =>
-          a.id === id ? { ...a, d: f.day, staffId: f.staffId ?? a.staffId, st: mins, du: f.dur } : a,
+          a.id === id
+            ? movedTo({ ...a, staffId: f.staffId ?? a.staffId, du: f.dur }, { d: f.day, w: f.week, st: mins })
+            : a,
         ),
         showAdd: false,
         rescheduleId: null,
@@ -729,6 +751,7 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
 
     const appt: Appointment = {
       id: 'u' + Date.now(),
+      startsAt: isoAt(f.day, f.week, mins),
       d: f.day,
       w: f.week,
       staffId: si,
@@ -891,6 +914,7 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
     const stamp = Date.now();
     const blocks: Appointment[] = m.who.map((si) => ({
       id: `m${stamp}-${si}`,
+      startsAt: isoAt(m.day, m.week, start),
       d: m.day,
       w: m.week,
       staffId: si,
@@ -1270,3 +1294,9 @@ export function seatMissingTotal(s: State): number {
 
 export { REPEATABLE_SERVICES };
 export const TODAY_IDX = TODAY;
+
+// Dev-only handle on the store, for debugging in the console and for the browser
+// tests to assert against state rather than pixels. Never present in a build.
+if (import.meta.env.DEV) {
+  (globalThis as unknown as { __scheduler?: typeof useScheduler }).__scheduler = useScheduler;
+}

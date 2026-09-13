@@ -46,6 +46,11 @@ export function weekDays(now = new Date(), offsetWeeks = 0): DayInfo[] {
 /** Cached weeks, so every render of a column header is not a fresh date walk. */
 const WEEK_CACHE = new Map<number, DayInfo[]>();
 
+/** Dropped when the date rolls over: every entry is relative to today. */
+export function clearWeekCache(): void {
+  WEEK_CACHE.clear();
+}
+
 /** The week `offset` weeks from the one containing today. */
 export function weekAt(offset: number): DayInfo[] {
   let week = WEEK_CACHE.get(offset);
@@ -54,6 +59,33 @@ export function weekAt(offset: number): DayInfo[] {
     WEEK_CACHE.set(offset, week);
   }
   return week;
+}
+
+/**
+ * Where an absolute start time falls on the grid: which weekday column, how many
+ * weeks from the one containing today, and how far down the day.
+ *
+ * The datetime is what a booking stores and what the backend exchanges; these
+ * three are a rendering position, recomputed from it rather than kept alongside.
+ */
+export function gridOf(startsAt: string, now = new Date()): { d: number; w: number; st: number } {
+  const at = new Date(startsAt);
+  const day = new Date(at.getFullYear(), at.getMonth(), at.getDate());
+  const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - mondayIndex(now));
+  const diff = Math.round((day.getTime() - weekStart.getTime()) / 86400000);
+  return {
+    d: mondayIndex(at),
+    w: Math.floor(diff / 7),
+    st: at.getHours() * 60 + at.getMinutes(),
+  };
+}
+
+/** The inverse: an absolute start time for a position on the grid. */
+export function isoAt(d: number, w: number, st: number, now = new Date()): string {
+  const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - mondayIndex(now));
+  const at = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + w * 7 + d);
+  at.setHours(Math.floor(st / 60), st % 60, 0, 0);
+  return at.toISOString();
 }
 
 export function dateKeyOf(d: Date): string {

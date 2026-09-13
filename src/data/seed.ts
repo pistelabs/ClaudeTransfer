@@ -1,4 +1,5 @@
 import { staffIdAt } from './catalogue';
+import { gridOf, isoAt } from '../lib/dates';
 import type { Appointment, ApptRecord, BookingSource, Customer, TypeCode, WalkIn } from '../types';
 
 /**
@@ -6,7 +7,10 @@ import type { Appointment, ApptRecord, BookingSource, Customer, TypeCode, WalkIn
  * shifted so it lands on today when the app boots (see {@link seedAppointments}).
  * Replace this whole module with the bookings API.
  */
-type SeedRow = Omit<Appointment, 'id' | 'bb' | 'ba' | 'bookedAt' | 'bookedVia' | 'staffId' | 'assistIds'> & {
+type SeedRow = Omit<
+  Appointment,
+  'id' | 'bb' | 'ba' | 'bookedAt' | 'bookedVia' | 'staffId' | 'assistIds' | 'startsAt' | 'w'
+> & {
   /** authored by column for legibility, resolved to a staff id below */
   s: number;
   assist?: number[];
@@ -88,9 +92,11 @@ export function seedAppointments(todayIdx: number, staffCount = 4, now = new Dat
   return BASE.map((row, i) => {
     const { s, assist, ...a } = row;
     const d = (a.d + offset) % 7;
+    // The row authors a weekday and a time; the booking stores the moment.
     return {
       ...a,
-      d,
+      ...gridOf(isoAt(d, 0, a.st, now), now),
+      startsAt: isoAt(d, 0, a.st, now),
       id: 'b' + i,
       staffId: staffIdAt(s),
       ...(assist?.length ? { assistIds: assist.map(staffIdAt) } : {}),

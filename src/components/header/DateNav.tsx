@@ -1,6 +1,6 @@
 import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
 import { dateKeyOf, monthCells, monthLabel, weekAt } from '../../lib/dates';
-import { TODAY_IDX, useScheduler } from '../../store/useScheduler';
+import { useScheduler } from '../../store/useScheduler';
 import { Button } from '@/components/ui/button';
 import { useEscape, useOutsideClick } from '../ui/hooks';
 
@@ -36,7 +36,8 @@ export function DateNav() {
   const cells = monthCells(navMonth);
   const selectedKey = dateKeyOf(week[selDay].iso);
   // tomorrow rolls into next week when today is a Sunday
-  const tomorrow = TODAY_IDX === 6 ? { d: 0, w: 1 } : { d: TODAY_IDX + 1, w: 0 };
+  const todayIdx = useScheduler((s) => s.todayIdx);
+  const tomorrow = todayIdx === 6 ? { d: 0, w: 1 } : { d: todayIdx + 1, w: 0 };
 
   return (
     <div className="date-nav popover-anchor" ref={ref}>

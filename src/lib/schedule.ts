@@ -1,5 +1,29 @@
 import { STAFF, staffById } from '../data/catalogue';
+import { gridOf, isoAt } from './dates';
 import type { Appointment, CheckInSource, LaidOutAppt } from '../types';
+
+/**
+ * Refreshes a booking's grid position from its stored start time. Called wherever
+ * bookings enter the app and whenever the date rolls over, so a tab left open
+ * past midnight redraws against the new today instead of keeping yesterday's
+ * week offset.
+ */
+export function placed<T extends { startsAt: string }>(a: T, now = new Date()): T {
+  return { ...a, ...gridOf(a.startsAt, now) };
+}
+
+/**
+ * Moves a booking to a position on the grid. The start time is rewritten first,
+ * because that is the booking; the grid fields follow from it.
+ */
+export function movedTo<T extends { startsAt: string; d: number; w?: number; st: number }>(
+  a: T,
+  to: { d?: number; w?: number; st?: number },
+  now = new Date(),
+): T {
+  const startsAt = isoAt(to.d ?? a.d, to.w ?? a.w ?? 0, to.st ?? a.st, now);
+  return placed({ ...a, startsAt }, now);
+}
 
 /**
  * Greedy lane packing: appointments that overlap in time share a column,

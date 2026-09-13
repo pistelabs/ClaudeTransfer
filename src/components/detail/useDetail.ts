@@ -1,7 +1,7 @@
 import { STAFF, TYPES, serviceFor, staffById } from '../../data/catalogue';
 import { initialsOf } from '../../lib/dates';
 import { formatMoney, normalizeName, partyOf, priceValue } from '../../lib/schedule';
-import { TODAY_IDX, equipListOf, useScheduler, type SchedulerStore } from '../../store/useScheduler';
+import { equipListOf, useScheduler, type SchedulerStore } from '../../store/useScheduler';
 import type { Appointment, ApptType, CheckInSource, Customer, EquipItem, Payment, Service } from '../../types';
 
 export interface PartyMember {
@@ -101,6 +101,8 @@ export function useDetail(): DetailInfo | null {
     scheduled ??
     (walkIn && {
       id: walkIn.id,
+      // a queue entry has no time; the detail sheet hides every scheduling fact
+      startsAt: walkIn.checkedInAt,
       d: 0,
       staffId: STAFF[0].id,
       st: 0,
@@ -141,12 +143,13 @@ export function useDetail(): DetailInfo | null {
   // A walk-in is here now and waiting, which says more than Today/Upcoming/Past.
   // Everything else is placed against today, week included.
   const week = appt.w ?? 0;
-  const past = week < 0 || (week === 0 && appt.d < TODAY_IDX);
+  const todayIdx = store.todayIdx;
+  const past = week < 0 || (week === 0 && appt.d < todayIdx);
   const status = walkIn
     ? { label: 'Waiting', modifier: 'waiting' as const }
     : past
       ? { label: 'Completed', modifier: 'past' as const }
-      : week === 0 && appt.d === TODAY_IDX
+      : week === 0 && appt.d === todayIdx
         ? { label: 'Today', modifier: 'today' as const }
         : { label: 'Upcoming', modifier: 'upcoming' as const };
 

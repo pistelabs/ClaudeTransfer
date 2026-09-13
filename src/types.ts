@@ -27,9 +27,16 @@ export interface Staff {
 
 export interface Appointment {
   id: string;
-  /** day index within its week, Monday = 0 */
+  /**
+   * When it starts, ISO 8601. This is what the booking *is* — what gets stored,
+   * and what the API exchanges. Everything below about where it sits on the grid
+   * is derived from it, because a grid position is relative to whenever the app
+   * happened to be opened and this is not.
+   */
+  startsAt: string;
+  /** day index within its week, Monday = 0 — derived from {@link startsAt} */
   d: number;
-  /** weeks from the one containing today; absent means this week */
+  /** weeks from the one containing today — derived from {@link startsAt} */
   w?: number;
   /** the fitter leading it — whose column the booking is drawn in */
   staffId: string;
@@ -39,7 +46,7 @@ export interface Appointment {
    * genuinely busy for the duration.
    */
   assistIds?: string[];
-  /** start, minutes from midnight */
+  /** start, minutes from midnight — derived from {@link startsAt} */
   st: number;
   /** duration in minutes */
   du: number;

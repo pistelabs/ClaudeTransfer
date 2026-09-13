@@ -6,12 +6,16 @@ import { NewAppointmentSheet } from './components/booking/NewAppointmentSheet';
 import { TeamMeetingDialog } from './components/booking/TeamMeetingDialog';
 import { AppointmentDetailSheet } from './components/detail/AppointmentDetailSheet';
 import { Toaster } from '@/components/ui/sonner';
+import { useDayRollover } from './components/ui/useDayRollover';
 import { useScheduler } from './store/useScheduler';
 
 export default function App() {
   const showAdd = useScheduler((s) => s.showAdd);
   const showDetail = useScheduler((s) => s.showDetail);
   const showMeeting = useScheduler((s) => s.showMeeting);
+
+  // the grid is drawn relative to today, so it has to notice today changing
+  useDayRollover();
 
   return (
     <div className="app">

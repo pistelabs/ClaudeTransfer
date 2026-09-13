@@ -13,7 +13,7 @@ import {
   rangeLabel,
 } from '../../lib/time';
 import { weekAt } from '../../lib/dates';
-import { TODAY_IDX, useScheduler } from '../../store/useScheduler';
+import { useScheduler } from '../../store/useScheduler';
 import type { Appointment, LaidOutAppt } from '../../types';
 import { Avatar } from '../ui/Avatar';
 import { AppointmentBlock } from './AppointmentBlock';
@@ -75,6 +75,7 @@ export function ScheduleGrid() {
   const weekOffset = useScheduler((s) => s.weekOffset);
   const appts = useScheduler((s) => s.appts);
   const staffFilter = useScheduler((s) => s.staffFilter);
+  const todayIdx = useScheduler((s) => s.todayIdx);
   const colW = useScheduler((s) => s.colW);
   const drag = useScheduler((s) => s.drag);
   const walkInDrag = useScheduler((s) => s.walkInDrag);
@@ -144,14 +145,14 @@ export function ScheduleGrid() {
         title: info.short,
         sub: info.date,
         fullSub: `${info.long}, ${info.date}`,
-        today: weekOffset === 0 && d === TODAY_IDX,
+        today: weekOffset === 0 && d === todayIdx,
         past: info.past,
         leaves: splitWeek
           ? visibleStaff.map((si) => ({
               key: `w:${d}:${si}`,
               d,
               s: si,
-              today: weekOffset === 0 && d === TODAY_IDX,
+              today: weekOffset === 0 && d === todayIdx,
               past: info.past,
               shift: STAFF[si].shift,
               brk: STAFF[si].brk,
@@ -162,7 +163,7 @@ export function ScheduleGrid() {
                 key: `w:${d}`,
                 d,
                 s: null,
-                today: weekOffset === 0 && d === TODAY_IDX,
+                today: weekOffset === 0 && d === todayIdx,
                 past: info.past,
                 shift: SHOP_HOURS,
                 brk: null,
@@ -346,7 +347,7 @@ export function ScheduleGrid() {
 
   const nowMin = minutesSinceMidnight();
   const showNow =
-    !isWeek && weekOffset === 0 && selDay === TODAY_IDX && nowMin >= GRID_START_MIN && nowMin <= GRID_END_MIN;
+    !isWeek && weekOffset === 0 && selDay === todayIdx && nowMin >= GRID_START_MIN && nowMin <= GRID_END_MIN;
 
   return (
     <div className="sched-grid" ref={scrollerRef}>
