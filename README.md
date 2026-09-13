@@ -49,6 +49,11 @@ network access. Offline the app still runs, just in a system sans-serif.
 
 ```
 src/
+  index.ts              what a host imports: Scheduler, hydrate, the API
+  Scheduler.tsx         the console as one mountable component
+  host-example.tsx      a worked embedding, served at /host.html
+  api/                  the backend seam — wire types, mappers, Django client
+  lib/money.ts          cents in, formatted money out; DecimalField conversions
   lib/utils.ts          cn() — clsx plus tailwind-merge, shadcn's class helper
   data/catalogue.ts     staff, services, questions, equipment types — the shop's catalogue
   data/seed.ts          seeded bookings, customers and captured records
@@ -84,6 +89,58 @@ rules, so the schedule canvas is `.sched-grid` rather than `.grid` and the text 
 `.input-text` rather than `.text-input` — `input` being a colour token makes `text-input` a
 real utility. And the app's own classes keep `--`/`__` modifiers, while anything a Radix
 component drives is styled off `data-state` instead.
+
+## Connecting a backend
+
+Everything below `src/api` is the seam, and nothing outside it knows the backend
+exists.
+
+```
+src/api/types.ts   the wire format — snake_case, primary keys, ISO instants,
+                   DecimalFields as strings, DRF's pagination envelope
+src/api/map.ts     wire ↔ domain, the only place the two vocabularies meet
+src/api/client.ts  fetch for Django: session cookie, CSRF header, DRF errors
+src/api/index.ts   one function per endpoint, plus loadSchedule for a date window
+```
+
+Three conversions live in the mapper and nowhere else:
+
+| on the wire | in the app |
+|---|---|
+| `staff_id: "47"` | `staffId: "47"` — the grid works out which column at render time |
+| `starts_at: "2026-09-15T09:30:00+02:00"` | `startsAt`, with day/week/minute derived from it |
+| `price: "120.00"` | `12000` — whole cents, formatted only where drawn |
+
+### Mounting it in another project
+
+The console is a component, not an application. `main.tsx` is only the
+standalone dev shell; a host imports from `src/index.ts`:
+
+```tsx
+const data = await loadSchedule({ from: '2026-09-14', to: '2026-09-20' });
+
+configureCatalogue({ staff: data.staff });   // before the first render
+hydrateScheduler(data);                      // bookings, walk-ins, customers
+root.render(<Scheduler />);
+```
+
+The catalogue goes first because the screens read staff and services as module
+constants — that is the one ordering constraint. `host.html` is a working example
+of the whole sequence against fixtures shaped exactly as Django sends them; open
+it with `npm run dev` and swap `fixtures()` for `loadSchedule()`.
+
+### Worth knowing before you wire it up
+
+- **Times render in the viewer's timezone.** The wire carries an offset and it is
+  honoured, so a booking sent as `09:30+02:00` reads as 09:30 on a machine in
+  that zone and 07:30 on one in UTC. Right for staff standing in the shop; if the
+  console is ever used from another country and should still show shop time, that
+  needs a fixed timezone rather than the browser's.
+- **Ids are opaque strings.** Send whatever the primary key is; nothing parses them.
+- **Mutations are still local.** `createAppointment` and friends exist and are
+  typed, but the store writes to itself synchronously — there is no loading,
+  error or rollback state yet. That is the next piece of work, and the reason the
+  store is worth splitting from the server cache before it grows further.
 
 ## Where the data comes from
 

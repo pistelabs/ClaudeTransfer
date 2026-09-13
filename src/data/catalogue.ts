@@ -31,6 +31,26 @@ export const STAFF: Staff[] = [
   { id: 'stf-priya-anand', name: 'Priya Anand', role: 'Footbed Specialist', dot: '#e11d48', initials: 'PA', shift: [555, 1020], brk: [765, 810] },
 ];
 
+/**
+ * Replaces the seeded catalogue with the shop's real one.
+ *
+ * STAFF and the service list are module constants read by most of the screens,
+ * so this rewrites their contents in place rather than rebinding them. Call it
+ * once, before the first render — after that the arrays are being read during
+ * renders and swapping them underneath would not repaint.
+ *
+ * (The fuller version of this moves the catalogue into the store so it can
+ * change while the console is open. Nothing here needs that yet: staff and
+ * services change between shifts, not during one.)
+ */
+export function configureCatalogue(next: { staff?: Staff[]; services?: ServiceGroup[] }): void {
+  if (next.staff?.length) STAFF.splice(0, STAFF.length, ...next.staff);
+  if (next.services?.length) {
+    SERVICE_GROUPS.splice(0, SERVICE_GROUPS.length, ...next.services);
+    ALL_SERVICES.splice(0, ALL_SERVICES.length, ...next.services.flatMap((g) => g.items));
+  }
+}
+
 /** Look somebody up by the id a booking stores. */
 export function staffById(id: string): Staff | undefined {
   return STAFF.find((s) => s.id === id);

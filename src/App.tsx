@@ -1,39 +1,6 @@
-import { HeaderBar } from './components/header/HeaderBar';
-import { ScheduleGrid } from './components/schedule/ScheduleGrid';
-import { OverlapNotice } from './components/schedule/OverlapNotice';
-import { WalkInColumn } from './components/schedule/WalkInColumn';
-import { NewAppointmentSheet } from './components/booking/NewAppointmentSheet';
-import { TeamMeetingDialog } from './components/booking/TeamMeetingDialog';
-import { AppointmentDetailSheet } from './components/detail/AppointmentDetailSheet';
-import { Toaster } from '@/components/ui/sonner';
-import { useDayRollover } from './components/ui/useDayRollover';
-import { useScheduler } from './store/useScheduler';
+import { Scheduler } from './Scheduler';
 
+/** Kept so the dev shell has a conventional entry; the console itself is Scheduler. */
 export default function App() {
-  const showAdd = useScheduler((s) => s.showAdd);
-  const showDetail = useScheduler((s) => s.showDetail);
-  const showMeeting = useScheduler((s) => s.showMeeting);
-
-  // the grid is drawn relative to today, so it has to notice today changing
-  useDayRollover();
-
-  return (
-    <div className="app">
-      <main className="app__main">
-        <HeaderBar />
-        <div className="app__body">
-          <WalkInColumn />
-          <ScheduleGrid />
-        </div>
-      </main>
-
-      {/* raises its notices through the Toaster rather than rendering one itself */}
-      <OverlapNotice />
-      <Toaster />
-
-      {showAdd && <NewAppointmentSheet />}
-      {showDetail && <AppointmentDetailSheet />}
-      {showMeeting && <TeamMeetingDialog />}
-    </div>
-  );
+  return <Scheduler />;
 }

@@ -82,6 +82,19 @@ function newEquipItem(): EquipItem {
   };
 }
 
+/**
+ * What can be handed in from outside. Everything is optional so a caller can
+ * bring only the bookings and leave the rest seeded, which is what the demo does
+ * and what a partly-wired backend will do first.
+ */
+export interface HydrateData {
+  appointments?: Appointment[];
+  walkIns?: WalkIn[];
+  customers?: Customer[];
+  payments?: Record<string, Payment>;
+  records?: Record<string, ApptRecord>;
+}
+
 interface State {
   // ---- schedule ----
   view: View;
@@ -202,6 +215,8 @@ interface Actions {
   setDrag: (d: DragState | null) => void;
   commitDrag: () => void;
   dismissOverlapNotice: () => void;
+  /** Replaces the seeded data with what the backend returned. */
+  hydrate: (data: HydrateData) => void;
   /** The date has changed under an open tab: re-read today and re-place every booking. */
   refreshToday: () => void;
   toggleWalkIns: () => void;
@@ -394,6 +409,19 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
    * today, so when today moves the whole schedule has to be re-placed. Without
    * this a tab left open overnight keeps drawing against yesterday.
    */
+  hydrate: (data) =>
+    set(() => {
+      const now = new Date();
+      return {
+        ...(data.appointments ? { appts: data.appointments.map((a) => placed(a, now)) } : {}),
+        ...(data.walkIns ? { walkIns: data.walkIns } : {}),
+        ...(data.customers ? { customers: data.customers } : {}),
+        ...(data.payments ? { payments: data.payments } : {}),
+        ...(data.records ? { records: data.records } : {}),
+        todayIdx: todayIndex(now),
+      };
+    }),
+
   refreshToday: () =>
     set((s) => {
       clearWeekCache();
