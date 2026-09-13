@@ -14,6 +14,7 @@ import { SEED_CUSTOMERS, SEED_RECORDS, seedAppointments, seedWalkIns } from '../
 import { clearWeekCache, dateKeyOf, isoAt, monthOffsetOf, todayIndex, weekAt } from '../lib/dates';
 import { collisionsFor, movedTo, partyOf, placed, slotOpen } from '../lib/schedule';
 import { parseTime, rangeLabel, stampNow, toTimeValue } from '../lib/time';
+import type { Cents } from '../lib/money';
 import type {
   Answers,
   Appointment,
@@ -276,8 +277,8 @@ interface Actions {
   updateEquip: (uid: string, key: 'kind' | 'brand' | 'model' | 'size' | 'flex' | 'camber', val: string) => void;
   removeEquip: (uid: string) => void;
   setEquipTab: (uid: string, key: string) => void;
-  toggleEquipService: (uid: string, name: string, price: string) => void;
-  addEquipServiceInstance: (uid: string, name: string, price: string) => void;
+  toggleEquipService: (uid: string, name: string, price: Cents) => void;
+  addEquipServiceInstance: (uid: string, name: string, price: Cents) => void;
   removeLastEquipService: (uid: string, name: string) => void;
   removeEquipServiceInstance: (uid: string, sid: string) => void;
   updateEquipService: (uid: string, sid: string, key: 'location' | 'side' | 'note', val: string) => void;

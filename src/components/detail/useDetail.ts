@@ -1,6 +1,7 @@
 import { STAFF, TYPES, serviceFor, staffById } from '../../data/catalogue';
 import { initialsOf } from '../../lib/dates';
-import { formatMoney, normalizeName, partyOf, priceValue } from '../../lib/schedule';
+import { normalizeName, partyOf } from '../../lib/schedule';
+import { formatMoney } from '../../lib/money';
 import { equipListOf, useScheduler, type SchedulerStore } from '../../store/useScheduler';
 import type { Appointment, ApptType, CheckInSource, Customer, EquipItem, Payment, Service } from '../../types';
 
@@ -61,11 +62,11 @@ export function totalsFor(
   appt?: Pick<Appointment, 'svc' | 't'>,
 ) {
   const service = appt && appt.t !== 'MT' ? serviceFor(appt) : null;
-  const servicePrice = service ? priceValue(service.price) : 0;
+  const servicePrice = service ? service.price : 0;
 
   let extras = 0;
   for (const list of equipmentByPerson(store, id, partySize)) {
-    for (const e of list) for (const sv of e.services) if (sv.charged) extras += priceValue(sv.price);
+    for (const e of list) for (const sv of e.services) if (sv.charged) extras += sv.price;
   }
 
   const subtotal = servicePrice + extras;

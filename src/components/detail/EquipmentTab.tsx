@@ -10,6 +10,7 @@ import {
   equipSizes,
 } from '../../data/catalogue';
 import { useScheduler } from '../../store/useScheduler';
+import { formatMoney } from '../../lib/money';
 import type { EquipItem } from '../../types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -233,7 +234,7 @@ function EquipmentEntry({ item }: { item: EquipItem }) {
               >
                 <span style={{ flex: 1, minWidth: 0 }}>
                   <span className="equip__svc-name">{svc.name}</span>
-                  <span className="equip__svc-price">{svc.price}</span>
+                  <span className="equip__svc-price">{formatMoney(svc.price)}</span>
                 </span>
                 {on && repeatable && (
                   <span className="counter" onClick={(e) => e.stopPropagation()}>
@@ -290,7 +291,7 @@ function EquipmentEntry({ item }: { item: EquipItem }) {
                       title={svc.charged ? 'Billed on top — click to include' : 'Included — click to charge'}
                       onClick={() => toggleCharge(item.uid, svc.sid)}
                     >
-                      {svc.charged ? `+${svc.price}` : 'Included'}
+                      {svc.charged ? `+${formatMoney(svc.price)}` : 'Included'}
                     </button>
                     <button
                       className="equip-entry__remove"

@@ -1,3 +1,5 @@
+import type { Cents } from './lib/money';
+
 /** Appointment type codes. `MT` is an internal team-meeting block, not a booking. */
 export type TypeCode = 'BF' | 'FB' | 'SH' | 'HM' | 'AL' | 'TU' | 'MT';
 
@@ -127,7 +129,8 @@ export interface Service {
   t: TypeCode;
   /** duration, minutes */
   du: number;
-  price: string;
+  /** in minor units — see lib/money */
+  price: Cents;
   /** buffer before / after, minutes */
   bb?: number;
   ba?: number;
@@ -157,7 +160,8 @@ export type Answers = Record<string, string>;
 export interface EquipService {
   sid: string;
   name: string;
-  price: string;
+  /** in minor units — see lib/money */
+  price: Cents;
   location: string;
   side: 'Left' | 'Right' | 'Both';
   note: string;
@@ -184,7 +188,7 @@ export interface EquipServiceGroup {
   key: string;
   label: string;
   accent: string;
-  items: { name: string; price: string }[];
+  items: { name: string; price: Cents }[];
 }
 
 /** Captured information for one appointment, answers kept per person on the booking. */
@@ -214,8 +218,8 @@ export type PaymentMethod = 'shopify' | 'shopify-link' | 'square' | 'stripe' | '
 
 export interface Payment {
   method: PaymentMethod;
-  /** what was taken, in euro */
-  amount: number;
+  /** what was taken, in minor units */
+  amount: Cents;
   /** when it was recorded, `4:07 PM` */
   at: string;
   /** the staff member who took it */

@@ -1,3 +1,4 @@
+import { eur } from '../lib/money';
 import type {
   ApptType,
   EquipServiceGroup,
@@ -57,47 +58,47 @@ export const SERVICE_GROUPS: ServiceGroup[] = [
     key: 'fitting',
     label: 'Boot Fitting',
     items: [
-      { id: 'bf-full', name: 'Full Boot Fitting', t: 'BF', du: 90, price: '€120.00', ba: 15 },
-      { id: 'bf-rac', name: 'Race Stock Fit', t: 'BF', du: 120, price: '€180.00', ba: 15 },
-      { id: 'bf-tour', name: 'Touring Boot Fit', t: 'BF', du: 90, price: '€130.00' },
-      { id: 'bf-jr', name: 'Junior Fit', t: 'BF', du: 45, price: '€60.00' },
-      { id: 'bf-couple', name: 'Couples Boot Fitting', t: 'BF', du: 150, price: '€220.00', ba: 15, seats: 2 },
+      { id: 'bf-full', name: 'Full Boot Fitting', t: 'BF', du: 90, price: eur(120), ba: 15 },
+      { id: 'bf-rac', name: 'Race Stock Fit', t: 'BF', du: 120, price: eur(180), ba: 15 },
+      { id: 'bf-tour', name: 'Touring Boot Fit', t: 'BF', du: 90, price: eur(130) },
+      { id: 'bf-jr', name: 'Junior Fit', t: 'BF', du: 45, price: eur(60) },
+      { id: 'bf-couple', name: 'Couples Boot Fitting', t: 'BF', du: 150, price: eur(220), ba: 15, seats: 2 },
     ],
   },
   {
     key: 'footbeds',
     label: 'Footbeds',
     items: [
-      { id: 'fb-cust', name: 'Custom Footbed', t: 'FB', du: 90, price: '€185.00', ba: 15 },
-      { id: 'fb-cork', name: 'Cork Footbed Cast', t: 'FB', du: 90, price: '€210.00', ba: 30 },
-      { id: 'fb-grind', name: 'Footbed Regrind', t: 'FB', du: 45, price: '€45.00' },
+      { id: 'fb-cust', name: 'Custom Footbed', t: 'FB', du: 90, price: eur(185), ba: 15 },
+      { id: 'fb-cork', name: 'Cork Footbed Cast', t: 'FB', du: 90, price: eur(210), ba: 30 },
+      { id: 'fb-grind', name: 'Footbed Regrind', t: 'FB', du: 45, price: eur(45) },
     ],
   },
   {
     key: 'mods',
     label: 'Modifications',
     items: [
-      { id: 'sh-punch', name: 'Shell Punch', t: 'SH', du: 45, price: '€55.00' },
-      { id: 'sh-grind', name: 'Shell Grind', t: 'SH', du: 45, price: '€65.00' },
-      { id: 'hm-liner', name: 'Liner Heat Mold', t: 'HM', du: 45, price: '€50.00', bb: 15, ba: 20 },
-      { id: 'hm-shell', name: 'Shell Heat Stretch', t: 'HM', du: 60, price: '€70.00', bb: 15, ba: 20 },
+      { id: 'sh-punch', name: 'Shell Punch', t: 'SH', du: 45, price: eur(55) },
+      { id: 'sh-grind', name: 'Shell Grind', t: 'SH', du: 45, price: eur(65) },
+      { id: 'hm-liner', name: 'Liner Heat Mold', t: 'HM', du: 45, price: eur(50), bb: 15, ba: 20 },
+      { id: 'hm-shell', name: 'Shell Heat Stretch', t: 'HM', du: 60, price: eur(70), bb: 15, ba: 20 },
     ],
   },
   {
     key: 'align',
     label: 'Alignment',
     items: [
-      { id: 'al-cant', name: 'Canting Assessment', t: 'AL', du: 90, price: '€140.00' },
-      { id: 'al-sole', name: 'Sole Planing', t: 'AL', du: 60, price: '€95.00' },
+      { id: 'al-cant', name: 'Canting Assessment', t: 'AL', du: 90, price: eur(140) },
+      { id: 'al-sole', name: 'Sole Planing', t: 'AL', du: 60, price: eur(95) },
     ],
   },
   {
     key: 'ski',
     label: 'Ski Service',
     items: [
-      { id: 'tu-mount', name: 'Binding Mount', t: 'TU', du: 60, price: '€75.00', ba: 15 },
-      { id: 'tu-tune', name: 'Full Tune & Wax', t: 'TU', du: 45, price: '€55.00' },
-      { id: 'tu-hotwax', name: 'Hot Wax', t: 'TU', du: 30, price: '€25.00' },
+      { id: 'tu-mount', name: 'Binding Mount', t: 'TU', du: 60, price: eur(75), ba: 15 },
+      { id: 'tu-tune', name: 'Full Tune & Wax', t: 'TU', du: 45, price: eur(55) },
+      { id: 'tu-hotwax', name: 'Hot Wax', t: 'TU', du: 30, price: eur(25) },
     ],
   },
 ];
@@ -233,35 +234,35 @@ export function equipBrands(kind: string): string[] {
 
 const EQUIP_SERVICES: Record<string, EquipServiceGroup[]> = {
   Boots: [
-    { key: 'fitting', label: 'Fitting', accent: '#0284c7', items: [{ name: 'Full Boot Fitting', price: '€120.00' }, { name: 'Shell Fit Assessment', price: '€40.00' }] },
-    { key: 'mods', label: 'Modifications', accent: '#d97706', items: [{ name: 'Shell Punch', price: '€55.00' }, { name: 'Shell Grind', price: '€65.00' }, { name: 'Cuff Alignment', price: '€45.00' }] },
-    { key: 'heat', label: 'Heat Molding', accent: '#e11d48', items: [{ name: 'Liner Heat Mold', price: '€50.00' }, { name: 'Shell Heat Stretch', price: '€70.00' }] },
-    { key: 'align', label: 'Alignment', accent: '#7c3aed', items: [{ name: 'Canting Assessment', price: '€140.00' }, { name: 'Sole Planing', price: '€95.00' }] },
+    { key: 'fitting', label: 'Fitting', accent: '#0284c7', items: [{ name: 'Full Boot Fitting', price: eur(120) }, { name: 'Shell Fit Assessment', price: eur(40) }] },
+    { key: 'mods', label: 'Modifications', accent: '#d97706', items: [{ name: 'Shell Punch', price: eur(55) }, { name: 'Shell Grind', price: eur(65) }, { name: 'Cuff Alignment', price: eur(45) }] },
+    { key: 'heat', label: 'Heat Molding', accent: '#e11d48', items: [{ name: 'Liner Heat Mold', price: eur(50) }, { name: 'Shell Heat Stretch', price: eur(70) }] },
+    { key: 'align', label: 'Alignment', accent: '#7c3aed', items: [{ name: 'Canting Assessment', price: eur(140) }, { name: 'Sole Planing', price: eur(95) }] },
   ],
   Skis: [
-    { key: 'wax', label: 'Waxing', accent: '#0284c7', items: [{ name: 'Hot Wax', price: '€25.00' }, { name: 'Roll Wax', price: '€15.00' }] },
-    { key: 'tune', label: 'Tuning', accent: '#d97706', items: [{ name: 'Full Tune', price: '€55.00' }, { name: 'Edge Bevel', price: '€35.00' }, { name: 'Base Grind', price: '€60.00' }] },
-    { key: 'repair', label: 'Repairs', accent: '#e11d48', items: [{ name: 'Base Weld', price: '€30.00' }, { name: 'Core Shot Repair', price: '€45.00' }] },
+    { key: 'wax', label: 'Waxing', accent: '#0284c7', items: [{ name: 'Hot Wax', price: eur(25) }, { name: 'Roll Wax', price: eur(15) }] },
+    { key: 'tune', label: 'Tuning', accent: '#d97706', items: [{ name: 'Full Tune', price: eur(55) }, { name: 'Edge Bevel', price: eur(35) }, { name: 'Base Grind', price: eur(60) }] },
+    { key: 'repair', label: 'Repairs', accent: '#e11d48', items: [{ name: 'Base Weld', price: eur(30) }, { name: 'Core Shot Repair', price: eur(45) }] },
   ],
   Snowboard: [
-    { key: 'wax', label: 'Waxing', accent: '#0284c7', items: [{ name: 'Hot Wax', price: '€25.00' }, { name: 'Roll Wax', price: '€15.00' }] },
-    { key: 'tune', label: 'Tuning', accent: '#d97706', items: [{ name: 'Full Tune', price: '€55.00' }, { name: 'Edge Bevel', price: '€35.00' }, { name: 'Base Grind', price: '€60.00' }] },
-    { key: 'repair', label: 'Repairs', accent: '#e11d48', items: [{ name: 'Base Weld', price: '€30.00' }, { name: 'Core Shot Repair', price: '€45.00' }] },
+    { key: 'wax', label: 'Waxing', accent: '#0284c7', items: [{ name: 'Hot Wax', price: eur(25) }, { name: 'Roll Wax', price: eur(15) }] },
+    { key: 'tune', label: 'Tuning', accent: '#d97706', items: [{ name: 'Full Tune', price: eur(55) }, { name: 'Edge Bevel', price: eur(35) }, { name: 'Base Grind', price: eur(60) }] },
+    { key: 'repair', label: 'Repairs', accent: '#e11d48', items: [{ name: 'Base Weld', price: eur(30) }, { name: 'Core Shot Repair', price: eur(45) }] },
   ],
   Bindings: [
-    { key: 'mount', label: 'Mounting', accent: '#0284c7', items: [{ name: 'Binding Mount', price: '€75.00' }, { name: 'Remount / Plug', price: '€95.00' }] },
-    { key: 'safety', label: 'Safety', accent: '#0d9488', items: [{ name: 'DIN Setting', price: '€20.00' }, { name: 'Release Test', price: '€35.00' }] },
+    { key: 'mount', label: 'Mounting', accent: '#0284c7', items: [{ name: 'Binding Mount', price: eur(75) }, { name: 'Remount / Plug', price: eur(95) }] },
+    { key: 'safety', label: 'Safety', accent: '#0d9488', items: [{ name: 'DIN Setting', price: eur(20) }, { name: 'Release Test', price: eur(35) }] },
   ],
   Footbeds: [
-    { key: 'make', label: 'Manufacture', accent: '#0d9488', items: [{ name: 'Custom Footbed', price: '€185.00' }, { name: 'Cork Footbed Cast', price: '€210.00' }] },
-    { key: 'adjust', label: 'Adjustment', accent: '#d97706', items: [{ name: 'Footbed Regrind', price: '€45.00' }, { name: 'Posting / Wedge', price: '€35.00' }] },
+    { key: 'make', label: 'Manufacture', accent: '#0d9488', items: [{ name: 'Custom Footbed', price: eur(185) }, { name: 'Cork Footbed Cast', price: eur(210) }] },
+    { key: 'adjust', label: 'Adjustment', accent: '#d97706', items: [{ name: 'Footbed Regrind', price: eur(45) }, { name: 'Posting / Wedge', price: eur(35) }] },
   ],
   Liners: [
-    { key: 'heat', label: 'Heat Molding', accent: '#e11d48', items: [{ name: 'Liner Heat Mold', price: '€50.00' }, { name: 'Re-mold', price: '€35.00' }] },
-    { key: 'fit', label: 'Fit', accent: '#0284c7', items: [{ name: 'Tongue Shim', price: '€25.00' }, { name: 'Ankle Pad', price: '€25.00' }] },
+    { key: 'heat', label: 'Heat Molding', accent: '#e11d48', items: [{ name: 'Liner Heat Mold', price: eur(50) }, { name: 'Re-mold', price: eur(35) }] },
+    { key: 'fit', label: 'Fit', accent: '#0284c7', items: [{ name: 'Tongue Shim', price: eur(25) }, { name: 'Ankle Pad', price: eur(25) }] },
   ],
-  Poles: [{ key: 'service', label: 'Service', accent: '#0284c7', items: [{ name: 'Cut to Length', price: '€15.00' }, { name: 'Basket Replacement', price: '€12.00' }] }],
-  Helmet: [{ key: 'fit', label: 'Fit', accent: '#0284c7', items: [{ name: 'Fit Check', price: '€0.00' }, { name: 'Pad Swap', price: '€18.00' }] }],
+  Poles: [{ key: 'service', label: 'Service', accent: '#0284c7', items: [{ name: 'Cut to Length', price: eur(15) }, { name: 'Basket Replacement', price: eur(12) }] }],
+  Helmet: [{ key: 'fit', label: 'Fit', accent: '#0284c7', items: [{ name: 'Fit Check', price: eur(0) }, { name: 'Pad Swap', price: eur(18) }] }],
 };
 
 export function equipServiceGroups(kind: string): EquipServiceGroup[] {

@@ -1,5 +1,6 @@
 import { Check, ChevronLeft, FileText, Minus, Wrench, X } from 'lucide-react';
 import { useScheduler, type SchedulerStore } from '../../store/useScheduler';
+import { formatMoney } from '../../lib/money';
 import { Avatar } from '../ui/Avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -28,7 +29,7 @@ function workshopGroups(store: SchedulerStore, detail: DetailInfo) {
         return {
           key,
           service: sv.name.toUpperCase(),
-          price: sv.charged ? `+${sv.price}` : 'Included',
+          price: sv.charged ? `+${formatMoney(sv.price)}` : 'Included',
           charged: sv.charged,
           item: e.kind + (e.model ? ` · ${e.model}` : ''),
           side: sv.side || 'Both',

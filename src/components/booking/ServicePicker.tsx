@@ -1,6 +1,7 @@
 import { SERVICE_GROUPS, TYPES } from '../../data/catalogue';
 import { durationLabel } from '../../lib/time';
 import { useScheduler } from '../../store/useScheduler';
+import { formatMoney } from '../../lib/money';
 
 export function ServicePicker() {
   const svcTab = useScheduler((s) => s.svcTab);
@@ -48,7 +49,7 @@ export function ServicePicker() {
             >
               <span className="svc-card__name">{sv.name}</span>
               <span className="svc-card__meta">
-                <span className="svc-card__price">{sv.price}</span>
+                <span className="svc-card__price">{formatMoney(sv.price)}</span>
                 <span className="svc-card__dur">{durationLabel(sv.du)}</span>
               </span>
             </button>
