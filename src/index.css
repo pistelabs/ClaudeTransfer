@@ -113,6 +113,16 @@
   color-scheme: light;
 }
 
+@layer base {
+  /* Tailwind v4 defaults an un-coloured `border` utility to currentColor, which renders
+   * near-black. shadcn's components write a bare `border` and rely on this rule to point it
+   * at the border token instead — without it every card, column and panel gets a hard outline. */
+  * {
+    border-color: var(--border);
+    outline-color: color-mix(in oklab, var(--ring) 50%, transparent);
+  }
+}
+
 * {
   box-sizing: border-box;
 }
