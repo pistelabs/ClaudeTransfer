@@ -177,3 +177,14 @@ export interface NotificationEventPayload {
 export interface CompanySendingDomainDto {
   address: string
 }
+
+export interface GeneralSettingsDto {
+  name: string
+  contact_email: string
+  phone: string
+  address: string
+  /** URL of the uploaded logo, or null when none is set. */
+  logo: string | null
+  currency: "CHF" | "EUR" | "GBP" | "USD"
+  date_format: "DD/MM/YYYY" | "MM/DD/YYYY" | "YYYY-MM-DD"
+}

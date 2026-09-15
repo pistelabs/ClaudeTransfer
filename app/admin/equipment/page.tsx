@@ -1,19 +1,12 @@
-import { Card, CardContent } from "@/components/ui/card"
+import type { Metadata } from "next"
+
+import { EquipmentSection } from "@/components/equipment/equipment-section"
+
+export const metadata: Metadata = {
+  title: "Equipment Types · Workshop Admin",
+  description: "Select the equipment types your workshop offers.",
+}
 
 export default function EquipmentPage() {
-  return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-xl font-semibold tracking-[-0.02em]">Equipment Types</h1>
-        <p className="mt-1.5 text-sm text-muted-foreground">
-          This section is part of the Workshop Admin console but is not built in this slice.
-        </p>
-      </div>
-      <Card>
-        <CardContent className="py-12 text-center text-[13px] text-muted-foreground">
-          The Equipment Types section has not been implemented yet.
-        </CardContent>
-      </Card>
-    </div>
-  )
+  return <EquipmentSection />
 }

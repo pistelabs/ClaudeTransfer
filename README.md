@@ -2,8 +2,8 @@
 
 Bringing designs to Ai for the guys, hopefully reducing their workload.
 
-This repo currently holds the **Workshop Admin — Services, Appointments and Notifications**
-sections, built from the `Admin_Services_Section` design handoff. Every interactive element comes from
+This repo holds the **Workshop Admin** console — all five sections of the `Admin_Services_Section`
+design handoff: General, Equipment Types, Services, Appointments and Notifications. Every interactive element comes from
 [ui.shadcn.com](https://ui.shadcn.com) components.
 
 ## Running it
@@ -21,8 +21,8 @@ saying so, so the UI can be reviewed before the backend is up.
 
 ## Data
 
-Equipment types, service groups, services, appointment types, appointments and notification events
-live in Django and are read and written over its REST API — nothing is stored in the browser. **[docs/django-api.md](docs/django-api.md)** is the
+Workshop settings, equipment types, service groups, services, appointment types, appointments and
+notification events live in Django and are read and written over its REST API — nothing is stored in the browser. **[docs/django-api.md](docs/django-api.md)** is the
 contract: endpoints, the exact payloads, and a reference DRF implementation (models, serializers,
 viewsets, router) that this UI was tested against end to end.
 
@@ -35,6 +35,13 @@ viewsets, router) that this UI was tested against end to end.
 | Load + mutate state for the pages | `lib/workshop/store.tsx` |
 
 ## What is built
+
+`/admin/general` — workshop details (logo upload, name, contact email, phone, address) and the
+regional settings. The contact details are the defaults offered when sending a notification test,
+the currency drives price formatting everywhere, and the name and logo appear in the app bar.
+
+`/admin/equipment` — the sixteen equipment types as selectable tiles with a live count and a
+Select all / Clear all button. Only the enabled types can be assigned to services and appointments.
 
 `/admin/services` — the Services section in full:
 
@@ -95,9 +102,6 @@ Loading, empty and error states are covered: a skeleton while the API responds, 
 retry button when it fails, inline errors on save, and disabled controls while a request is in
 flight.
 
-The other two sections (General and Equipment Types) exist as routes with placeholder pages so the
-section nav works — they are not part of this slice.
-
 ## Stack
 
 - Next.js (App Router) + TypeScript + Tailwind CSS v4
@@ -112,11 +116,15 @@ drops new components straight into `components/ui/`.
 ## Layout
 
 ```
+app/admin/general/page.tsx       the General route
+app/admin/equipment/page.tsx     the Equipment Types route
 app/admin/services/page.tsx      the Services route
 app/admin/appointments/page.tsx  the Appointments route
 app/admin/notifications/page.tsx the Notifications route
 app/admin/layout.tsx             app bar + section nav + providers
 components/services/             services UI (section, row, dialog)
+components/general/              general settings UI
+components/equipment/            equipment types UI
 components/appointments/         appointments UI (section, row, dialog)
 components/notifications/        notifications UI (section, message editor)
 components/workshop/             shared pieces (field editor, tiles, stepper, group dialogs)

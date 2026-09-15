@@ -1,6 +1,5 @@
-import { MountainSnowIcon } from "lucide-react"
-
 import { AdminNav } from "@/components/admin/admin-nav"
+import { AppBarBrand } from "@/components/admin/app-bar-brand"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { WorkshopProvider } from "@/lib/workshop/store"
 
@@ -11,10 +10,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="min-h-svh bg-[#fafafa]">
           <header className="sticky top-0 z-40 border-b bg-background">
             <div className="mx-auto flex h-[60px] w-full max-w-[1040px] items-center gap-2.5 px-8">
-              <span className="flex size-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
-                <MountainSnowIcon className="size-4" />
-              </span>
-              <span className="text-[15px] font-semibold tracking-[-0.01em]">Alpine Werks</span>
+              <AppBarBrand />
             </div>
             <AdminNav />
           </header>

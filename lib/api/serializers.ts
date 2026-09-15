@@ -1,5 +1,6 @@
 import type {
   AppointmentDto,
+  GeneralSettingsDto,
   NotificationEventDto,
   NotificationEventPayload,
   AppointmentFieldDto,
@@ -14,6 +15,7 @@ import type {
 import type {
   Appointment,
   AppointmentGroup,
+  GeneralSettings,
   NotificationEvent,
   NotificationEventInput,
   AppointmentInput,
@@ -337,5 +339,28 @@ export function fromNotificationEventInput(
       position: index,
     })),
     ...(input.timing ? { timing_hours: input.timing.hours } : {}),
+  }
+}
+
+export function toGeneralSettings(dto: GeneralSettingsDto): GeneralSettings {
+  return {
+    name: dto.name ?? "",
+    email: dto.contact_email ?? "",
+    phone: dto.phone ?? "",
+    address: dto.address ?? "",
+    logo: dto.logo ?? null,
+    currency: dto.currency ?? "CHF",
+    dateFormat: dto.date_format ?? "DD/MM/YYYY",
+  }
+}
+
+export function fromGeneralSettings(general: GeneralSettings): Omit<GeneralSettingsDto, "logo"> {
+  return {
+    name: general.name,
+    contact_email: general.email,
+    phone: general.phone,
+    address: general.address,
+    currency: general.currency,
+    date_format: general.dateFormat,
   }
 }

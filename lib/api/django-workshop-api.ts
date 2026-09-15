@@ -1,20 +1,23 @@
-import { apiRequest, unwrapList } from "./http"
+import { API_BASE_URL, ApiError, apiRequest, csrfHeader, unwrapList } from "./http"
 import type {
   AppointmentDto,
   AppointmentGroupDto,
   CompanySendingDomainDto,
   EquipmentTypeDto,
+  GeneralSettingsDto,
   NotificationEventDto,
   ServiceDto,
   ServiceGroupDto,
 } from "./dto"
 import {
   fromAppointmentInput,
+  fromGeneralSettings,
   fromNotificationEventInput,
   fromServiceInput,
   toAppointment,
   toAppointmentGroup,
   toEquipmentType,
+  toGeneralSettings,
   toNotificationEvent,
   toService,
   toServiceGroup,
@@ -23,10 +26,52 @@ import type { WorkshopApi } from "./workshop-api"
 
 /** Endpoints are documented in docs/django-api.md. */
 export const djangoWorkshopApi: WorkshopApi = {
+  async getGeneralSettings() {
+    const dto = await apiRequest<GeneralSettingsDto>("/general-settings/")
+    return toGeneralSettings(dto)
+  },
+
+  async updateGeneralSettings(general) {
+    const dto = await apiRequest<GeneralSettingsDto>("/general-settings/", {
+      method: "PATCH",
+      json: fromGeneralSettings(general),
+    })
+    return toGeneralSettings(dto)
+  },
+
+  async uploadLogo(file) {
+    // Multipart, so no JSON content-type here — the browser sets the boundary.
+    const form = new FormData()
+    form.append("logo", file)
+    const response = await fetch(API_BASE_URL + "/general-settings/logo/", {
+      method: "POST",
+      body: form,
+      credentials: "include",
+      headers: csrfHeader(),
+    })
+    if (!response.ok) throw new ApiError("Could not upload the logo", response.status)
+    return toGeneralSettings((await response.json()) as GeneralSettingsDto)
+  },
+
+  async removeLogo() {
+    const dto = await apiRequest<GeneralSettingsDto>("/general-settings/logo/", {
+      method: "DELETE",
+    })
+    return toGeneralSettings(dto)
+  },
+
   async listEquipmentTypes() {
     const body = await apiRequest<EquipmentTypeDto[] | { results: EquipmentTypeDto[] }>(
       "/equipment-types/",
     )
+    return unwrapList(body).map(toEquipmentType)
+  },
+
+  async setEnabledEquipmentTypes(enabledIds) {
+    const body = await apiRequest<EquipmentTypeDto[]>("/equipment-types/set-enabled/", {
+      method: "POST",
+      json: { enabled: enabledIds },
+    })
     return unwrapList(body).map(toEquipmentType)
   },
 

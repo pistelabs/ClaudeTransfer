@@ -27,6 +27,12 @@ export class ApiError extends Error {
   }
 }
 
+/** CSRF header for requests that bypass apiRequest (multipart uploads). */
+export function csrfHeader(): Record<string, string> {
+  const token = readCookie("csrftoken")
+  return token ? { "X-CSRFToken": token } : {}
+}
+
 function readCookie(name: string) {
   if (typeof document === "undefined") return null
   const match = document.cookie.match(new RegExp("(^|;\\s*)" + name + "=([^;]*)"))

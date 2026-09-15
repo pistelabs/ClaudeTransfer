@@ -14,7 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Switch } from "@/components/ui/switch"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { MessageEditorDialog } from "@/components/notifications/message-editor-dialog"
-import { DEFAULT_GENERAL, toNotificationEventInput } from "@/lib/workshop/data"
+import { toNotificationEventInput } from "@/lib/workshop/data"
 import { errorMessage, useWorkshop } from "@/lib/workshop/store"
 import type {
   Id,
@@ -32,6 +32,7 @@ export function NotificationsSection() {
     error,
     reload,
     usingMockApi,
+    general,
     notificationEvents,
     sendingDomain,
     updateNotificationEvent,
@@ -162,7 +163,7 @@ export function NotificationsSection() {
         onOpenChange={(open) => setEditor((state) => ({ ...state, open }))}
         event={editor.event}
         channel={editor.channel}
-        defaultRecipient={editor.channel === "sms" ? DEFAULT_GENERAL.phone : DEFAULT_GENERAL.email}
+        defaultRecipient={editor.channel === "sms" ? general.phone : general.email}
         onSave={async (patch) => {
           if (!editor.event) return
           try {

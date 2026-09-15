@@ -34,6 +34,14 @@ export const STANDARD_ENTRIES: Array<{ code: StandardEntryCode; name: string; hi
   { code: "snowboard_stance", name: "Snowboard Stance", hint: "Width, angles and setback" },
 ]
 
+export const CURRENCIES: Array<GeneralSettings["currency"]> = ["CHF", "EUR", "GBP", "USD"]
+
+export const DATE_FORMATS: Array<GeneralSettings["dateFormat"]> = [
+  "DD/MM/YYYY",
+  "MM/DD/YYYY",
+  "YYYY-MM-DD",
+]
+
 export const CURRENCY_SYMBOLS: Record<GeneralSettings["currency"], string> = {
   CHF: "CHF ",
   EUR: "€",

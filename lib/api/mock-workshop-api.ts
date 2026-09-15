@@ -1,9 +1,10 @@
-import { emptyAppointmentInput, emptyServiceInput } from "@/lib/workshop/data"
+import { DEFAULT_GENERAL, emptyAppointmentInput, emptyServiceInput } from "@/lib/workshop/data"
 import type {
   Appointment,
   AppointmentGroup,
   AppointmentInput,
   EquipmentType,
+  GeneralSettings,
   NotificationEvent,
   Service,
   ServiceGroup,
@@ -267,8 +268,32 @@ function findAppointmentGroup(groupId: string) {
   return group
 }
 
+let general: GeneralSettings = { ...DEFAULT_GENERAL }
+
 export const mockWorkshopApi: WorkshopApi = {
+  getGeneralSettings: () => settle(general),
+
+  updateGeneralSettings(next) {
+    general = { ...clone(next), logo: general.logo }
+    return settle(general)
+  },
+
+  uploadLogo(file) {
+    general = { ...general, logo: URL.createObjectURL(file) }
+    return settle(general)
+  },
+
+  removeLogo() {
+    general = { ...general, logo: null }
+    return settle(general)
+  },
+
   listEquipmentTypes: () => settle(equipmentTypes),
+
+  setEnabledEquipmentTypes(enabledIds) {
+    for (const type of equipmentTypes) type.enabled = enabledIds.includes(type.id)
+    return settle(equipmentTypes)
+  },
 
   listServiceGroups: () => settle(groups),
 

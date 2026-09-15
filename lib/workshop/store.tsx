@@ -12,6 +12,7 @@ import type {
   AppointmentGroup,
   AppointmentInput,
   EquipmentType,
+  GeneralSettings,
   Id,
   NotificationChannel,
   NotificationEvent,
@@ -33,6 +34,7 @@ interface WorkshopContextValue {
   /** True while running against the in-memory stand-in rather than Django. */
   usingMockApi: boolean
 
+  general: GeneralSettings
   equipmentTypes: EquipmentType[]
   /** Equipment types the workshop offers — the only ones assignable to a service. */
   enabledEquipmentTypes: EquipmentType[]
@@ -42,6 +44,11 @@ interface WorkshopContextValue {
   /** Read-only address every notification is sent from. */
   sendingDomain: string
   currencySymbol: string
+
+  updateGeneralSettings: (general: GeneralSettings) => Promise<void>
+  uploadLogo: (file: File) => Promise<void>
+  removeLogo: () => Promise<void>
+  setEnabledEquipmentTypes: (enabledIds: Id[]) => Promise<void>
 
   createServiceGroup: (name: string) => Promise<ServiceGroup>
   renameServiceGroup: (groupId: Id, name: string) => Promise<void>
@@ -86,6 +93,7 @@ export function errorMessage(error: unknown) {
 export function WorkshopProvider({ children }: { children: React.ReactNode }) {
   const [status, setStatus] = React.useState<Status>("loading")
   const [error, setError] = React.useState<string | null>(null)
+  const [general, setGeneral] = React.useState<GeneralSettings>(DEFAULT_GENERAL)
   const [equipmentTypes, setEquipmentTypes] = React.useState<EquipmentType[]>([])
   const [serviceGroups, setServiceGroups] = React.useState<ServiceGroup[]>([])
   const [appointmentGroups, setAppointmentGroups] = React.useState<AppointmentGroup[]>([])
@@ -98,14 +106,16 @@ export function WorkshopProvider({ children }: { children: React.ReactNode }) {
     let cancelled = false
 
     Promise.all([
+      api.getGeneralSettings(),
       api.listEquipmentTypes(),
       api.listServiceGroups(),
       api.listAppointmentGroups(),
       api.listNotificationEvents(),
       api.getSendingDomain(),
     ])
-      .then(([types, groups, appointmentTypes, events, domain]) => {
+      .then(([generalSettings, types, groups, appointmentTypes, events, domain]) => {
         if (cancelled) return
+        setGeneral(generalSettings)
         setEquipmentTypes(types)
         setServiceGroups(groups)
         setAppointmentGroups(appointmentTypes)
@@ -143,13 +153,30 @@ export function WorkshopProvider({ children }: { children: React.ReactNode }) {
         setReloadToken((token) => token + 1)
       },
 
+      general,
       equipmentTypes,
       enabledEquipmentTypes: equipmentTypes.filter((type) => type.enabled),
       serviceGroups,
       appointmentGroups,
       notificationEvents,
       sendingDomain,
-      currencySymbol: CURRENCY_SYMBOLS[DEFAULT_GENERAL.currency],
+      currencySymbol: CURRENCY_SYMBOLS[general.currency],
+
+      async updateGeneralSettings(next) {
+        setGeneral(await api.updateGeneralSettings(next))
+      },
+
+      async uploadLogo(file) {
+        setGeneral(await api.uploadLogo(file))
+      },
+
+      async removeLogo() {
+        setGeneral(await api.removeLogo())
+      },
+
+      async setEnabledEquipmentTypes(enabledIds) {
+        setEquipmentTypes(await api.setEnabledEquipmentTypes(enabledIds))
+      },
 
       async createServiceGroup(name) {
         const group = await api.createServiceGroup(name)
@@ -288,6 +315,7 @@ export function WorkshopProvider({ children }: { children: React.ReactNode }) {
   }, [
     status,
     error,
+    general,
     equipmentTypes,
     serviceGroups,
     appointmentGroups,

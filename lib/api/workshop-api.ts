@@ -3,6 +3,7 @@ import type {
   AppointmentGroup,
   AppointmentInput,
   EquipmentType,
+  GeneralSettings,
   Id,
   NotificationChannel,
   NotificationEvent,
@@ -18,8 +19,17 @@ import type {
  * with no backend configured.
  */
 export interface WorkshopApi {
+  /** Workshop details and regional settings. */
+  getGeneralSettings(): Promise<GeneralSettings>
+  updateGeneralSettings(general: GeneralSettings): Promise<GeneralSettings>
+  /** Uploads a new shop logo and returns the settings with its URL. */
+  uploadLogo(file: File): Promise<GeneralSettings>
+  removeLogo(): Promise<GeneralSettings>
+
   /** Equipment types defined in Django, including the ones not currently offered. */
   listEquipmentTypes(): Promise<EquipmentType[]>
+  /** Turns the given types on and every other type off. */
+  setEnabledEquipmentTypes(enabledIds: Id[]): Promise<EquipmentType[]>
   /** Service groups with their services nested, ordered by position. */
   listServiceGroups(): Promise<ServiceGroup[]>
 

@@ -30,7 +30,12 @@ Swap `lib/api/http.ts` if you use token or JWT auth instead — it is the only p
 
 | Method | Path | Purpose |
 | --- | --- | --- |
+| GET | `/general-settings/` | Workshop details and regional settings (singleton) |
+| PATCH | `/general-settings/` | Any of the editable fields below |
+| POST | `/general-settings/logo/` | Multipart `logo` file; returns the settings with its URL |
+| DELETE | `/general-settings/logo/` | Clears the logo |
 | GET | `/equipment-types/` | All equipment types with their `enabled` flag |
+| POST | `/equipment-types/set-enabled/` | `{ "enabled": [1, 2, 4] }` — enables these, disables the rest |
 | GET | `/service-groups/` | Groups, each with its `services` nested, ordered by `position` |
 | POST | `/service-groups/` | `{ "name": "Standard tunes" }` |
 | PATCH | `/service-groups/{id}/` | `{ "name": "…" }` |
@@ -54,6 +59,27 @@ Plain lists and DRF's paginated `{count, next, previous, results}` envelope are 
 | GET | `/notifications/` | Notification events, ordered by `position` |
 | PATCH | `/notifications/{id}/` | Editable fields only (see below) |
 | POST | `/notifications/{id}/send-test/` | `{ "channel": "sms" \| "email", "recipient": "…" }` |
+
+## General settings payload
+
+```json
+{
+  "name": "Alpine Werks",
+  "contact_email": "hello@alpinewerks.com",
+  "phone": "+41 79 000 00 00",
+  "address": "Dorfstrasse 12, Zermatt",
+  "logo": "/media/workshop/logo.png",
+  "currency": "CHF",
+  "date_format": "DD/MM/YYYY"
+}
+```
+
+Notes:
+
+- A single row, so the collection endpoint itself is the object — no id in the URL.
+- `logo` is read-only here; it is written through `logo/` as multipart and cleared with DELETE.
+- `contact_email` and `phone` are the defaults offered when sending a notification test.
+- `currency` drives the price formatting shown across the console.
 
 ## Service payload
 
@@ -225,6 +251,31 @@ class EquipmentType(models.Model):
 
     class Meta:
         ordering = ["position", "id"]
+
+
+class GeneralSettings(models.Model):
+    """Single row of workshop-wide settings."""
+
+    CURRENCIES = [("CHF", "CHF"), ("EUR", "EUR"), ("GBP", "GBP"), ("USD", "USD")]
+    DATE_FORMATS = [
+        ("DD/MM/YYYY", "DD/MM/YYYY"),
+        ("MM/DD/YYYY", "MM/DD/YYYY"),
+        ("YYYY-MM-DD", "YYYY-MM-DD"),
+    ]
+
+    name = models.CharField(max_length=120, blank=True)
+    contact_email = models.EmailField(blank=True)
+    phone = models.CharField(max_length=40, blank=True)
+    address = models.CharField(max_length=200, blank=True)
+    # Use ImageField instead when Pillow is installed.
+    logo = models.FileField(upload_to="workshop/", blank=True, null=True)
+    currency = models.CharField(max_length=3, choices=CURRENCIES, default="CHF")
+    date_format = models.CharField(max_length=10, choices=DATE_FORMATS, default="DD/MM/YYYY")
+
+    @classmethod
+    def load(cls):
+        settings_row, _ = cls.objects.get_or_create(pk=1)
+        return settings_row
 
 
 class ServiceGroup(models.Model):
@@ -439,6 +490,7 @@ from .models import (
     AppointmentFieldOption,
     AppointmentGroup,
     EquipmentType,
+    GeneralSettings,
     NotificationEvent,
     NotificationImage,
     RequiredField,
@@ -452,6 +504,28 @@ class EquipmentTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = EquipmentType
         fields = ["id", "name", "enabled"]
+
+
+class GeneralSettingsSerializer(serializers.ModelSerializer):
+    logo = serializers.SerializerMethodField()
+
+    class Meta:
+        model = GeneralSettings
+        fields = [
+            "name",
+            "contact_email",
+            "phone",
+            "address",
+            "logo",
+            "currency",
+            "date_format",
+        ]
+
+    def get_logo(self, obj):
+        if not obj.logo:
+            return None
+        request = self.context.get("request")
+        return request.build_absolute_uri(obj.logo.url) if request else obj.logo.url
 
 
 class RequiredFieldOptionSerializer(serializers.ModelSerializer):
@@ -678,6 +752,7 @@ from .models import (
     Appointment,
     AppointmentGroup,
     EquipmentType,
+    GeneralSettings,
     NotificationEvent,
     Service,
     ServiceGroup,
@@ -686,6 +761,7 @@ from .serializers import (
     AppointmentGroupSerializer,
     AppointmentSerializer,
     EquipmentTypeSerializer,
+    GeneralSettingsSerializer,
     NotificationEventSerializer,
     ServiceGroupSerializer,
     ServiceSerializer,
@@ -718,9 +794,62 @@ def apply_order(related_manager, ids):
     return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+class GeneralSettingsView(APIView):
+    """The settings singleton: GET to read, PATCH to update."""
+
+    def get(self, request):
+        serializer = GeneralSettingsSerializer(GeneralSettings.load(), context={"request": request})
+        return Response(serializer.data)
+
+    def patch(self, request):
+        serializer = GeneralSettingsSerializer(
+            GeneralSettings.load(), data=request.data, partial=True, context={"request": request}
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+
+class GeneralSettingsLogoView(APIView):
+    """Multipart upload and removal of the shop logo."""
+
+    def post(self, request):
+        settings_row = GeneralSettings.load()
+        logo = request.FILES.get("logo")
+        if not logo:
+            return Response({"detail": "A logo file is required."}, status=status.HTTP_400_BAD_REQUEST)
+        settings_row.logo = logo
+        settings_row.save(update_fields=["logo"])
+        return Response(
+            GeneralSettingsSerializer(settings_row, context={"request": request}).data
+        )
+
+    def delete(self, request):
+        settings_row = GeneralSettings.load()
+        settings_row.logo = None
+        settings_row.save(update_fields=["logo"])
+        return Response(
+            GeneralSettingsSerializer(settings_row, context={"request": request}).data
+        )
+
+
 class EquipmentTypeViewSet(viewsets.ModelViewSet):
     queryset = EquipmentType.objects.all()
     serializer_class = EquipmentTypeSerializer
+
+    @action(detail=False, methods=["post"], url_path="set-enabled")
+    def set_enabled(self, request):
+        """Enable exactly the posted ids, disabling every other type."""
+        ids = request.data.get("enabled")
+        if not isinstance(ids, list):
+            return Response(
+                {"detail": "A list of ids is required."}, status=status.HTTP_400_BAD_REQUEST
+            )
+        ids = {int(pk) for pk in ids}
+        with transaction.atomic():
+            EquipmentType.objects.filter(pk__in=ids).update(enabled=True)
+            EquipmentType.objects.exclude(pk__in=ids).update(enabled=False)
+        return Response(EquipmentTypeSerializer(self.get_queryset(), many=True).data)
 
 
 class ServiceGroupViewSet(viewsets.ModelViewSet):
@@ -807,6 +936,8 @@ from .views import (
     AppointmentGroupViewSet,
     AppointmentViewSet,
     EquipmentTypeViewSet,
+    GeneralSettingsLogoView,
+    GeneralSettingsView,
     NotificationEventViewSet,
     SendingDomainView,
     ServiceGroupViewSet,
@@ -822,6 +953,8 @@ router.register("appointments", AppointmentViewSet)
 router.register("notifications", NotificationEventViewSet)
 
 urlpatterns = router.urls + [
+    path("general-settings/", GeneralSettingsView.as_view()),
+    path("general-settings/logo/", GeneralSettingsLogoView.as_view()),
     path("sending-domain/", SendingDomainView.as_view()),
 ]
 ```
