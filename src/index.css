@@ -13,8 +13,10 @@
   --card-foreground: oklch(0.141 0.005 285.823);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.141 0.005 285.823);
-  /* Tailwind cyan-600 — the app's primary action colour. */
-  --primary: oklch(0.609 0.126 221.723);
+  /* Tailwind cyan-700 — the app's primary action colour. One step darker than cyan-600 so
+   * white button labels clear 4.5:1 contrast; cyan-600 only reaches 3.35:1, which passes
+   * WCAG AA for large text but not for 13px button copy. */
+  --primary: oklch(0.52 0.105 223.128);
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.967 0.001 286.375);
   --secondary-foreground: oklch(0.21 0.006 285.885);
