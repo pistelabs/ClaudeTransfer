@@ -22,7 +22,7 @@ const buttonVariants = cva(
         destructive: 'bg-destructive text-destructive-foreground hover:bg-[#be123c]',
         success: 'border-[var(--success-border)] bg-[var(--success-tint)] text-[var(--success-text)]',
         pay: 'bg-pay text-white hover:bg-[var(--pay-hover)]',
-        dark: 'bg-[var(--n-950)] text-white hover:bg-[var(--dark-action)]',
+        action: 'bg-action text-white hover:bg-[var(--action-hover)]',
       },
       size: {
         sm: 'h-8 px-3 text-[12.5px]',

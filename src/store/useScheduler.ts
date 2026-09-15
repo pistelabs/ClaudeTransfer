@@ -19,6 +19,7 @@ import type {
   Answers,
   Appointment,
   ApptRecord,
+  ApptReport,
   BookingForm,
   CompleteStep,
   Customer,
@@ -187,7 +188,8 @@ interface State {
   /** the other-payment menu beside Send to POS */
   posMenu: boolean;
   svcDone: Record<string, boolean>;
-  pdfReport: boolean;
+  /** the customer's summary, taken when a booking is closed out, keyed by booking */
+  reports: Record<string, ApptReport>;
 }
 
 interface Actions {
@@ -303,7 +305,6 @@ interface Actions {
   closeComplete: () => void;
   setCompleteStep: (s: CompleteStep) => void;
   toggleSvcDone: (key: string) => void;
-  togglePdf: () => void;
   finishComplete: () => void;
   togglePosMenu: () => void;
   closePosMenu: () => void;
@@ -387,7 +388,7 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
   completeStep: 'review',
   posMenu: false,
   svcDone: {},
-  pdfReport: false,
+  reports: {},
 
   // ---- schedule ---------------------------------------------------------
 
@@ -1235,8 +1236,19 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
   closeComplete: () => set({ showComplete: false }),
   setCompleteStep: (completeStep) => set({ completeStep }),
   toggleSvcDone: (key) => set((s) => ({ svcDone: { ...s.svcDone, [key]: !s.svcDone[key] } })),
-  togglePdf: () => set((s) => ({ pdfReport: !s.pdfReport })),
-  finishComplete: () => set({ showComplete: false, showDetail: false, completeStep: 'review', posMenu: false }),
+  /**
+   * Closing out writes the report. All three endings do — sending a payment link
+   * or recording money taken elsewhere still finishes the appointment, and the
+   * customer's copy should not depend on which till it went through.
+   */
+  finishComplete: () =>
+    set((s) => ({
+      showComplete: false,
+      showDetail: false,
+      completeStep: 'review',
+      posMenu: false,
+      reports: s.detailId ? { ...s.reports, [s.detailId]: buildReport(s, s.detailId) } : s.reports,
+    })),
 
   togglePosMenu: () => set((s) => ({ posMenu: !s.posMenu })),
   closePosMenu: () => set({ posMenu: false }),
@@ -1251,6 +1263,7 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
       showDetail: false,
       completeStep: 'review',
       posMenu: false,
+      reports: s.detailId ? { ...s.reports, [s.detailId]: buildReport(s, s.detailId) } : s.reports,
       payments: s.detailId
         ? { ...s.payments, [s.detailId]: { method: 'shopify-link', amount, at: stampNow(), by: s.bookedBy, pending: true } }
         : s.payments,
@@ -1262,6 +1275,7 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
       showComplete: false,
       showDetail: false,
       completeStep: 'review',
+      reports: s.detailId ? { ...s.reports, [s.detailId]: buildReport(s, s.detailId) } : s.reports,
       posMenu: false,
       payments: s.detailId
         ? { ...s.payments, [s.detailId]: { method: 'external', source, amount, at: stampNow(), by: s.bookedBy } }
@@ -1283,6 +1297,42 @@ export function equipKeyOf(s: State): string {
 }
 
 /** Always keeps one open entry row so equipment can be recorded without an extra click. */
+/**
+ * What was captured for a booking, at the moment it is closed out.
+ *
+ * Reads the same three places the Fitting and Equipment tabs write to, and keeps
+ * only what belongs in a customer's copy — whether each questionnaire was
+ * completed, and the equipment with the work done to it. Prices are not repeated
+ * here; the bill is its own thing.
+ */
+export interface ReportSource {
+  appts: Appointment[];
+  saved: Record<string, string>;
+  equipment: Record<string, EquipItem[]>;
+  bookedBy: string | null;
+}
+
+export function buildReport(s: ReportSource, id: string): ApptReport {
+  const appt = s.appts.find((a) => a.id === id);
+  const names = appt ? partyOf(appt) : [];
+  return {
+    at: stampNow(),
+    by: s.bookedBy,
+    people: names.map((name, i) => ({
+      name,
+      fitting: !!s.saved[`${id}:c${i}`],
+      assessment: !!s.saved[`${id}:s${i}`],
+      equipment: (s.equipment[`${id}:${i}`] ?? [])
+        // an untouched blank row is not equipment anybody brought in
+        .filter((e) => e.model.trim() || e.size || e.services.length)
+        .map((e) => ({
+          item: [e.kind, e.brand, e.model].filter(Boolean).join(' ').trim() || e.kind,
+          services: e.services.map((sv) => sv.name),
+        })),
+    })),
+  };
+}
+
 export function equipListOf(s: State): EquipItem[] {
   const list = s.equipment[equipKeyOf(s)];
   if (list && list.length) return list;

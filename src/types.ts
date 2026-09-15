@@ -209,6 +209,32 @@ export interface ApptRecord {
   seats?: { customer: string; details: Answers }[];
 }
 
+/** One person's line in a report: what was captured for them, and on what. */
+export interface ReportPerson {
+  name: string;
+  /** the customer questionnaire was marked complete */
+  fitting: boolean;
+  /** the staff assessment was marked complete */
+  assessment: boolean;
+  /** equipment recorded for them, with the work done to each item */
+  equipment: { item: string; services: string[] }[];
+}
+
+/**
+ * The customer's summary of the appointment, taken when it is closed out.
+ *
+ * A snapshot rather than a view: the sheet keeps being editable afterwards, and
+ * a report that silently rewrote itself would not be worth handing anybody. What
+ * is here is what was true at the moment the appointment was completed.
+ */
+export interface ApptReport {
+  /** when it was taken */
+  at: string;
+  /** the staff member who closed the appointment out */
+  by: string | null;
+  people: ReportPerson[];
+}
+
 /**
  * How the shop took the money. The first four are the card routes it runs
  * itself; `external` covers money that arrived some other way and is only being

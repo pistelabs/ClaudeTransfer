@@ -1,4 +1,4 @@
-import { Check, ChevronLeft, FileText, Minus, Wrench, X } from 'lucide-react';
+import { Check, ChevronLeft, Minus, Wrench, X } from 'lucide-react';
 import { useScheduler, type SchedulerStore } from '../../store/useScheduler';
 import { formatMoney } from '../../lib/money';
 import { Avatar } from '../ui/Avatar';
@@ -44,8 +44,7 @@ function workshopGroups(store: SchedulerStore, detail: DetailInfo) {
 
 export function CompleteDialog({ detail }: { detail: DetailInfo }) {
   const store = useScheduler((s) => s as SchedulerStore);
-  const { completeStep, pdfReport, saved, closeComplete, setCompleteStep, toggleSvcDone, togglePdf, finishComplete } =
-    store;
+  const { completeStep, saved, closeComplete, setCompleteStep, toggleSvcDone, finishComplete } = store;
 
   // the other-payment-options menu sits over this dialog, so it takes Escape first
   useEscape(!store.posMenu, closeComplete);
@@ -112,21 +111,6 @@ export function CompleteDialog({ detail }: { detail: DetailInfo }) {
                 );
               })}
             </div>
-
-            <button className="complete__pdf" type="button" aria-pressed={pdfReport} onClick={togglePdf}>
-              <span className={`complete__pdf-box${pdfReport ? ' complete__pdf-box--on' : ''}`}>
-                <Check size={12} strokeWidth={3.2} />
-              </span>
-              <span style={{ flex: 1, minWidth: 0 }}>
-                <span style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--n-800)' }}>
-                  Create PDF Report
-                </span>
-                <span style={{ display: 'block', marginTop: 2, fontSize: 11.5, color: 'var(--n-500)' }}>
-                  Fitting and equipment summary for the customer
-                </span>
-              </span>
-              <FileText size={16} strokeWidth={2} color="var(--n-350)" />
-            </button>
 
             <Totals detail={detail} />
 

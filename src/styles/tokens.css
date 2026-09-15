@@ -68,7 +68,11 @@
   --danger-border: #fecdd3;
   --danger-text: #9f1239;
 
-  --dark-action: #1c1917;
+  /* The solid action that is not the primary one — the appointment menu beside
+     Complete, and the new-customer dialog's save. Cyan 700 rather than 600 for
+     the same reason as the others: it carries white text, and 600 is 3.68:1. */
+  --action: #0e7490;
+  --action-hover: #155e75;
 
   /* typography */
   --font-ui: 'Geist', system-ui, -apple-system, sans-serif;
@@ -165,6 +169,7 @@
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-pay: var(--pay);
+  --color-action: var(--action);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);

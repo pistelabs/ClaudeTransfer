@@ -37,7 +37,7 @@ network access. Offline the app still runs, just in a system sans-serif.
   Separator, Label, DropdownMenu, Popover, Tabs, ToggleGroup, ButtonGroup and the Sonner
   Toaster, written with `cva`, `cn()` and `data-slot` as shadcn writes them. The variant maps
   are tuned to this design rather than shadcn's defaults — 34px controls at 13px, and the
-  studio's own `success`, `pay` and `dark` beside shadcn's set — which is what owning the files
+  studio's own `success`, `pay` and `action` beside shadcn's set — which is what owning the files
   is for.
 - **Tailwind v4**, imported layer by layer in `styles/index.css`. Everything Tailwind ships
   sits in a cascade layer and the hand-written stylesheets stay unlayered, which beats layered
@@ -222,6 +222,14 @@ the "now" line and the Today/Upcoming/Past pills meaningful whenever you open it
   sizes are per type, so changing the type clears the specs entered against the old one. The
   services applied to the item, and their location, side, note and Included/+price pill, are
   unchanged.
+- **The customer's report lives on the booking.** The Appointment tab carries it, not the
+  complete dialog: before the appointment is closed out it previews what has been captured so
+  far, so a gap shows while there is still time to fill it. Completing takes a snapshot — who
+  completed it, when, and per person whether the questionnaire and assessment were finished
+  plus the equipment with the work done to it. A snapshot rather than a live view, because
+  the sheet stays editable afterwards and a report that quietly rewrote itself would not be
+  worth handing anybody. All three endings write it, since a payment link still finishes the
+  appointment.
 - **Answers are per person, not per booking.** A multi-customer booking keeps its own
   required-at-booking answers, fitting questionnaire, staff assessment, check-in and
   equipment record for each person on it.

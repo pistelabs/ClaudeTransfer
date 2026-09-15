@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DataRow } from '@/components/ui/data-row';
 import { FitterTeam } from './FitterTeam';
+import { ReportCard } from './ReportCard';
 import type { DetailInfo } from './useDetail';
 
 const ICON = { size: 15, strokeWidth: 2, color: 'var(--n-400)' } as const;
@@ -139,6 +140,9 @@ export function AppointmentTab({ detail }: { detail: DetailInfo }) {
               })}
             </CardContent>
           </Card>
+
+          {/* what the customer goes home with, filled in when the booking is closed out */}
+          {!isWalkIn && <ReportCard detail={detail} />}
 
           {!!appt.n && (
             <Card>

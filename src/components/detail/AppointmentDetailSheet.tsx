@@ -180,7 +180,7 @@ export function AppointmentDetailSheet() {
                   Complete
                 </Button>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="dark" size="lg" className="complete-btn__more" aria-label="More actions" title="More actions">
+                  <Button variant="action" size="lg" className="complete-btn__more" aria-label="More actions" title="More actions">
                     <EllipsisVertical size={16} strokeWidth={2.4} />
                   </Button>
                 </DropdownMenuTrigger>
