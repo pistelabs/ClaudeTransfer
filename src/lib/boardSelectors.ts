@@ -38,6 +38,8 @@ export interface EquipRow {
   dropTime: string;
   /** reason this item is on hold, shown on its Pending-column card ("" when not on hold) */
   holdReason: string;
+  /** job was flagged as a rush at check-in */
+  urgent: boolean;
   status: Job["status"];
   services: string[];
   job: Job;
@@ -64,6 +66,7 @@ export function jobToRows(job: Job): EquipRow[] {
     dropoff: job.dropoff || "",
     hasDrop: eq.stage === "kiosk" && !!job.dropoff,
     holdReason: hold ? hold.reason || hold.text : "",
+    urgent: !!job.urgent,
     dropDate: (job.dropoff || "").split(" ")[0] || "",
     dropTime: (job.dropoff || "").split(" ").slice(1).join(" ") || "",
     status: job.status === "late" ? "late" : "",

@@ -1,14 +1,28 @@
-import { CalendarDays, PauseCircle, User } from "lucide-react";
+import { CalendarDays, PauseCircle, User, Zap } from "lucide-react";
 import type { EquipRow } from "../../lib/boardSelectors";
 import { ServicePill, StatusPill, cardTint } from "../Pills";
 import { useAppStore } from "../../store/useAppStore";
 import { isEquipmentLocked } from "../../lib/statusFlow";
+import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 interface Props {
   row: EquipRow;
   variant: "card" | "row";
+}
+
+/** Rush jobs are flagged at check-in; this is how that reaches the bench. */
+function UrgentPill() {
+  return (
+    <Badge
+      variant="outline"
+      className="gap-0.5 rounded-[5px] border-amber-300 bg-amber-50 px-1.5 py-px text-[9px] leading-[1.5] font-bold tracking-wide text-amber-700"
+    >
+      <Zap className="size-2.5" strokeWidth={3} />
+      URGENT
+    </Badge>
+  );
 }
 
 export function JobEntry({ row, variant }: Props) {
@@ -41,7 +55,10 @@ export function JobEntry({ row, variant }: Props) {
       >
         <div className="flex w-[90px] shrink-0 flex-col items-start gap-[3px]">
           <span className="text-xs font-semibold">{row.rowId}</span>
-          <StatusPill status={row.status} />
+          <div className="flex flex-wrap items-center gap-1">
+            <StatusPill status={row.status} />
+            {row.urgent && <UrgentPill />}
+          </div>
         </div>
         <div className="flex min-w-0 flex-[1.2] items-baseline gap-1.5">
           <span className="overflow-hidden text-[12.5px] font-semibold text-ellipsis whitespace-nowrap">
@@ -103,6 +120,7 @@ export function JobEntry({ row, variant }: Props) {
       <div className="flex items-center gap-1.5">
         <span className="text-xs font-bold">{row.rowId}</span>
         <StatusPill status={row.status} />
+        {row.urgent && <UrgentPill />}
         <div className="flex-1" />
         <span className="text-muted-foreground text-[11px]">{row.due}</span>
       </div>

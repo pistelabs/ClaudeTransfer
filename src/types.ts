@@ -118,6 +118,8 @@ export interface Job {
   due: string;
   pickup: string;
   dropoff?: string;
+  /** flagged at check-in as a rush job — shown on the board so it can be picked up first */
+  urgent?: boolean;
   notes: string;
   tech: string;
   updatedAt: string;
@@ -192,6 +194,8 @@ export interface NewJobForm {
   email: string;
   due: string;
   pickup: string;
+  /** rush job — set once for the whole job, so it survives adding further equipment */
+  urgent: boolean;
   notes: string;
   type: EquipmentType;
   category: EquipmentCategory;

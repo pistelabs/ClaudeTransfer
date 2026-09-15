@@ -43,6 +43,7 @@ function blankForm(): NewJobForm {
     email: "",
     due: "",
     pickup: "",
+    urgent: false,
     notes: "",
     type: "SKI",
     category: "Alpine Ski",
@@ -796,6 +797,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         phone: j.phone,
         due: j.due === "—" ? "" : j.due,
         pickup: j.pickup === "—" ? "" : j.pickup,
+        urgent: !!j.urgent,
         notes: j.notes || "",
         items: rest,
         type: first ? first.type : "SKI",
@@ -843,6 +845,10 @@ export const useAppStore = create<AppState>((set, get) => ({
           colour: "",
           services: [],
           serviceData: {},
+          // Collection details (due, pickup, urgent) are job-level, so they stay put —
+          // but everything describing this piece of equipment is cleared, the manual
+          // price override included.
+          priceOverride: "",
         },
       };
     }),
@@ -940,6 +946,7 @@ export const useAppStore = create<AppState>((set, get) => ({
             phone: f.phone || j.phone,
             due: f.due || "—",
             pickup: f.pickup || "—",
+            urgent: f.urgent,
             notes: f.notes || "",
             equipment: mergedEquipment,
             updates: [{ text: "Job edited", at: who + " · " + stamp }, ...j.updates],
@@ -966,6 +973,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         paid: 0,
         due: f.due || "—",
         pickup: f.pickup || "—",
+        urgent: f.urgent,
         dropoff: "",
         notes: f.notes || "",
         tech: st.activeStaff || "Staff",

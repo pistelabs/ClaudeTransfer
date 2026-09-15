@@ -12,6 +12,8 @@ import { WaiverModal } from "./WaiverModal";
 import { pickupSlots } from "../../lib/serviceCatalog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,6 +24,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 
 export function CheckInSheet() {
   const newOpen = useAppStore((s) => s.newOpen);
@@ -128,6 +131,25 @@ export function CheckInSheet() {
                         ))}
                       </SelectContent>
                     </Select>
+                  </div>
+                  {/* Rush flag — job-level, so it sits with the collection details rather than
+                      with the equipment, and survives adding further items. */}
+                  <div className="flex shrink-0 flex-col gap-1.5">
+                    <span className="text-muted-foreground text-[11px]">Priority</span>
+                    <Label
+                      htmlFor="job-urgent"
+                      className={cn(
+                        "h-9 cursor-pointer gap-2 rounded-md border px-3 text-[13px] font-medium transition-colors",
+                        nf.urgent ? "border-amber-300 bg-amber-50 text-amber-800" : "bg-white",
+                      )}
+                    >
+                      <Checkbox
+                        id="job-urgent"
+                        checked={nf.urgent}
+                        onCheckedChange={(v) => patchNf({ urgent: v === true })}
+                      />
+                      Urgent
+                    </Label>
                   </div>
                 </div>
               </div>
