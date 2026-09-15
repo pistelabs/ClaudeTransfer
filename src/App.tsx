@@ -6,6 +6,7 @@ import { CheckInSheet } from "./components/checkin/CheckInSheet";
 import { CustomerDialog } from "./components/customer/CustomerDialog";
 import { NoServicesModal } from "./components/NoServicesModal";
 import { DamagePhotoModal } from "./components/DamagePhotoModal";
+import { PaymentDialog } from "./components/detail/PaymentDialog";
 import { useAppStore } from "./store/useAppStore";
 
 function App() {
@@ -27,6 +28,7 @@ function App() {
       <CustomerDialog />
       <NoServicesModal />
       <DamagePhotoModal />
+      <PaymentDialog />
     </div>
   );
 }

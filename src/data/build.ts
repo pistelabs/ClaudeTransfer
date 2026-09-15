@@ -106,6 +106,16 @@ export function jobTotal(job: Job): number {
   return job.equipment.reduce((acc, eq) => acc + equipmentPrice(eq), 0);
 }
 
+/** What the job's services come to at catalogue prices, before any manual adjustment. */
+export function jobSubtotal(job: Job): number {
+  return job.equipment.reduce((acc, eq) => acc + equipmentServiceTotal(eq), 0);
+}
+
+/** How much has been taken off the catalogue price. Positive when the job was discounted. */
+export function jobDiscount(job: Job): number {
+  return jobSubtotal(job) - jobTotal(job);
+}
+
 /** What is still owed on a job — the whole-job figure the Collected gate checks. */
 export function jobBalance(job: Job): number {
   return jobTotal(job) - (job.paid || 0);

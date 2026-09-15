@@ -4,6 +4,7 @@ import { useAppStore, nextJobIdStr } from "../../store/useAppStore";
 import { ServicePill, TypeBadge } from "../Pills";
 import { svcPrice } from "../../lib/serviceCatalog";
 import { money } from "../../lib/format";
+import { hasAdjustment, priceItems } from "../../lib/pricing";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -37,11 +38,11 @@ export function CheckoutColumn() {
   const hasCurrentEditing = !!(nf.brand && nf.brand.trim());
   const checkoutCount = nf.items.length + (hasCurrentEditing ? 1 : 0);
 
-  let total = 0;
-  nf.items.forEach((it) => {
-    total += itemPrice(it.services, it.serviceData, it.priceOverride);
-  });
-  if (hasCurrentEditing) total += nf.services.reduce((a, n) => a + svcPrice(n, nf.serviceData), 0);
+  const priced = priceItems([
+    ...nf.items,
+    ...(hasCurrentEditing ? [{ services: nf.services, serviceData: nf.serviceData, priceOverride: nf.priceOverride }] : []),
+  ]);
+  const showBreakdown = hasAdjustment(priced);
 
   const canSubmit = nf.customer.trim().length > 0 && (nf.items.length > 0 || nf.brand.trim().length > 0);
 
@@ -236,20 +237,42 @@ export function CheckoutColumn() {
       </div>
 
       <div className="flex flex-shrink-0 flex-col gap-2 border-t border-app-bg px-[18px] py-3.5">
+        {showBreakdown && (
+          <>
+            <div className="flex items-baseline justify-between">
+              <span className="text-muted-foreground text-[12.5px]">Subtotal</span>
+              <span className="text-[12.5px] font-semibold tabular-nums">{money(priced.subtotal)}</span>
+            </div>
+            <div className="flex items-baseline justify-between">
+              <span className="text-muted-foreground text-[12.5px]">
+                {priced.discount > 0 ? "Discounts" : "Adjustments"}
+              </span>
+              <span
+                className={
+                  priced.discount > 0
+                    ? "text-[12.5px] font-semibold tabular-nums text-green-600"
+                    : "text-[12.5px] font-semibold tabular-nums"
+                }
+              >
+                {priced.discount > 0 ? `−${money(priced.discount)}` : `+${money(-priced.discount)}`}
+              </span>
+            </div>
+          </>
+        )}
         <div className="flex items-baseline justify-between pb-0.5">
-          <span className="text-[13px] font-semibold text-zinc-700">Total</span>
-          <span className="text-[19px] font-extrabold tracking-tight text-ink">{money(total)}</span>
+          <span className="text-[13px] font-semibold text-zinc-700">Total Due</span>
+          <span className="text-ink text-[19px] font-extrabold tracking-tight tabular-nums">{money(priced.total)}</span>
         </div>
         {editId ? (
-          <Button onClick={createJob} disabled={!canSubmit} size="lg">
+          <Button onClick={() => createJob("later")} disabled={!canSubmit} size="lg">
             Save Changes
           </Button>
         ) : (
           <>
-            <Button onClick={createJob} disabled={!canSubmit} size="lg">
+            <Button onClick={() => createJob("later")} disabled={!canSubmit} size="lg">
               Create and Pay Later
             </Button>
-            <Button onClick={createJob} disabled={!canSubmit} size="lg" variant="outline">
+            <Button onClick={() => createJob("now")} disabled={!canSubmit} size="lg" variant="outline">
               Create and Pay Now
             </Button>
           </>

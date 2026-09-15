@@ -19,7 +19,8 @@ import { formatJobId, nextEquipmentCode } from "../lib/equipmentCode";
 import { blankDin, categoryToType, computeDin, defaultCategoryForType, SERVICE_DEFS } from "../lib/serviceCatalog";
 import { canPickStatus, isEquipmentLocked, STAGE_WORK_STATUS } from "../lib/statusFlow";
 import { hasWaiver, makeWaiver, requiresWaiver } from "../lib/waivers";
-import { stampNow } from "../lib/format";
+import { money, stampNow } from "../lib/format";
+import { openPaymentSoftware, printJobTicket, type PaymentMethod } from "../lib/integrations";
 
 export const STAGE_DEFS: { key: Stage; label: string; dot: string }[] = [
   { key: "kiosk", label: "Drop offs Booked", dot: "#10b981" },
@@ -28,6 +29,9 @@ export const STAGE_DEFS: { key: Stage; label: string; dot: string }[] = [
   { key: "awaiting", label: "Awaiting Collection", dot: "#f59e0b" },
   { key: "archive", label: "Archive", dot: "#52525b" },
 ];
+
+/** Which button raised the job: "later" prints a ticket, "now" goes on to take payment. */
+export type CreateIntent = "later" | "now";
 
 export interface ImgViewerPayload {
   url: string;
@@ -172,6 +176,8 @@ interface AppState {
   custQuery: string;
   itemMenuIdx: number | null;
   priceEditIdx: number | null;
+  /** remembered while the waiver interrupts createJob, so the right thing happens after signing */
+  pendingIntent: CreateIntent;
 
   // check-in waiver signing flow
   waiverOpen: boolean;
@@ -256,7 +262,11 @@ interface AppState {
   setItemPriceOverride: (i: number, v: string) => void;
   setItemMenuIdx: (i: number | null) => void;
   setPriceEditIdx: (i: number | null) => void;
-  createJob: () => void;
+  createJob: (intent?: CreateIntent) => void;
+  /** job awaiting payment in the fallback dialog, when no payment software is connected */
+  payDialogJobId: string | null;
+  closePayDialog: () => void;
+  recordPayment: (jobId: string, amount: number, method: PaymentMethod) => void;
   closeWaiver: () => void;
   setWaiverAgreed: (v: boolean) => void;
   waiverNext: () => void;
@@ -313,6 +323,9 @@ export const useAppStore = create<AppState>((set, get) => ({
   newOpen: false,
   editId: null,
   nf: blankForm(),
+  payDialogJobId: null,
+  /** remembered while the waiver interrupts createJob, so the right thing happens after signing */
+  pendingIntent: "later" as CreateIntent,
   custQuery: "",
   itemMenuIdx: null,
   priceEditIdx: null,
@@ -885,7 +898,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   setItemPriceOverride: (i, v) => set((s) => ({ nf: { ...s.nf, items: s.nf.items.map((x, xi) => (xi === i ? { ...x, priceOverride: v } : x)) } })),
   setItemMenuIdx: (i) => set({ itemMenuIdx: i }),
   setPriceEditIdx: (i) => set({ priceEditIdx: i }),
-  createJob: () => {
+  createJob: (intent: CreateIntent = "later") => {
     const s = get();
     const f = s.nf;
     const items = f.items.slice();
@@ -916,7 +929,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     // Services needing a waiver can't be checked in until it's signed — pause here, then
     // createJob is re-run once the signature is captured.
     if (!s.editId && requiresWaiver({ equipment }) && !s.waiverSignature) {
-      set({ waiverOpen: true, waiverStep: 1, waiverAgreed: false });
+      set({ waiverOpen: true, waiverStep: 1, waiverAgreed: false, pendingIntent: intent });
       return;
     }
 
@@ -989,18 +1002,57 @@ export const useAppStore = create<AppState>((set, get) => ({
           : [],
         equipment,
       };
-      return { jobs: [job, ...st.jobs], newOpen: false, nf: blankForm(), custQuery: "", selectedId: id, activeTab: 0, waiverSignature: null, waiverCustomerSignature: null };
+
+      // "Pay later" prints the job ticket and is done. "Pay now" hands off to the payment
+      // software; when nothing is connected the in-app payment dialog stands in for it.
+      let payDialogJobId: string | null = null;
+      if (intent === "later") {
+        printJobTicket(job);
+      } else if (!openPaymentSoftware(job, jobTotal(job))) {
+        payDialogJobId = id;
+      }
+
+      return {
+        jobs: [job, ...st.jobs],
+        newOpen: false,
+        nf: blankForm(),
+        custQuery: "",
+        selectedId: id,
+        activeTab: 0,
+        waiverSignature: null,
+        waiverCustomerSignature: null,
+        payDialogJobId,
+      };
     });
   },
 
   // ---- customer search / select ----
+  closePayDialog: () => set({ payDialogJobId: null }),
+  recordPayment: (jobId, amount, method) =>
+    set((st) => ({
+      payDialogJobId: null,
+      jobs: st.jobs.map((j) =>
+        j.id === jobId
+          ? {
+              ...j,
+              paid: (j.paid || 0) + amount,
+              updates: [
+                { text: `Payment received: ${money(amount)} by ${method}`, at: (st.activeStaff || "Staff") + " · " + stampNow() },
+                ...j.updates,
+              ],
+            }
+          : j,
+      ),
+    })),
+
   closeWaiver: () => set({ waiverOpen: false, waiverStep: 1, waiverAgreed: false }),
   setWaiverAgreed: (v) => set({ waiverAgreed: v }),
   waiverNext: () => set((s) => (s.waiverAgreed ? { waiverStep: 2 } : {})),
   waiverBack: () => set({ waiverStep: 1 }),
   signWaiver: (staffSignature, customerSignature) => {
+    const intent = get().pendingIntent;
     set({ waiverSignature: staffSignature, waiverCustomerSignature: customerSignature, waiverOpen: false, waiverStep: 1, waiverAgreed: false });
-    get().createJob();
+    get().createJob(intent);
   },
 
   setCustQuery: (q) => set({ custQuery: q }),
