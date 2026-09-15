@@ -13,14 +13,27 @@ import { PartyPills } from './PartyPills';
 import type { DetailInfo } from './useDetail';
 
 /**
- * Two backend-defined question sets rendered identically — same card, same
- * labelled fields, same completion action. Both are editable at any point and
- * saved per person on the booking, not per appointment.
+ * Both question sets, one above the other: what the customer answered, then what
+ * the fitter found.
+ *
+ * They used to share one panel behind a Customer/Staff switch, which meant the
+ * fitter could not see the answers they were assessing against without leaving
+ * the assessment. Same card, same labelled fields, same completion action for
+ * each — and both editable at any point, saved per person on the booking rather
+ * than per appointment.
  */
 export function FittingTab({ detail }: { detail: DetailInfo }) {
+  return (
+    <div>
+      <PartyPills detail={detail} />
+      <QuestionCard detail={detail} side="customer" />
+      <QuestionCard detail={detail} side="staff" />
+    </div>
+  );
+}
+
+function QuestionCard({ detail, side }: { detail: DetailInfo; side: 'customer' | 'staff' }) {
   const { appt, custIdx } = detail;
-  const who = useScheduler((s) => s.detailWho);
-  const setWho = useScheduler((s) => s.setDetailWho);
   const records = useScheduler((s) => s.records);
   const saved = useScheduler((s) => s.saved);
   const setCustAnswer = useScheduler((s) => s.setCustAnswer);
@@ -29,7 +42,7 @@ export function FittingTab({ detail }: { detail: DetailInfo }) {
   const setAssessedBy = useScheduler((s) => s.setAssessedBy);
 
   const rec = records[appt.id] ?? {};
-  const onCustomer = who === 'customer';
+  const onCustomer = side === 'customer';
 
   const answers: Answers = onCustomer
     ? (rec.fittingByCustomer?.[custIdx] ?? {})
@@ -45,98 +58,79 @@ export function FittingTab({ detail }: { detail: DetailInfo }) {
   const showAuthor = !onCustomer && team.length > 1;
 
   return (
-    <div>
-      <PartyPills detail={detail} />
+    <Card className="detail__panel">
+      <CardHeader>
+        <CardTitle>{onCustomer ? 'Customer questions' : 'Staff assessment'}</CardTitle>
+        <CardDescription>
+          {onCustomer
+            ? 'Completed by the customer before or during the appointment'
+            : 'Recorded by the fitter during the appointment'}
+        </CardDescription>
+        {stamp && (
+          <CardAction>
+            <Badge variant="success">
+              <Check size={12} strokeWidth={3} />
+              Saved {stamp}
+              {showAuthor && ` · ${staffById(assessedBy)?.name ?? ''}`}
+            </Badge>
+          </CardAction>
+        )}
+      </CardHeader>
 
-      <div className="who-strip" role="tablist">
-        <button
-          className={`who-strip__btn${onCustomer ? ' who-strip__btn--on' : ''}`}
-          type="button"
-          role="tab"
-          aria-selected={onCustomer}
-          onClick={() => setWho('customer')}
-        >
-          Customer
-        </button>
-        <button
-          className={`who-strip__btn${onCustomer ? '' : ' who-strip__btn--on'}`}
-          type="button"
-          role="tab"
-          aria-selected={!onCustomer}
-          onClick={() => setWho('staff')}
-        >
-          Staff
-        </button>
-      </div>
-
-      <Card className="detail__panel">
-        <CardHeader>
-          <CardTitle>{onCustomer ? 'Customer questions' : 'Staff assessment'}</CardTitle>
-          <CardDescription>
-            {onCustomer
-              ? 'Completed by the customer before or during the appointment'
-              : 'Recorded by the fitter during the appointment'}
-          </CardDescription>
-          {stamp && (
-            <CardAction>
-              <Badge variant="success">
-                <Check size={12} strokeWidth={3} />
-                Saved {stamp}
-                {showAuthor && ` · ${staffById(assessedBy)?.name ?? ''}`}
-              </Badge>
-            </CardAction>
-          )}
-        </CardHeader>
-
-        <CardContent>
-          {showAuthor && (
-            <div className="assessed-by">
-              <Label>Recorded by</Label>
-              <div className="assessed-by__options" role="radiogroup" aria-label="Recorded by">
-                {team.map((si) => {
-                  const s = staffById(si);
-                  if (!s) return null;
-                  const on = si === assessedBy;
-                  return (
-                    <button
-                      className={`assessed-by__option${on ? ' assessed-by__option--on' : ''}`}
-                      type="button"
-                      role="radio"
-                      aria-checked={on}
-                      key={si}
-                      onClick={() => setAssessedBy(custIdx, si)}
-                    >
-                      <Avatar initials={s.initials} color={s.dot} size={22} fontSize={9} />
-                      {s.name}
-                    </button>
-                  );
-                })}
-              </div>
+      <CardContent>
+        {showAuthor && (
+          <div className="assessed-by">
+            <Label>Recorded by</Label>
+            <div className="assessed-by__options" role="radiogroup" aria-label="Recorded by">
+              {team.map((si) => {
+                const s = staffById(si);
+                if (!s) return null;
+                const on = si === assessedBy;
+                return (
+                  <button
+                    className={`assessed-by__option${on ? ' assessed-by__option--on' : ''}`}
+                    type="button"
+                    role="radio"
+                    aria-checked={on}
+                    key={si}
+                    onClick={() => setAssessedBy(custIdx, si)}
+                  >
+                    <Avatar initials={s.initials} color={s.dot} size={22} fontSize={9} />
+                    {s.name}
+                  </button>
+                );
+              })}
             </div>
-          )}
+          </div>
+        )}
 
-          <div className="answer-grid">
-            {questions.map((q: QuestionField) => (
+        <div className="answer-grid">
+          {questions.map((q: QuestionField) => {
+            // Both sets are on the page together now, so a field id has to say
+            // which set it belongs to or the labels point at the wrong input.
+            const fieldId = `fit-${side}-${custIdx}-${q.id}`;
+            return (
               <div className="answer-field" key={q.id}>
-                <Label htmlFor={`fit-${q.id}`}>{q.label}</Label>
+                <Label htmlFor={fieldId}>{q.label}</Label>
                 <Field
                   field={q}
+                  id={fieldId}
                   value={answers[q.id] ?? ''}
                   className="answer-input"
                   onChange={(v) => (onCustomer ? setCustAnswer(custIdx, q.id, v) : setStaffAnswer(custIdx, q.id, v))}
                 />
               </div>
-            ))}
-          </div>
+            );
+          })}
+        </div>
 
-          <div className="save-row">
-            <Button variant={stamp ? 'success' : 'default'} onClick={() => markSaved(suffix)}>
-              <Check size={15} strokeWidth={2.4} />
-              {stamp ? 'Completed' : onCustomer ? 'Complete customer questions' : 'Complete assessment'}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+        <div className="save-row">
+          <Button variant={stamp ? 'success' : 'default'} onClick={() => markSaved(suffix)}>
+            <Check size={15} strokeWidth={2.4} />
+            {stamp ? 'Completed' : onCustomer ? 'Complete customer questions' : 'Complete assessment'}
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

@@ -233,9 +233,12 @@ the "now" line and the Today/Upcoming/Past pills meaningful whenever you open it
 - **Answers are per person, not per booking.** A multi-customer booking keeps its own
   required-at-booking answers, fitting questionnaire, staff assessment, check-in and
   equipment record for each person on it.
-- **Both sides of the Fitting tab are the same form.** Customer questions and the staff
-  assessment share a card, a labelled field grid and a completion action, and either can be
-  filled at any point. Check-in timestamps the arrival but no longer gates the assessment.
+- **The Fitting tab shows both sets at once.** Customer questions on top, the staff assessment
+  below — they used to share one panel behind a Customer/Staff switch, which meant a fitter
+  could not see the answers they were assessing against without leaving the assessment. Same
+  card, same labelled field grid, same completion action for each, and each saves on its own.
+  Either can be filled at any point; check-in timestamps the arrival but no longer gates the
+  assessment.
 - **A filtered week divides by fitter.** Week view shows a column per day; filter to
   particular fitters and each day divides into a column for each of them, so a person's week
   can be read down the page. Unfiltered it stays one column per day — twenty-eight columns

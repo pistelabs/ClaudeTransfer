@@ -266,8 +266,6 @@ export type ServiceStep = 'service' | 'date' | 'time';
 
 export type DetailTab = 0 | 1 | 2;
 
-export type FittingSide = 'customer' | 'staff';
-
 export type CompleteStep = 'review' | 'workshop';
 
 /** One seat on a multi-customer booking. */

@@ -26,7 +26,6 @@ import type {
   DetailTab,
   DragState,
   EquipItem,
-  FittingSide,
   MeetingDraft,
   NewCustomerDraft,
   OverlapEntry,
@@ -169,7 +168,6 @@ interface State {
   showDetail: boolean;
   detailId: string | null;
   detailTab: DetailTab;
-  detailWho: FittingSide;
   detailCust: number;
   detailStaffOpen: boolean;
   detailAddFitterOpen: boolean;
@@ -270,7 +268,6 @@ interface Actions {
   openDetail: (id: string) => void;
   closeDetail: () => void;
   setDetailTab: (t: DetailTab) => void;
-  setDetailWho: (w: FittingSide) => void;
   setDetailCust: (i: number) => void;
   setDetailStaffOpen: (open: boolean) => void;
   reassignFitter: (staffId: string) => void;
@@ -372,7 +369,6 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
   showDetail: false,
   detailId: null,
   detailTab: 0,
-  detailWho: 'customer',
   detailCust: 0,
   detailStaffOpen: false,
   detailAddFitterOpen: false,
@@ -964,10 +960,9 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
   // ---- detail sheet -----------------------------------------------------
 
   openDetail: (id) =>
-    set({ showDetail: true, detailId: id, detailTab: 0, detailWho: 'customer', detailCust: 0, apptMenu: false, detailStaffOpen: false, detailAddFitterOpen: false }),
+    set({ showDetail: true, detailId: id, detailTab: 0, detailCust: 0, apptMenu: false, detailStaffOpen: false, detailAddFitterOpen: false }),
   closeDetail: () => set({ showDetail: false }),
   setDetailTab: (detailTab) => set({ detailTab }),
-  setDetailWho: (detailWho) => set({ detailWho }),
   setDetailCust: (detailCust) => set({ detailCust }),
   setDetailStaffOpen: (detailStaffOpen) => set({ detailStaffOpen }),
   /** Swaps the lead fitter. Anyone assisting stays, minus the new lead if they were on it. */
