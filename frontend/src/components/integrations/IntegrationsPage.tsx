@@ -67,12 +67,14 @@ export function IntegrationsPage() {
         <div
           className={cn(
             "grid gap-3 transition-opacity",
-            noPaymentSoftware && "pointer-events-none opacity-45",
+            noPaymentSoftware && "opacity-45",
           )}
           style={{
             gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
           }}
-          aria-hidden={noPaymentSoftware}
+          // Dimmed rather than unmounted, so the manager can still see what is
+          // available; `inert` keeps it out of the tab order while it is off.
+          inert={noPaymentSoftware}
         >
           {integrations.map((integration) => (
             <IntegrationCard

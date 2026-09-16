@@ -1,3 +1,5 @@
+import { useMemo } from "react";
+
 import logoUrl from "@/assets/pistelabs-black.png";
 import { cn } from "@/lib/utils";
 import type { DocketSettings, RollSize } from "@/lib/types";
@@ -169,11 +171,15 @@ function Rule() {
 
 function Barcode({ seed }: { seed: string }) {
   // Deterministic bar widths so the preview does not flicker between renders.
-  let state = seed.split("").reduce((acc, c) => acc + c.charCodeAt(0), 7);
-  const bars = Array.from({ length: 42 }, () => {
-    state = (state * 1103515245 + 12345) & 0x7fffffff;
-    return (state % 3) + 1;
-  });
+  const bars = useMemo(() => {
+    const base = seed.split("").reduce((acc, c) => acc + c.charCodeAt(0), 7);
+    // Each bar is a pure function of (seed, index) — no carried state.
+    return Array.from(
+      { length: 42 },
+      (_, i) =>
+        ((((base + i * 2654435761) * 1103515245 + 12345) & 0x7fffffff) % 3) + 1,
+    );
+  }, [seed]);
   return (
     <div
       className="mt-2 flex h-7 items-end justify-center gap-[1px]"

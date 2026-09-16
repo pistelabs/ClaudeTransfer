@@ -128,13 +128,8 @@ export function StaffFormDialog({
       return;
     }
     setErrors({});
-    // Initials and avatar colour are generated on save by the backend/mock.
-    onSave(value, {
-      ...parsed.data,
-      initials: "",
-      color: "",
-      status: "Active",
-    } as StaffInput);
+    // Initials, avatar colour and status stay with the server.
+    onSave(value, parsed.data);
   }
 
   return (

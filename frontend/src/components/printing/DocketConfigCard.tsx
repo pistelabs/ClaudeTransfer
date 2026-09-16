@@ -85,8 +85,9 @@ export function DocketConfigCard({
           <div
             className={cn(
               "mt-3 space-y-3 transition-opacity",
-              !docket.customerCopy && "pointer-events-none opacity-45",
+              !docket.customerCopy && "opacity-45",
             )}
+            inert={!docket.customerCopy}
           >
             <div className="space-y-1.5">
               <FieldLabel htmlFor="docket-header">Header</FieldLabel>

@@ -18,8 +18,6 @@ interface AnnualLeaveTableProps {
   onDelete: (entry: LeaveEntry) => void;
 }
 
-const COLUMNS = "1.6fr 1.2fr 1.6fr 90px";
-
 export function AnnualLeaveTable({
   leave,
   staff,
@@ -29,7 +27,14 @@ export function AnnualLeaveTable({
 
   return (
     <div className="border-border bg-card overflow-hidden rounded-xl border shadow-card">
-      <Table>
+      <Table className="table-fixed">
+        {/* Column widths from the handoff: 1.6fr 1.2fr 1.6fr 90px */}
+        <colgroup>
+          <col style={{ width: "32%" }} />
+          <col style={{ width: "24%" }} />
+          <col style={{ width: "32%" }} />
+          <col style={{ width: 90 }} />
+        </colgroup>
         <TableHeader>
           <TableRow className="bg-muted hover:bg-muted">
             <TableHead className="px-[18px] py-3 text-[11px] font-semibold tracking-[0.4px] uppercase">
@@ -105,7 +110,6 @@ export function AnnualLeaveTable({
           })}
         </TableBody>
       </Table>
-      <div className="sr-only">{COLUMNS}</div>
     </div>
   );
 }
