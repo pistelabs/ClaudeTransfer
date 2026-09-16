@@ -1,0 +1,210 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/*
+ * Store Management theme — generated from the shadcn theme editor:
+ * base Taupe, primary Sky, charts Teal, radius 0.5rem.
+ * Dark mode is explicitly out of scope for this design (see handoff README).
+ */
+
+:root {
+  --radius: 0.5rem;
+
+  --background: #f4f2ef;
+  --foreground: #1c1917;
+
+  --card: #ffffff;
+  --card-foreground: #1c1917;
+  --popover: #ffffff;
+  --popover-foreground: #1c1917;
+
+  --primary: #0284c7; /* sky 600 */
+  --primary-foreground: #ffffff;
+  --primary-hover: #0369a1; /* sky 700 */
+  --primary-strong: #0c4a6e; /* sky 900 — text on sky-tinted surfaces */
+
+  --secondary: #faf9f7;
+  --secondary-foreground: #1c1917;
+
+  --muted: #faf9f7;
+  --muted-foreground: #78716c;
+
+  --accent: #f0f9ff; /* sky 50 */
+  --accent-foreground: #0c4a6e;
+
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+
+  --border: #e7e4df;
+  --input: #e7e4df;
+  --ring: rgba(2, 132, 199, 0.5);
+
+  /* Text ramp beyond the shadcn defaults */
+  --tertiary-foreground: #a8a29e; /* labels, meta */
+  --placeholder-foreground: #c4b8ae; /* disabled text, icon ghosts */
+
+  /* Surface ramp */
+  --divider: #f0eeec; /* inner dividers inside a card */
+  --divider-light: #f5f3f1; /* lightest row divider */
+  --track: #ece9e5; /* segmented-control track, ghost hover */
+  --switch-off: #d6d3d1;
+
+  /* Sky tints */
+  --sky-50: #f0f9ff;
+  --sky-200: #bae6fd;
+  --sky-300: #7dd3fc;
+
+  /* Destructive tints */
+  --destructive-strong: #b91c1c;
+  --destructive-tint: #fef2f2;
+  --destructive-border: #fecaca;
+
+  /* Teal — success / approve / "on" accents */
+  --chart-1: #0d9488;
+  --teal-600: #0d9488;
+  --teal-700: #0f766e;
+  --teal-50: #f0fdfa;
+  --teal-100: #ccfbf1;
+
+  --chart-2: #0284c7;
+  --chart-3: #d97706;
+  --chart-4: #7c3aed;
+  --chart-5: #be185d;
+
+  /* Service categories */
+  --cat-rental-bg: #eff6ff;
+  --cat-rental-fg: #1d4ed8;
+  --cat-rental-dot: #2563eb;
+  --cat-tuning-bg: #f0fdfa;
+  --cat-tuning-fg: #0f766e;
+  --cat-tuning-dot: #0d9488;
+  --cat-lessons-bg: #fffbeb;
+  --cat-lessons-fg: #b45309;
+  --cat-lessons-dot: #d97706;
+  --cat-fitting-bg: #f5f3ff;
+  --cat-fitting-fg: #6d28d9;
+  --cat-fitting-dot: #7c3aed;
+
+  /* Day-off purple + break amber */
+  --dayoff-bg: #faf5ff;
+  --dayoff-border: #e9d5ff;
+  --dayoff-fg: #7c3aed;
+  --break-bg: #fffbeb;
+  --break-border: #fde68a;
+  --break-fg: #b45309;
+
+  /* Weekend tint on day headers */
+  --weekend-bg: #effcfa;
+  --weekend-border: #ccfbf1;
+}
+
+@theme inline {
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+
+  --font-sans: "Geist", system-ui, -apple-system, sans-serif;
+  --font-heading: "Roboto", system-ui, sans-serif;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-strong: var(--primary-strong);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-destructive-strong: var(--destructive-strong);
+  --color-destructive-tint: var(--destructive-tint);
+  --color-destructive-border: var(--destructive-border);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-tertiary-foreground: var(--tertiary-foreground);
+  --color-placeholder-foreground: var(--placeholder-foreground);
+  --color-divider: var(--divider);
+  --color-divider-light: var(--divider-light);
+  --color-track: var(--track);
+  --color-switch-off: var(--switch-off);
+
+  --color-sky-50: var(--sky-50);
+  --color-sky-200: var(--sky-200);
+  --color-sky-300: var(--sky-300);
+
+  --color-teal-50: var(--teal-50);
+  --color-teal-100: var(--teal-100);
+  --color-teal-600: var(--teal-600);
+  --color-teal-700: var(--teal-700);
+
+  --color-dayoff-bg: var(--dayoff-bg);
+  --color-dayoff-border: var(--dayoff-border);
+  --color-dayoff-fg: var(--dayoff-fg);
+  --color-break-bg: var(--break-bg);
+  --color-break-border: var(--break-border);
+  --color-break-fg: var(--break-fg);
+  --color-weekend-bg: var(--weekend-bg);
+  --color-weekend-border: var(--weekend-border);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --shadow-card: 0 1px 2px rgba(28, 25, 23, 0.05);
+  --shadow-dialog: 0 20px 50px rgba(28, 25, 23, 0.28);
+  --shadow-toast: 0 8px 24px rgba(28, 25, 23, 0.14);
+  --shadow-tab: 0 1px 2px rgba(28, 25, 23, 0.12);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-heading;
+  }
+
+  /* Focus: 3px sky ring on :focus-visible only */
+  :focus-visible {
+    @apply outline-none;
+  }
+}
+
+@layer utilities {
+  .focus-ring {
+    @apply focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring focus-visible:outline-none;
+  }
+}
+
+/* Scrollbars match the prototype */
+::-webkit-scrollbar {
+  height: 9px;
+  width: 9px;
+}
+::-webkit-scrollbar-thumb {
+  background: #d6d3d1;
+  border-radius: 999px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
