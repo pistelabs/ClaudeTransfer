@@ -83,6 +83,7 @@ are in [`docs/django-integration.md`](../docs/django-integration.md).
 
 ## Known placeholders
 
-QR codes are decorative and do not scan; integration lettermarks stand in for
-brand SVGs; all seeded data is demo content. See the integration doc for the
-full list.
+Integration lettermarks stand in for brand SVGs, and all seeded data is demo
+content. QR codes are real and scannable (`qrcode.react`), encoding whatever
+booking / check-in URL the settings hold. See the integration doc for the full
+list.

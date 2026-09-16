@@ -251,9 +251,10 @@ setAuthTokenGetter(() => localStorage.getItem("authToken"))
 
 Carried over from the design handoff, flagged for replacement:
 
-- **QR codes** (`src/components/common/QrCode.tsx`) are a decorative matrix and
-  **do not scan** — swap in `qrcode.react` pointed at the live URL, keeping the
-  118px / 8px padding / 8px radius treatment.
+- **QR codes** now render real, scannable codes via `qrcode.react`
+  (`src/components/common/QrCode.tsx`), pointed at whatever URL the booking and
+  walk-in settings hold — so they follow the backend once `booking_url` and
+  `walk_in_url` come from Django. Nothing left to swap here.
 - **Integration lettermarks** are coloured initials; swap in real brand SVGs.
 - **Demo seed data** (`src/lib/demo-data.ts`) — five staff, eight services,
   three leave rows, the `192.168.1.42` printer and `alpinewerks.book.app` URLs.
