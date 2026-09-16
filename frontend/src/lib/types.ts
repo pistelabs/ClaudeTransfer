@@ -146,13 +146,11 @@ export interface Integration {
 
 export type PrinterConnection = "network" | "wired"
 
-export const ROLL_SIZES = [
-  "57mm thermal roll",
-  "80mm thermal roll",
-  "A4 sheet",
-  "4x6 label",
-] as const
+export const ROLL_SIZES = ["Sticker Print", "Receipt Paper"] as const
 export type RollSize = (typeof ROLL_SIZES)[number]
+
+/** The medium a new printer defaults to. */
+export const DEFAULT_ROLL_SIZE: RollSize = "Receipt Paper"
 
 export const PRINTER_PROTOCOLS = ["ESC/POS", "Star Line", "ZPL", "Raw"] as const
 export type PrinterProtocol = (typeof PRINTER_PROTOCOLS)[number]

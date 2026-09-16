@@ -336,7 +336,7 @@ export const demoIntegrations: Integration[] = [
 
 export const demoPrinter: PrinterSettings = {
   connection: "network",
-  roll: "57mm thermal roll",
+  roll: "Receipt Paper",
   autoPrint: true,
   ip: "192.168.1.42",
   port: "9100",

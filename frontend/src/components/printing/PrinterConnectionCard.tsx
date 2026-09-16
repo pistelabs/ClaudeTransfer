@@ -17,6 +17,7 @@ import {
 import { FieldLabel } from "@/components/common/FieldLabel"
 import { networkPrinterSchema, fieldErrorsFrom } from "@/lib/validation"
 import {
+  DEFAULT_ROLL_SIZE,
   PRINTER_PROTOCOLS,
   ROLL_SIZES,
   type PrinterConnection,
@@ -212,7 +213,7 @@ export function PrinterConnectionCard({
 
       <Card className="gap-0 rounded-xl p-[18px] shadow-card">
         <h3 className="font-heading text-[14px] font-bold tracking-[-0.2px]">
-          Roll size
+          Print media
         </h3>
         <div className="mt-3 space-y-2">
           {ROLL_SIZES.map((roll) => {
@@ -231,7 +232,7 @@ export function PrinterConnectionCard({
                 )}
               >
                 {roll}
-                {roll === "57mm thermal roll" && (
+                {roll === DEFAULT_ROLL_SIZE && (
                   <span className="text-tertiary-foreground text-[11px] font-medium">
                     Default
                   </span>

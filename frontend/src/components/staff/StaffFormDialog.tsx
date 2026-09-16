@@ -44,6 +44,9 @@ const NOTIFY_OPTIONS: {
   },
 ]
 
+/** Shown as the weekly-hours hint, and used when the field is left blank. */
+const DEFAULT_WEEKLY_HOURS = 25
+
 export interface StaffDraft {
   /** null when creating. */
   id: string | null
@@ -51,7 +54,8 @@ export interface StaffDraft {
   role: string
   email: string
   phone: string
-  availableHours: number
+  /** null while the field is empty — the hint value applies on save. */
+  availableHours: number | null
   daysOff: Day[]
   bookingNotify: NotifyPreference
   canCheckEquipment: boolean
@@ -80,7 +84,7 @@ export function newStaffDraft(): StaffDraft {
     role: "",
     email: "",
     phone: "",
-    availableHours: 40,
+    availableHours: null,
     daysOff: [],
     bookingNotify: "every",
     canCheckEquipment: true,
@@ -117,7 +121,7 @@ export function StaffFormDialog({
       role: value.role,
       email: value.email,
       phone: value.phone,
-      availableHours: value.availableHours,
+      availableHours: value.availableHours ?? DEFAULT_WEEKLY_HOURS,
       daysOff: value.daysOff,
       bookingNotify: value.bookingNotify,
       canCheckEquipment: value.canCheckEquipment,
@@ -148,7 +152,7 @@ export function StaffFormDialog({
               value={value.name}
               onChange={(e) => patch({ name: e.target.value })}
               aria-invalid={Boolean(errors.name)}
-              placeholder="Mara Lindqvist"
+              placeholder="e.g. Jane Smith"
             />
           </Field>
 
@@ -158,7 +162,7 @@ export function StaffFormDialog({
               value={value.role}
               onChange={(e) => patch({ role: e.target.value })}
               aria-invalid={Boolean(errors.role)}
-              placeholder="Rental Technician"
+              placeholder="e.g. Workshop Technician"
             />
           </Field>
 
@@ -192,9 +196,13 @@ export function StaffFormDialog({
                 type="number"
                 min={0}
                 max={168}
-                value={value.availableHours}
+                value={value.availableHours ?? ""}
+                placeholder={String(DEFAULT_WEEKLY_HOURS)}
                 onChange={(e) =>
-                  patch({ availableHours: Number(e.target.value) })
+                  patch({
+                    availableHours:
+                      e.target.value === "" ? null : Number(e.target.value),
+                  })
                 }
                 aria-invalid={Boolean(errors.availableHours)}
                 className="w-24"

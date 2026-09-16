@@ -4,16 +4,14 @@ import logoUrl from "@/assets/pistelabs-black.png"
 import { cn } from "@/lib/utils"
 import type { DocketSettings, RollSize } from "@/lib/types"
 
-/** Preview width follows the roll size. */
+/** Preview width follows the chosen print medium. */
 export const ROLL_WIDTHS: Record<RollSize, number> = {
-  "57mm thermal roll": 216,
-  "80mm thermal roll": 300,
-  "A4 sheet": 420,
-  "4x6 label": 384,
+  "Sticker Print": 384,
+  "Receipt Paper": 216,
 }
 
 export function rollLabel(roll: RollSize): string {
-  return roll.split(" ")[0].toUpperCase()
+  return roll.toUpperCase()
 }
 
 const DEMO = {
