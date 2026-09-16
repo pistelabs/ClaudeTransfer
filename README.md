@@ -198,6 +198,11 @@ the "now" line and the Today/Upcoming/Past pills meaningful whenever you open it
   against their availability and conflicts. Only the lead's copy drags; the others move with
   it. With more than one fitter on the booking, the staff assessment asks which of them
   recorded it, per person, and the saved badge carries the name.
+- **The customer leads the Appointment tab**, then the scheduling facts, then the report and
+  any note. Who the booking is for is the thing being looked up; when it is happens to be
+  visible on the grid already. Every customer reads the same — avatar, name, email, phone —
+  whether the booking is for one person or three. How it was taken and when share one line in
+  the sheet's header: the route first, then the timestamp.
 - **The bar at the foot of a booking is its bill**: balance due, the subtotal, what has been
   paid, and one green Complete button. Reschedule and delete are not there: they act on the
   whole booking rather than on taking money, so they sit under the menu in the sheet's top
@@ -239,8 +244,7 @@ the "now" line and the Today/Upcoming/Past pills meaningful whenever you open it
   below — they used to share one panel behind a Customer/Staff switch, which meant a fitter
   could not see the answers they were assessing against without leaving the assessment. Same
   card, same labelled field grid, same completion action for each, and each saves on its own.
-  Either can be filled at any point; check-in timestamps the arrival but no longer gates the
-  assessment.
+  Either can be filled at any point.
 - **A filtered week divides by fitter.** Week view shows a column per day; filter to
   particular fitters and each day divides into a column for each of them, so a person's week
   can be read down the page. Unfiltered it stays one column per day — twenty-eight columns

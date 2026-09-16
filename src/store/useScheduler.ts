@@ -172,7 +172,6 @@ interface State {
   detailStaffOpen: boolean;
   detailAddFitterOpen: boolean;
   apptMenu: boolean;
-  checkins: Record<string, string>;
   saved: Record<string, string>;
   equipment: Record<string, EquipItem[]>;
   records: Record<string, ApptRecord>;
@@ -279,7 +278,6 @@ interface Actions {
   setAssessedBy: (ci: number, staffId: string) => void;
   toggleApptMenu: () => void;
   closeApptMenu: () => void;
-  checkIn: (key: string) => void;
   markSaved: (suffix: string) => void;
   setCustAnswer: (ci: number, key: string, val: string) => void;
   setStaffAnswer: (ci: number, key: string, val: string) => void;
@@ -375,7 +373,6 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
   detailStaffOpen: false,
   detailAddFitterOpen: false,
   apptMenu: false,
-  checkins: {},
   saved: {},
   equipment: {},
   records: SEED_RECORDS,
@@ -1035,9 +1032,6 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
     }),
   toggleApptMenu: () => set((s) => ({ apptMenu: !s.apptMenu })),
   closeApptMenu: () => set({ apptMenu: false }),
-
-  checkIn: (key) =>
-    set((s) => (s.checkins[key] ? s : { checkins: { ...s.checkins, [key]: stampNow() } })),
 
   markSaved: (suffix) =>
     set((s) => ({ saved: { ...s.saved, [`${s.detailId}:${suffix}`]: stampNow() } })),

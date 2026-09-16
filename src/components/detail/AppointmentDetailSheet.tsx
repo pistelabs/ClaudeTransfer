@@ -93,26 +93,26 @@ export function AppointmentDetailSheet() {
                 <Badge variant={STATUS_VARIANT[status.modifier]}>{status.label}</Badge>
               </div>
 
-              {/* When and how it arrived, opposite the name. A walk-in has no booking
-                  to date — what matters is when they checked in and who did it. */}
+              {/* How it arrived and when, on one line opposite the name. A walk-in has
+                  no booking to date — what matters is when they checked in and who did it. */}
               <div className="booked-meta">
                 <span className="booked-meta__label">{isWalkIn ? 'Walk in' : 'Booked'}</span>
                 <span className="booked-meta__value">
-                  {formatBookedAt(isWalkIn ? detail.checkedInAt! : appt.bookedAt)}
-                  <span className="booked-meta__sep" aria-hidden>
-                    ·
-                  </span>
                   {source.kind === 'staff' ? (
                     <span className="booked-meta__staff">
                       <Avatar initials={source.initials} color={source.color} size={18} fontSize={8} />
                       {source.label}
                     </span>
                   ) : (
-                    <Badge variant={source.kind === 'online' ? 'default' : 'secondary'}>
-                      {source.kind === 'online' && <Globe size={12} strokeWidth={2.2} />}
+                    <Badge variant="outline">
+                      {source.kind === 'online' && <Globe size={12} strokeWidth={2.2} color="var(--n-450)" />}
                       {source.label}
                     </Badge>
                   )}
+                  <span className="booked-meta__sep" aria-hidden>
+                    ·
+                  </span>
+                  {formatBookedAt(isWalkIn ? detail.checkedInAt! : appt.bookedAt)}
                 </span>
               </div>
 

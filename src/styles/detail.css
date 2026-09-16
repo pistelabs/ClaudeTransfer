@@ -49,14 +49,15 @@
 
 /* ---- when and how the booking was taken ---- */
 
+/* One line: the label, then how it arrived, then when. */
 .booked-meta {
   display: flex;
   flex: 1 1 auto;
-  flex-direction: column;
-  gap: 3px;
-  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  align-items: center;
+  justify-content: flex-end;
   min-width: 0;
-  text-align: right;
 }
 
 .booked-meta__label {
