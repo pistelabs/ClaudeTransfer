@@ -11,7 +11,7 @@ import { DAYS, type StaffMember } from "@/lib/types"
 
 const NOTIFY_LABELS = {
   every: "Email on every booking",
-  daily: "Daily recap of bookings",
+  daily: "Daily recap at 5pm",
   none: "No notifications",
 } as const
 

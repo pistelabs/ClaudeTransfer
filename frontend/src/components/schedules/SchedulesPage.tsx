@@ -63,7 +63,7 @@ const MONTHS = [
 
 export function SchedulesPage() {
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date()))
-  const [viewMode, setViewMode] = useState<ViewMode>("staff")
+  const [viewMode, setViewMode] = useState<ViewMode>("day")
   const [selectedStaffId, setSelectedStaffId] = useState<string | null>(null)
   const [dayViewDay, setDayViewDay] = useState<Day>("Mon")
   const [draft, setDraft] = useState<TimeBlockDraft | null>(null)
@@ -184,34 +184,7 @@ export function SchedulesPage() {
 
   return (
     <div>
-      <PageHeader
-        title="Schedules & Availability"
-        actions={
-          <div className="flex items-center gap-1.5">
-            <Button
-              variant="outline"
-              size="icon"
-              className="size-[34px]"
-              onClick={() => setWeekStart((current) => addDays(current, -7))}
-              aria-label="Previous week"
-            >
-              <ChevronLeftIcon />
-            </Button>
-            <div className="w-[132px] text-center text-[13px] font-semibold">
-              {formatWeekLabel(weekStart)}
-            </div>
-            <Button
-              variant="outline"
-              size="icon"
-              className="size-[34px]"
-              onClick={() => setWeekStart((current) => addDays(current, 7))}
-              aria-label="Next week"
-            >
-              <ChevronRightIcon />
-            </Button>
-          </div>
-        }
-      />
+      <PageHeader title="Schedules & Availability" />
 
       <Tabs
         value={viewMode}
@@ -219,11 +192,11 @@ export function SchedulesPage() {
         className="mb-3"
       >
         <TabsList>
-          <TabsTrigger value="staff">
-            <UsersIcon /> By staff member
-          </TabsTrigger>
           <TabsTrigger value="day">
             <CalendarIcon /> By day — all staff
+          </TabsTrigger>
+          <TabsTrigger value="staff">
+            <UsersIcon /> By staff member
           </TabsTrigger>
         </TabsList>
       </Tabs>
@@ -284,8 +257,15 @@ export function SchedulesPage() {
             </SummaryCard>
           </div>
 
-          <div className="mb-3">
+          <div className="mb-3 grid grid-cols-[1fr_auto_1fr] items-center gap-3">
             <CategoryLegend />
+            <WeekStepper
+              weekStart={weekStart}
+              onStep={(days) =>
+                setWeekStart((current) => addDays(current, days))
+              }
+            />
+            <span />
           </div>
 
           <WeekGridByStaff
@@ -333,8 +313,15 @@ export function SchedulesPage() {
             })}
           </div>
 
-          <div className="mb-3">
+          <div className="mb-3 grid grid-cols-[1fr_auto_1fr] items-center gap-3">
             <CategoryLegend />
+            <WeekStepper
+              weekStart={weekStart}
+              onStep={(days) =>
+                setWeekStart((current) => addDays(current, days))
+              }
+            />
+            <span />
           </div>
 
           <DayGridByStaff
@@ -390,6 +377,41 @@ export function SchedulesPage() {
           setOffConfirm(null)
         }}
       />
+    </div>
+  )
+}
+
+/** Week navigator, centred above the grid it drives. */
+function WeekStepper({
+  weekStart,
+  onStep,
+}: {
+  weekStart: Date
+  onStep: (days: number) => void
+}) {
+  return (
+    <div className="flex items-center justify-center gap-1.5">
+      <Button
+        variant="outline"
+        size="icon"
+        className="size-[34px]"
+        onClick={() => onStep(-7)}
+        aria-label="Previous week"
+      >
+        <ChevronLeftIcon />
+      </Button>
+      <div className="w-[132px] text-center text-[13px] font-semibold">
+        {formatWeekLabel(weekStart)}
+      </div>
+      <Button
+        variant="outline"
+        size="icon"
+        className="size-[34px]"
+        onClick={() => onStep(7)}
+        aria-label="Next week"
+      >
+        <ChevronRightIcon />
+      </Button>
     </div>
   )
 }

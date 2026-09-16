@@ -34,8 +34,9 @@ const NOTIFY_OPTIONS: {
   },
   {
     value: "daily",
-    label: "Daily recap of bookings",
-    description: "One email each morning listing the day",
+    label: "Daily recap at 5pm",
+    description:
+      "One email at 5pm listing every booking made for them in the last 24 hours",
   },
   {
     value: "none",
