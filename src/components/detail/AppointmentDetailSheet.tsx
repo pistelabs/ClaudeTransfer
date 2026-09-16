@@ -5,7 +5,6 @@ import { useScheduler } from '../../store/useScheduler';
 import { Avatar } from '../ui/Avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ButtonGroup } from '@/components/ui/button-group';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Separator } from '@/components/ui/separator';
 import type { BadgeVariant } from '@/components/ui/badge';
@@ -117,9 +116,33 @@ export function AppointmentDetailSheet() {
                 </span>
               </div>
 
-              <Button variant="ghost" size="icon" aria-label="Close" onClick={closeDetail}>
-                <X size={16} strokeWidth={2} />
-              </Button>
+              {/* Reschedule and delete act on the whole booking, so they belong up
+                  here with Close rather than beside the button that takes money. */}
+              <div className="detail__actions">
+                <DropdownMenu open={apptMenu} onOpenChange={(v) => (v ? toggleApptMenu() : closeApptMenu())}>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" aria-label="More actions" title="More actions">
+                      <EllipsisVertical size={17} strokeWidth={2.2} />
+                    </Button>
+                  </DropdownMenuTrigger>
+
+                  <DropdownMenuContent align="end" side="bottom" className="appt-menu">
+                    <DropdownMenuItem onSelect={rescheduleAppt}>
+                      <CalendarCheck size={16} strokeWidth={2} color="var(--n-600)" />
+                      Reschedule
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem variant="destructive" onSelect={deleteAppt}>
+                      <Trash2 size={16} strokeWidth={2} />
+                      Delete appointment
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                <Button variant="ghost" size="icon" aria-label="Close" onClick={closeDetail}>
+                  <X size={16} strokeWidth={2} />
+                </Button>
+              </div>
             </div>
 
             <TabsList className="detail__tabs">
@@ -173,31 +196,10 @@ export function AppointmentDetailSheet() {
               </div>
             </dl>
             <div style={{ flex: 1 }} />
-            <DropdownMenu open={apptMenu} onOpenChange={(v) => (v ? toggleApptMenu() : closeApptMenu())}>
-              <ButtonGroup>
-                <Button variant="pay" size="lg" className="complete-btn" onClick={openComplete}>
-                  <CreditCard size={16} strokeWidth={2} />
-                  Complete
-                </Button>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="action" size="lg" className="complete-btn__more" aria-label="More actions" title="More actions">
-                    <EllipsisVertical size={16} strokeWidth={2.4} />
-                  </Button>
-                </DropdownMenuTrigger>
-              </ButtonGroup>
-
-              <DropdownMenuContent align="end" side="top" className="appt-menu">
-                <DropdownMenuItem onSelect={rescheduleAppt}>
-                  <CalendarCheck size={16} strokeWidth={2} color="var(--n-600)" />
-                  Reschedule
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem variant="destructive" onSelect={deleteAppt}>
-                  <Trash2 size={16} strokeWidth={2} />
-                  Delete appointment
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <Button variant="pay" size="lg" className="complete-btn" onClick={openComplete}>
+              <CreditCard size={16} strokeWidth={2} />
+              Complete
+            </Button>
           </div>
         </div>
       </div>

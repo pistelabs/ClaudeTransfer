@@ -199,7 +199,9 @@ the "now" line and the Today/Upcoming/Past pills meaningful whenever you open it
   it. With more than one fitter on the booking, the staff assessment asks which of them
   recorded it, per person, and the saved badge carries the name.
 - **The bar at the foot of a booking is its bill**: balance due, the subtotal, what has been
-  paid, and one green Complete button with the appointment menu beside it. The subtotal
+  paid, and one green Complete button. Reschedule and delete are not there: they act on the
+  whole booking rather than on taking money, so they sit under the menu in the sheet's top
+  right, beside Close. The subtotal
   includes the booked service's price as well as anything charged on the equipment; hovering
   it shows the split. The Paid figure is also the way in to recording a payment — it opens a
   popover offering the four routes the shop uses (Shopify, a Shopify link, Square, Stripe),
