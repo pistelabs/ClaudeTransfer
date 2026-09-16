@@ -207,13 +207,8 @@ export function normalizeName(s: string): string {
   return (s || '').replace(/’/g, "'").trim().toLowerCase();
 }
 
-const CURRENCY = new Intl.NumberFormat('en-IE', { style: 'currency', currency: 'EUR' });
-
-export function formatMoney(n: number): string {
-  return CURRENCY.format(n).replace(/ /g, '');
-}
-
-/** `€120.00` → `120`. */
-export function priceValue(price: string): number {
-  return Number(String(price || '').replace(/[^0-9.]/g, '')) || 0;
-}
+/*
+ * Money used to be formatted here, from a number of euros, and parsed back out
+ * of its own display string. Both went with the move to minor units — see
+ * `lib/money` for the formatter everything now shares.
+ */

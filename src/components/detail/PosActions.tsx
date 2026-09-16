@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Banknote, ChevronDown, CreditCard, Link2 } from 'lucide-react';
 import { EXTERNAL_SOURCES } from '../../data/catalogue';
-import { formatMoney } from '../../lib/schedule';
+import { formatMoney } from '../../lib/money';
 import { useScheduler } from '../../store/useScheduler';
 import { Button } from '@/components/ui/button';
 import { ButtonGroup } from '@/components/ui/button-group';

@@ -1,6 +1,6 @@
 import { Banknote, Check, Clock, CreditCard, Link2, Store, Wallet, X } from 'lucide-react';
 import { PAYMENT_METHODS, paymentMethod, staffById } from '../../data/catalogue';
-import { formatMoney } from '../../lib/schedule';
+import { formatMoney } from '../../lib/money';
 import { useScheduler } from '../../store/useScheduler';
 import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -32,6 +32,10 @@ export function PaymentControl({ totals }: { totals: DetailInfo['totals'] }) {
   const method = payment ? paymentMethod(payment.method) : null;
   const Icon = payment ? METHOD_ICON[payment.method] : CreditCard;
   const taker = payment && payment.by !== null ? staffById(payment.by) : null;
+  // Two things can be outstanding: a link sent to the customer, and a charge
+  // waiting at the till. Both are money that has not arrived, but they are
+  // cancelled in different places, so they are not described as the same thing.
+  const link = payment?.method === 'shopify-link';
 
   return (
     <Popover open={open} onOpenChange={(v) => (v ? toggle() : close())}>
@@ -42,7 +46,9 @@ export function PaymentControl({ totals }: { totals: DetailInfo['totals'] }) {
           title={
             payment
               ? payment.pending
-                ? `Payment link sent at ${payment.at} — click to change`
+                ? link
+                  ? `Payment link sent at ${payment.at} — click to change`
+                  : `Sent to the till at ${payment.at} — click to change`
                 : `Paid by ${payment.source ?? method!.label} at ${payment.at} — click to change`
               : 'Record how this was paid'
           }
@@ -71,7 +77,13 @@ export function PaymentControl({ totals }: { totals: DetailInfo['totals'] }) {
                   <span className="pay-menu__recorded-sub">{payment.source ? method!.label : method!.sub}</span>
                 </span>
                 <Badge variant={payment.pending ? 'warning' : 'success'}>
-                  {payment.pending ? 'Sent' : payment.method === 'external' ? 'External' : 'Online'}
+                  {payment.pending
+                    ? link
+                      ? 'Sent'
+                      : 'At the till'
+                    : payment.method === 'external'
+                      ? 'External'
+                      : 'Online'}
                 </Badge>
               </div>
               <div className="pay-menu__stamp">
@@ -80,7 +92,7 @@ export function PaymentControl({ totals }: { totals: DetailInfo['totals'] }) {
               </div>
               <button className="pay-menu__clear" type="button" onClick={clear}>
                 <X size={13} strokeWidth={2.4} />
-                {payment.pending ? 'Cancel this link' : 'Remove this payment'}
+                {payment.pending ? (link ? 'Cancel this link' : 'Cancel this charge') : 'Remove this payment'}
               </button>
             </div>
           ) : (
