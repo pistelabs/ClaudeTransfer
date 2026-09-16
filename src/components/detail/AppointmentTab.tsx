@@ -101,22 +101,22 @@ export function AppointmentTab({ detail }: { detail: DetailInfo }) {
               {party.map((p) => (
                 <div className="cust-box" key={p.key}>
                     <Avatar initials={p.initials} color={type.border} size={34} fontSize={12} />
+                    {/* name, email and phone are siblings rather than a name and a
+                        contact group, so the row can space all three evenly */}
                     <div className="cust-box__identity">
                       <span className="cust-box__name">{p.name}</span>
-                      <span className="cust-box__contact">
-                        {p.customer?.email && p.customer.email !== '—' && (
-                          <span className="cust-box__contact-item">
-                            <Mail size={13} strokeWidth={2} color="var(--n-400)" />
-                            <span>{p.customer.email}</span>
-                          </span>
-                        )}
-                        {p.customer?.phone && p.customer.phone !== '—' && (
-                          <span className="cust-box__contact-item">
-                            <Phone size={13} strokeWidth={2} color="var(--n-400)" />
-                            {p.customer.phone}
-                          </span>
-                        )}
-                      </span>
+                      {p.customer?.email && p.customer.email !== '—' && (
+                        <span className="cust-box__contact-item">
+                          <Mail size={13} strokeWidth={2} color="var(--n-400)" />
+                          <span>{p.customer.email}</span>
+                        </span>
+                      )}
+                      {p.customer?.phone && p.customer.phone !== '—' && (
+                        <span className="cust-box__contact-item">
+                          <Phone size={13} strokeWidth={2} color="var(--n-400)" />
+                          {p.customer.phone}
+                        </span>
+                      )}
                     </div>
                 </div>
               ))}

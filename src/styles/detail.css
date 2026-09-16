@@ -354,12 +354,16 @@
   margin-top: -2px;
 }
 
+/* Name, email and phone share the row equally: nothing sits at the right-hand
+   end any more, so the slack the check-in button used to take is spread between
+   them instead of pooling after the last one. */
 .cust-box__identity {
   display: flex;
   flex: 1;
   flex-wrap: wrap;
   gap: 2px 14px;
   align-items: baseline;
+  justify-content: space-between;
   min-width: 0;
 }
 
@@ -370,22 +374,13 @@
   white-space: nowrap;
 }
 
-.cust-box__contact {
-  display: flex;
-  flex: 1;
-  flex-wrap: wrap;
-  gap: 4px 14px;
-  align-items: center;
-  min-width: 0;
-  color: var(--n-500);
-  font-size: 12px;
-}
-
 .cust-box__contact-item {
   display: inline-flex;
   gap: 6px;
   align-items: center;
   min-width: 0;
+  color: var(--n-500);
+  font-size: 12px;
   white-space: nowrap;
 }
 
