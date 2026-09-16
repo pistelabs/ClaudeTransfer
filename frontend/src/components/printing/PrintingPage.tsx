@@ -57,6 +57,7 @@ export function PrintingPage() {
         docket={docket}
         roll={printer.roll}
         onChange={(patch) => updateDocket.mutate(patch)}
+        onRollChange={(roll) => updatePrinter.mutate({ roll })}
       />
     </div>
   )

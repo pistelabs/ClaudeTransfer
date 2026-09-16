@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { FieldLabel } from "@/components/common/FieldLabel"
 import { DocketPreview, rollLabel } from "./DocketPreview"
 import {
+  ROLL_SIZES,
   CUSTOMER_DOCKET_ELEMENTS,
   SHOP_DOCKET_ELEMENTS,
   type CustomerDocketElement,
@@ -46,12 +47,14 @@ interface DocketConfigCardProps {
   docket: DocketSettings
   roll: RollSize
   onChange: (patch: Partial<DocketSettings>) => void
+  onRollChange: (roll: RollSize) => void
 }
 
 export function DocketConfigCard({
   docket,
   roll,
   onChange,
+  onRollChange,
 }: DocketConfigCardProps) {
   return (
     <Card className="mt-3 gap-0 rounded-xl p-[18px] shadow-card">
@@ -133,15 +136,39 @@ export function DocketConfigCard({
           </div>
         </div>
 
-        {/* Live preview — customer */}
-        <div className="bg-muted border-border rounded-lg border p-4">
-          {docket.customerCopy ? (
-            <DocketPreview docket={docket} roll={roll} copy="customer" />
-          ) : (
-            <p className="text-placeholder-foreground py-10 text-center text-[12px]">
-              Customer copy is off
-            </p>
-          )}
+        {/* Print media + live preview — customer */}
+        <div>
+          <div className="mb-2 flex items-center gap-2">
+            <FieldLabel className="mr-1">Print media</FieldLabel>
+            {ROLL_SIZES.map((option) => {
+              const isSelected = roll === option
+              return (
+                <button
+                  key={option}
+                  type="button"
+                  aria-pressed={isSelected}
+                  onClick={() => onRollChange(option)}
+                  className={cn(
+                    "focus-ring h-8 rounded-md border px-3 text-[12.5px] transition-colors duration-[120ms]",
+                    isSelected
+                      ? "border-sky-300 bg-sky-50 text-primary-strong font-semibold"
+                      : "border-border bg-card text-muted-foreground hover:bg-background",
+                  )}
+                >
+                  {option}
+                </button>
+              )
+            })}
+          </div>
+          <div className="bg-muted border-border rounded-lg border p-4">
+            {docket.customerCopy ? (
+              <DocketPreview docket={docket} roll={roll} copy="customer" />
+            ) : (
+              <p className="text-placeholder-foreground py-10 text-center text-[12px]">
+                Customer copy is off
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Shop copy */}

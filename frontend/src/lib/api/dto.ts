@@ -367,7 +367,6 @@ export function toIntegration(dto: IntegrationDTO): Integration {
 export interface PrinterSettingsDTO {
   connection: PrinterConnection
   roll_size: RollSize
-  auto_print: boolean
   ip_address: string
   port: string | number
   model: string
@@ -378,7 +377,6 @@ export function toPrinterSettings(dto: PrinterSettingsDTO): PrinterSettings {
   return {
     connection: dto.connection,
     roll: dto.roll_size,
-    autoPrint: dto.auto_print,
     ip: dto.ip_address,
     port: String(dto.port),
     model: dto.model,
@@ -392,7 +390,6 @@ export function fromPrinterSettings(
   const dto: Partial<PrinterSettingsDTO> = {}
   if (settings.connection !== undefined) dto.connection = settings.connection
   if (settings.roll !== undefined) dto.roll_size = settings.roll
-  if (settings.autoPrint !== undefined) dto.auto_print = settings.autoPrint
   if (settings.ip !== undefined) dto.ip_address = settings.ip
   if (settings.port !== undefined) dto.port = settings.port
   if (settings.model !== undefined) dto.model = settings.model

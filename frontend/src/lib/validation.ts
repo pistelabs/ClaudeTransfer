@@ -92,7 +92,6 @@ export type LeaveFormValues = z.infer<typeof leaveSchema>
 export const printerSchema = z.object({
   connection: z.enum(["network", "wired"]),
   roll: z.enum(ROLL_SIZES),
-  autoPrint: z.boolean(),
   ip: z.string(),
   port: z.string(),
   model: z.string(),

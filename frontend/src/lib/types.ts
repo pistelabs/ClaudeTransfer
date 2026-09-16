@@ -158,7 +158,6 @@ export type PrinterProtocol = (typeof PRINTER_PROTOCOLS)[number]
 export interface PrinterSettings {
   connection: PrinterConnection
   roll: RollSize
-  autoPrint: boolean
   ip: string
   port: string
   model: string
