@@ -200,6 +200,17 @@
   font-weight: 500;
 }
 
+/* Greyed rather than hidden when today is already on screen: the header keeps
+   the same shape whatever day the schedule is showing. */
+.segmented__btn--today:disabled {
+  color: var(--n-350);
+  cursor: default;
+}
+
+.segmented__btn--today:disabled:hover {
+  background: #fff;
+}
+
 /* The date is the middle of the three, and the button that opens the picker. */
 .segmented__btn--date {
   gap: 8px;

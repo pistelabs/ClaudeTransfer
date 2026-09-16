@@ -217,6 +217,13 @@ the "now" line and the Today/Upcoming/Past pills meaningful whenever you open it
   own layer and flushes that synchronously, which would otherwise re-arm the sheet's handler
   while the same keypress is still travelling, so the event carries whether a layer already
   spent it.
+- **Confirming a booking asks where the money goes.** A new appointment that costs anything
+  opens a prompt with the total due and the two endings the desk has: send it to the POS, or
+  pay later. The customer is standing there at that moment, which is the difference between
+  taking the money and chasing it. The booking is saved before the prompt appears, so nothing
+  can lose it — Escape and the backdrop mean pay later. Sending it to the till records a
+  pending charge, not a payment: the balance keeps showing until the money lands. Walk-ins are
+  not asked (no time, no price yet) and neither is a reschedule.
 - **Closing out has three endings.** Send to POS keeps the button in the complete dialog; the
   chevron beside it opens the other two, and choosing to record an external payment swaps that
   same popover for the form rather than opening a second layer over it. A payment link is sent and the booking is marked
@@ -250,8 +257,10 @@ the "now" line and the Today/Upcoming/Past pills meaningful whenever you open it
   can be read down the page. Unfiltered it stays one column per day — twenty-eight columns
   of an empty shop helps nobody. A fitter keeps one width across every day, so the days stay
   aligned.
-- **The date is the middle of the three nav buttons**, with an arrow either side. Clicking it
-  opens a month calendar with Today and Tomorrow beneath it. Any date can be opened, forwards
+- **The date is the middle of the three nav buttons**, with an arrow either side, and a Today
+  button after them. Today greys out rather than disappearing once today is on screen, so the
+  header keeps its shape whatever day is showing; in week view this week counts as today.
+  Clicking the date opens a month calendar with Today and Tomorrow beneath it. Any date can be opened, forwards
   or back; the arrows step a day, or a week in week view, rolling over the week boundary. A
   booking carries the week it belongs to, so other weeks open empty until something is booked
   into them — the seed only fills the current one. A booking sheet opened from a date in
