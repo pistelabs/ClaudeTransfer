@@ -217,6 +217,8 @@ interface Actions {
   dismissOverlapNotice: () => void;
   /** Replaces the seeded data with what the backend returned. */
   hydrate: (data: HydrateData) => void;
+  /** Takes the customer's PDF summary for the open booking. */
+  createReport: () => void;
   /** The date has changed under an open tab: re-read today and re-place every booking. */
   refreshToday: () => void;
   toggleWalkIns: () => void;
@@ -418,6 +420,9 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
         todayIdx: todayIndex(now),
       };
     }),
+
+  createReport: () =>
+    set((s) => (s.detailId ? { reports: { ...s.reports, [s.detailId]: buildReport(s, s.detailId) } } : s)),
 
   refreshToday: () =>
     set((s) => {
@@ -1231,19 +1236,7 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
   closeComplete: () => set({ showComplete: false }),
   setCompleteStep: (completeStep) => set({ completeStep }),
   toggleSvcDone: (key) => set((s) => ({ svcDone: { ...s.svcDone, [key]: !s.svcDone[key] } })),
-  /**
-   * Closing out writes the report. All three endings do — sending a payment link
-   * or recording money taken elsewhere still finishes the appointment, and the
-   * customer's copy should not depend on which till it went through.
-   */
-  finishComplete: () =>
-    set((s) => ({
-      showComplete: false,
-      showDetail: false,
-      completeStep: 'review',
-      posMenu: false,
-      reports: s.detailId ? { ...s.reports, [s.detailId]: buildReport(s, s.detailId) } : s.reports,
-    })),
+  finishComplete: () => set({ showComplete: false, showDetail: false, completeStep: 'review', posMenu: false }),
 
   togglePosMenu: () => set((s) => ({ posMenu: !s.posMenu })),
   closePosMenu: () => set({ posMenu: false }),
@@ -1258,7 +1251,6 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
       showDetail: false,
       completeStep: 'review',
       posMenu: false,
-      reports: s.detailId ? { ...s.reports, [s.detailId]: buildReport(s, s.detailId) } : s.reports,
       payments: s.detailId
         ? { ...s.payments, [s.detailId]: { method: 'shopify-link', amount, at: stampNow(), by: s.bookedBy, pending: true } }
         : s.payments,
@@ -1270,7 +1262,6 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
       showComplete: false,
       showDetail: false,
       completeStep: 'review',
-      reports: s.detailId ? { ...s.reports, [s.detailId]: buildReport(s, s.detailId) } : s.reports,
       posMenu: false,
       payments: s.detailId
         ? { ...s.payments, [s.detailId]: { method: 'external', source, amount, at: stampNow(), by: s.bookedBy } }
@@ -1300,6 +1291,18 @@ export function equipKeyOf(s: State): string {
  * completed, and the equipment with the work done to it. Prices are not repeated
  * here; the bill is its own thing.
  */
+/**
+ * Is there enough recorded to hand the customer anything? Both question sets, for
+ * everybody on the booking — a report missing half a person's fitting is worse
+ * than no report.
+ */
+export function reportReady(s: { appts: Appointment[]; saved: Record<string, string> }, id: string): boolean {
+  const appt = s.appts.find((a) => a.id === id);
+  if (!appt) return false;
+  const names = partyOf(appt);
+  return names.length > 0 && names.every((_, i) => !!s.saved[`${id}:c${i}`] && !!s.saved[`${id}:s${i}`]);
+}
+
 export interface ReportSource {
   appts: Appointment[];
   saved: Record<string, string>;

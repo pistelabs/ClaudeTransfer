@@ -224,14 +224,14 @@ the "now" line and the Today/Upcoming/Past pills meaningful whenever you open it
   sizes are per type, so changing the type clears the specs entered against the old one. The
   services applied to the item, and their location, side, note and Included/+price pill, are
   unchanged.
-- **The customer's report lives on the booking.** The Appointment tab carries it, not the
-  complete dialog: before the appointment is closed out it previews what has been captured so
-  far, so a gap shows while there is still time to fill it. Completing takes a snapshot — who
-  completed it, when, and per person whether the questionnaire and assessment were finished
-  plus the equipment with the work done to it. A snapshot rather than a live view, because
-  the sheet stays editable afterwards and a report that quietly rewrote itself would not be
-  worth handing anybody. All three endings write it, since a payment link still finishes the
-  appointment.
+- **The customer's PDF report is one button on the Appointment tab**, disabled until both
+  question sets are complete for everybody on the booking — a report missing half a person's
+  fitting is worse than none, so the button says what is missing instead of producing one.
+  Creating it is explicit rather than a side effect of closing the appointment out, so a
+  fitter can make it, look at it, and still take the money afterwards. What it records is a
+  snapshot: who made it, when, and per person what was captured. A snapshot rather than a
+  live view, because the sheet stays editable and a report that quietly rewrote itself would
+  not be worth handing anybody.
 - **Answers are per person, not per booking.** A multi-customer booking keeps its own
   required-at-booking answers, fitting questionnaire, staff assessment, check-in and
   equipment record for each person on it.
