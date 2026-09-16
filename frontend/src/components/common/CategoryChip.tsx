@@ -1,15 +1,15 @@
-import { CATEGORIES } from "@/lib/categories";
-import { cn } from "@/lib/utils";
-import type { ServiceCategory } from "@/lib/types";
+import { CATEGORIES } from "@/lib/categories"
+import { cn } from "@/lib/utils"
+import type { ServiceCategory } from "@/lib/types"
 
 export function CategoryDot({
   category,
   size = 7,
   className,
 }: {
-  category: ServiceCategory;
-  size?: number;
-  className?: string;
+  category: ServiceCategory
+  size?: number
+  className?: string
 }) {
   return (
     <span
@@ -21,17 +21,17 @@ export function CategoryDot({
       }}
       aria-hidden
     />
-  );
+  )
 }
 
 export function CategoryChip({
   category,
   className,
 }: {
-  category: ServiceCategory;
-  className?: string;
+  category: ServiceCategory
+  className?: string
 }) {
-  const style = CATEGORIES[category];
+  const style = CATEGORIES[category]
   return (
     <span
       className={cn(
@@ -43,7 +43,7 @@ export function CategoryChip({
       <CategoryDot category={category} size={6} />
       {style.label}
     </span>
-  );
+  )
 }
 
 export function CategoryLegend() {
@@ -62,5 +62,5 @@ export function CategoryLegend() {
         </span>
       ))}
     </div>
-  );
+  )
 }

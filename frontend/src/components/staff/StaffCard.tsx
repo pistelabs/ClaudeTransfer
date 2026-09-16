@@ -1,15 +1,15 @@
-import { ClockIcon, MailIcon, PencilIcon, Trash2Icon } from "lucide-react";
+import { ClockIcon, MailIcon, PencilIcon, Trash2Icon } from "lucide-react"
 
-import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
-import { StaffAvatar } from "@/components/common/StaffAvatar";
-import type { StaffMember } from "@/lib/types";
+import { Badge } from "@/components/ui/badge"
+import { Card } from "@/components/ui/card"
+import { StaffAvatar } from "@/components/common/StaffAvatar"
+import type { StaffMember } from "@/lib/types"
 
 interface StaffCardProps {
-  staff: StaffMember;
-  onOpen: () => void;
-  onEdit: () => void;
-  onDelete: () => void;
+  staff: StaffMember
+  onOpen: () => void
+  onEdit: () => void
+  onDelete: () => void
 }
 
 export function StaffCard({ staff, onOpen, onEdit, onDelete }: StaffCardProps) {
@@ -66,5 +66,5 @@ export function StaffCard({ staff, onOpen, onEdit, onDelete }: StaffCardProps) {
         </div>
       </div>
     </Card>
-  );
+  )
 }

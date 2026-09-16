@@ -1,29 +1,29 @@
-import { useMemo, useState } from "react";
-import { ChevronDownIcon, PlusIcon, Trash2Icon } from "lucide-react";
+import { useMemo, useState } from "react"
+import { ChevronDownIcon, PlusIcon, Trash2Icon } from "lucide-react"
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils"
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
+} from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Input } from "@/components/ui/input"
+import { Switch } from "@/components/ui/switch"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { FieldLabel } from "@/components/common/FieldLabel";
-import { CategoryDot } from "@/components/common/CategoryChip";
-import { CATEGORIES, CATEGORY_LIST } from "@/lib/categories";
+} from "@/components/ui/select"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import { FieldLabel } from "@/components/common/FieldLabel"
+import { CategoryDot } from "@/components/common/CategoryChip"
+import { CATEGORIES, CATEGORY_LIST } from "@/lib/categories"
 import {
   INTERVAL_OPTIONS,
   LEAD_UNITS,
@@ -33,8 +33,8 @@ import {
   timeOptions,
   toMinutes,
   toTimeString,
-} from "@/lib/time";
-import { fieldErrorsFrom, timeBlockSchema } from "@/lib/validation";
+} from "@/lib/time"
+import { fieldErrorsFrom, timeBlockSchema } from "@/lib/validation"
 import type {
   BookingInterval,
   Break,
@@ -44,10 +44,10 @@ import type {
   Service,
   ServiceCategory,
   TimeBlock,
-} from "@/lib/types";
-import type { TimeBlockInput } from "@/lib/api";
+} from "@/lib/types"
+import type { TimeBlockInput } from "@/lib/api"
 
-const TIME_OPTIONS = timeOptions(15);
+const TIME_OPTIONS = timeOptions(15)
 
 const DEFAULT_LEAD: LeadTime = {
   custom: false,
@@ -55,23 +55,23 @@ const DEFAULT_LEAD: LeadTime = {
   minUnit: "h",
   max: 60,
   maxUnit: "d",
-};
+}
 
 export interface TimeBlockDraft {
   /** null when creating. */
-  id: string | null;
-  staffId: string;
-  day: Day;
-  start: string;
-  end: string;
-  services: ServiceCategory[];
-  appointments: string[];
-  recurring: boolean;
-  enabled: boolean;
-  interval: BookingInterval;
-  online: boolean;
-  breaks: Break[];
-  lead: Record<string, LeadTime>;
+  id: string | null
+  staffId: string
+  day: Day
+  start: string
+  end: string
+  services: ServiceCategory[]
+  appointments: string[]
+  recurring: boolean
+  enabled: boolean
+  interval: BookingInterval
+  online: boolean
+  breaks: Break[]
+  lead: Record<string, LeadTime>
 }
 
 export function draftFromBlock(block: TimeBlock): TimeBlockDraft {
@@ -89,7 +89,7 @@ export function draftFromBlock(block: TimeBlock): TimeBlockDraft {
     online: block.online,
     breaks: block.breaks.map((b) => ({ ...b })),
     lead: structuredClone(block.lead),
-  };
+  }
 }
 
 export function newDraft(staffId: string, day: Day): TimeBlockDraft {
@@ -107,17 +107,17 @@ export function newDraft(staffId: string, day: Day): TimeBlockDraft {
     online: true,
     breaks: [],
     lead: {},
-  };
+  }
 }
 
 interface TimeBlockDialogProps {
   /** Non-null: the parent mounts this only while a draft is open. */
-  draft: TimeBlockDraft;
-  services: Service[];
-  onOpenChange: (open: boolean) => void;
-  onSave: (draft: TimeBlockDraft, input: TimeBlockInput) => void;
-  onRemove: (id: string) => void;
-  saving?: boolean;
+  draft: TimeBlockDraft
+  services: Service[]
+  onOpenChange: (open: boolean) => void
+  onSave: (draft: TimeBlockDraft, input: TimeBlockInput) => void
+  onRemove: (id: string) => void
+  saving?: boolean
 }
 
 export function TimeBlockDialog({
@@ -128,45 +128,45 @@ export function TimeBlockDialog({
   onRemove,
   saving = false,
 }: TimeBlockDialogProps) {
-  const [value, setValue] = useState<TimeBlockDraft>(draft);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [expanded, setExpanded] = useState<ServiceCategory[]>([]);
+  const [value, setValue] = useState<TimeBlockDraft>(draft)
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [expanded, setExpanded] = useState<ServiceCategory[]>([])
 
   const servicesByCategory = useMemo(() => {
-    const grouped = {} as Record<ServiceCategory, Service[]>;
+    const grouped = {} as Record<ServiceCategory, Service[]>
     for (const category of CATEGORY_LIST) {
-      grouped[category.id] = services.filter((s) => s.category === category.id);
+      grouped[category.id] = services.filter((s) => s.category === category.id)
     }
-    return grouped;
-  }, [services]);
+    return grouped
+  }, [services])
 
-  const isEdit = value.id !== null;
-  const duration = blockMinutes(value.start, value.end, value.breaks);
+  const isEdit = value.id !== null
+  const duration = blockMinutes(value.start, value.end, value.breaks)
 
   function patch(partial: Partial<TimeBlockDraft>) {
-    setValue((current) => ({ ...current, ...partial }));
+    setValue((current) => ({ ...current, ...partial }))
   }
 
   function handleStartChange(start: string) {
     // Keep the end after the start, as the prototype does.
     if (toMinutes(start) >= toMinutes(value.end)) {
-      patch({ start, end: toTimeString(toMinutes(start) + 60) });
-      return;
+      patch({ start, end: toTimeString(toMinutes(start) + 60) })
+      return
     }
-    patch({ start });
+    patch({ start })
   }
 
   function addBreak() {
     const midpoint =
       toMinutes(value.start) +
-      Math.floor((toMinutes(value.end) - toMinutes(value.start)) / 2);
-    const start = toTimeString(Math.round(midpoint / 15) * 15);
+      Math.floor((toMinutes(value.end) - toMinutes(value.start)) / 2)
+    const start = toTimeString(Math.round(midpoint / 15) * 15)
     patch({
       breaks: [
         ...value.breaks,
         { start, end: toTimeString(toMinutes(start) + 30) },
       ],
-    });
+    })
   }
 
   function updateBreak(index: number, partial: Partial<Break>) {
@@ -174,38 +174,38 @@ export function TimeBlockDialog({
       breaks: value.breaks.map((b, i) =>
         i === index ? { ...b, ...partial } : b,
       ),
-    });
+    })
   }
 
   function removeBreak(index: number) {
-    patch({ breaks: value.breaks.filter((_, i) => i !== index) });
+    patch({ breaks: value.breaks.filter((_, i) => i !== index) })
   }
 
   /** Categories follow the service selection: a category shows once any of its services is bookable. */
   function categoriesFor(appointments: string[]): ServiceCategory[] {
-    const selected = new Set(appointments);
+    const selected = new Set(appointments)
     return CATEGORY_LIST.filter((category) =>
       servicesByCategory[category.id]?.some((s) => selected.has(s.id)),
-    ).map((c) => c.id);
+    ).map((c) => c.id)
   }
 
   function toggleService(service: Service, checked: boolean) {
     const appointments = checked
       ? [...new Set([...value.appointments, service.id])]
-      : value.appointments.filter((id) => id !== service.id);
-    patch({ appointments, services: categoriesFor(appointments) });
+      : value.appointments.filter((id) => id !== service.id)
+    patch({ appointments, services: categoriesFor(appointments) })
   }
 
   function toggleCategory(category: ServiceCategory, checked: boolean) {
-    const ids = (servicesByCategory[category] ?? []).map((s) => s.id);
+    const ids = (servicesByCategory[category] ?? []).map((s) => s.id)
     const appointments = checked
       ? [...new Set([...value.appointments, ...ids])]
-      : value.appointments.filter((id) => !ids.includes(id));
-    patch({ appointments, services: categoriesFor(appointments) });
+      : value.appointments.filter((id) => !ids.includes(id))
+    patch({ appointments, services: categoriesFor(appointments) })
   }
 
   function leadFor(serviceId: string): LeadTime {
-    return value.lead[serviceId] ?? DEFAULT_LEAD;
+    return value.lead[serviceId] ?? DEFAULT_LEAD
   }
 
   function patchLead(serviceId: string, partial: Partial<LeadTime>) {
@@ -214,7 +214,7 @@ export function TimeBlockDialog({
         ...value.lead,
         [serviceId]: { ...leadFor(serviceId), ...partial },
       },
-    });
+    })
   }
 
   function handleSave() {
@@ -222,20 +222,20 @@ export function TimeBlockDialog({
       start: value.start,
       end: value.end,
       breaks: value.breaks,
-    });
+    })
     if (!parsed.success) {
-      setErrors(fieldErrorsFrom(parsed.error));
-      return;
+      setErrors(fieldErrorsFrom(parsed.error))
+      return
     }
-    setErrors({});
-    const { id: _id, ...input } = value;
-    onSave(value, input);
+    setErrors({})
+    const { id: _id, ...input } = value
+    onSave(value, input)
   }
 
   const breakNote =
     value.breaks.length > 0
       ? "Blocks online bookings. Staff can still book manually."
-      : null;
+      : null
 
   return (
     <Dialog open onOpenChange={onOpenChange}>
@@ -415,7 +415,7 @@ export function TimeBlockDialog({
               type="single"
               value={value.recurring ? "recurring" : "once"}
               onValueChange={(next) => {
-                if (next) patch({ recurring: next === "recurring" });
+                if (next) patch({ recurring: next === "recurring" })
               }}
             >
               <ToggleGroupItem value="recurring">
@@ -432,7 +432,7 @@ export function TimeBlockDialog({
               type="single"
               value={String(value.interval)}
               onValueChange={(next) => {
-                if (next) patch({ interval: Number(next) as BookingInterval });
+                if (next) patch({ interval: Number(next) as BookingInterval })
               }}
             >
               {INTERVAL_OPTIONS.map((option) => (
@@ -454,14 +454,14 @@ export function TimeBlockDialog({
             <FieldLabel>Bookable during this slot</FieldLabel>
             <div className="grid grid-cols-2 gap-2.5">
               {CATEGORY_LIST.map((category) => {
-                const categoryServices = servicesByCategory[category.id] ?? [];
+                const categoryServices = servicesByCategory[category.id] ?? []
                 const selected = categoryServices.filter((s) =>
                   value.appointments.includes(s.id),
-                );
+                )
                 const allSelected =
                   categoryServices.length > 0 &&
-                  selected.length === categoryServices.length;
-                const isOpen = expanded.includes(category.id);
+                  selected.length === categoryServices.length
+                const isOpen = expanded.includes(category.id)
 
                 return (
                   <div
@@ -520,8 +520,8 @@ export function TimeBlockDialog({
                         {categoryServices.map((service) => {
                           const isSelected = value.appointments.includes(
                             service.id,
-                          );
-                          const lead = leadFor(service.id);
+                          )
+                          const lead = leadFor(service.id)
                           return (
                             <div key={service.id} className="px-2.5 py-2">
                               <div className="flex items-center gap-2">
@@ -604,12 +604,12 @@ export function TimeBlockDialog({
                                 </div>
                               )}
                             </div>
-                          );
+                          )
                         })}
                       </div>
                     )}
                   </div>
-                );
+                )
               })}
             </div>
           </div>
@@ -638,7 +638,7 @@ export function TimeBlockDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
+  )
 }
 
 function LeadUnitSelect({
@@ -646,9 +646,9 @@ function LeadUnitSelect({
   onChange,
   label,
 }: {
-  value: LeadUnit;
-  onChange: (unit: LeadUnit) => void;
-  label: string;
+  value: LeadUnit
+  onChange: (unit: LeadUnit) => void
+  label: string
 }) {
   return (
     <Select value={value} onValueChange={(next) => onChange(next as LeadUnit)}>
@@ -667,5 +667,5 @@ function LeadUnitSelect({
         ))}
       </SelectContent>
     </Select>
-  );
+  )
 }

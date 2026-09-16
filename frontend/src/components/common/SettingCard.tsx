@@ -1,20 +1,20 @@
-import type { ReactNode } from "react";
+import type { ReactNode } from "react"
 
-import { cn } from "@/lib/utils";
-import { Card } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
+import { cn } from "@/lib/utils"
+import { Card } from "@/components/ui/card"
+import { Switch } from "@/components/ui/switch"
 
 interface SettingCardProps {
-  icon: ReactNode;
+  icon: ReactNode
   /** Tailwind classes for the 42px icon tile (bg + text colour). */
-  tileClassName?: string;
-  title: string;
-  description: string;
-  checked: boolean;
-  onCheckedChange: (checked: boolean) => void;
-  switchLabel: string;
+  tileClassName?: string
+  title: string
+  description: string
+  checked: boolean
+  onCheckedChange: (checked: boolean) => void
+  switchLabel: string
   /** Body expands and collapses with the switch. */
-  children?: ReactNode;
+  children?: ReactNode
 }
 
 export function SettingCard({
@@ -58,5 +58,5 @@ export function SettingCard({
         </div>
       )}
     </Card>
-  );
+  )
 }

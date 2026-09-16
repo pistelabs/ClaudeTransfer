@@ -13,7 +13,11 @@ const IPV4 =
 export const staffSchema = z.object({
   name: z.string().trim().min(1, "Enter the staff member's name"),
   role: z.string().trim().min(1, "Enter a role"),
-  email: z.string().trim().min(1, "Enter an email address").email("Enter a valid email address"),
+  email: z
+    .string()
+    .trim()
+    .min(1, "Enter an email address")
+    .email("Enter a valid email address"),
   phone: z.string().trim().optional().default(""),
   availableHours: z
     .number({ message: "Enter the weekly hours" })

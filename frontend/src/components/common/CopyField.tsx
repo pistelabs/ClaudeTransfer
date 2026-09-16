@@ -1,15 +1,15 @@
-import { useEffect, useState } from "react";
-import { CheckIcon, CopyIcon, ExternalLinkIcon } from "lucide-react";
-import { toast } from "sonner";
+import { useEffect, useState } from "react"
+import { CheckIcon, CopyIcon, ExternalLinkIcon } from "lucide-react"
+import { toast } from "sonner"
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"
 
 interface CopyFieldProps {
-  url: string;
+  url: string
   /** Shown in the toast when the link is copied. */
-  toastTitle: string;
-  toastDescription?: string;
-  showVisit?: boolean;
+  toastTitle: string
+  toastDescription?: string
+  showVisit?: boolean
 }
 
 /** URL in a muted field, a Copy/Copied button, and an optional Visit link. */
@@ -19,23 +19,23 @@ export function CopyField({
   toastDescription,
   showVisit = false,
 }: CopyFieldProps) {
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
-    if (!copied) return;
-    const timer = setTimeout(() => setCopied(false), 2000);
-    return () => clearTimeout(timer);
-  }, [copied]);
+    if (!copied) return
+    const timer = setTimeout(() => setCopied(false), 2000)
+    return () => clearTimeout(timer)
+  }, [copied])
 
   async function handleCopy() {
     try {
-      await navigator.clipboard.writeText(`https://${url}`);
-      setCopied(true);
-      toast.success(toastTitle, { description: toastDescription ?? url });
+      await navigator.clipboard.writeText(`https://${url}`)
+      setCopied(true)
+      toast.success(toastTitle, { description: toastDescription ?? url })
     } catch {
       toast.error("Could not copy the link", {
         description: "Copy it manually from the field.",
-      });
+      })
     }
   }
 
@@ -67,5 +67,5 @@ export function CopyField({
         </a>
       )}
     </div>
-  );
+  )
 }

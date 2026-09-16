@@ -1,8 +1,8 @@
-import { useMemo } from "react";
+import { useMemo } from "react"
 
-import logoUrl from "@/assets/pistelabs-black.png";
-import { cn } from "@/lib/utils";
-import type { DocketSettings, RollSize } from "@/lib/types";
+import logoUrl from "@/assets/pistelabs-black.png"
+import { cn } from "@/lib/utils"
+import type { DocketSettings, RollSize } from "@/lib/types"
 
 /** Preview width follows the roll size. */
 export const ROLL_WIDTHS: Record<RollSize, number> = {
@@ -10,10 +10,10 @@ export const ROLL_WIDTHS: Record<RollSize, number> = {
   "80mm thermal roll": 300,
   "A4 sheet": 420,
   "4x6 label": 384,
-};
+}
 
 export function rollLabel(roll: RollSize): string {
-  return roll.split(" ")[0].toUpperCase();
+  return roll.split(" ")[0].toUpperCase()
 }
 
 const DEMO = {
@@ -29,12 +29,12 @@ const DEMO = {
   total: "$95.00",
   itemCount: "1 item",
   notes: "Customer collecting Friday before 5pm.",
-};
+}
 
 interface DocketPreviewProps {
-  docket: DocketSettings;
-  roll: RollSize;
-  copy: "customer" | "shop";
+  docket: DocketSettings
+  roll: RollSize
+  copy: "customer" | "shop"
 }
 
 /**
@@ -42,9 +42,9 @@ interface DocketPreviewProps {
  * the manager sees the change as it is toggled.
  */
 export function DocketPreview({ docket, roll, copy }: DocketPreviewProps) {
-  const width = ROLL_WIDTHS[roll];
-  const isCustomer = copy === "customer";
-  const els = isCustomer ? docket.customerEls : docket.shopEls;
+  const width = ROLL_WIDTHS[roll]
+  const isCustomer = copy === "customer"
+  const els = isCustomer ? docket.customerEls : docket.shopEls
 
   return (
     <div
@@ -145,7 +145,7 @@ export function DocketPreview({ docket, roll, copy }: DocketPreviewProps) {
         {isCustomer ? "Customer copy" : "Shop copy"}
       </div>
     </div>
-  );
+  )
 }
 
 function Line({
@@ -153,33 +153,33 @@ function Line({
   value,
   strong,
 }: {
-  label: string;
-  value: string;
-  strong?: boolean;
+  label: string
+  value: string
+  strong?: boolean
 }) {
   return (
     <div className={cn("flex justify-between gap-2", strong && "font-bold")}>
       <span className="opacity-70">{label}</span>
       <span>{value}</span>
     </div>
-  );
+  )
 }
 
 function Rule() {
-  return <div className="my-1.5 border-t border-dashed border-[#c4b8ae]" />;
+  return <div className="my-1.5 border-t border-dashed border-[#c4b8ae]" />
 }
 
 function Barcode({ seed }: { seed: string }) {
   // Deterministic bar widths so the preview does not flicker between renders.
   const bars = useMemo(() => {
-    const base = seed.split("").reduce((acc, c) => acc + c.charCodeAt(0), 7);
+    const base = seed.split("").reduce((acc, c) => acc + c.charCodeAt(0), 7)
     // Each bar is a pure function of (seed, index) — no carried state.
     return Array.from(
       { length: 42 },
       (_, i) =>
         ((((base + i * 2654435761) * 1103515245 + 12345) & 0x7fffffff) % 3) + 1,
-    );
-  }, [seed]);
+    )
+  }, [seed])
   return (
     <div
       className="mt-2 flex h-7 items-end justify-center gap-[1px]"
@@ -193,5 +193,5 @@ function Barcode({ seed }: { seed: string }) {
         />
       ))}
     </div>
-  );
+  )
 }

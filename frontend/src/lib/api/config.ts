@@ -19,8 +19,8 @@ export const USE_MOCK_API =
 
 /** Django session auth needs the cookie; token auth does not. */
 export const WITH_CREDENTIALS =
-  (import.meta.env.VITE_API_WITH_CREDENTIALS?.trim().toLowerCase() ?? "true") !==
-  "false"
+  (import.meta.env.VITE_API_WITH_CREDENTIALS?.trim().toLowerCase() ??
+    "true") !== "false"
 
 /** Name of Django's CSRF cookie (settings.CSRF_COOKIE_NAME). */
 export const CSRF_COOKIE_NAME =
@@ -45,5 +45,4 @@ export function getAuthToken(): string | null {
 }
 
 /** DRF's TokenAuthentication uses "Token <key>"; JWT setups use "Bearer". */
-export const AUTH_SCHEME =
-  import.meta.env.VITE_AUTH_SCHEME?.trim() || "Token"
+export const AUTH_SCHEME = import.meta.env.VITE_AUTH_SCHEME?.trim() || "Token"

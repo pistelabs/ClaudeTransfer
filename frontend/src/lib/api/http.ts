@@ -29,7 +29,7 @@ export class ApiError extends Error {
     status: number,
     detail: string,
     fieldErrors: Record<string, string[]> = {},
-    payload: unknown = null
+    payload: unknown = null,
   ) {
     super(detail)
     this.name = "ApiError"
@@ -87,10 +87,7 @@ export interface RequestOptions {
   headers?: Record<string, string>
 }
 
-function normalizeErrorPayload(
-  status: number,
-  payload: unknown
-): ApiError {
+function normalizeErrorPayload(status: number, payload: unknown): ApiError {
   if (typeof payload === "string" && payload.trim()) {
     return new ApiError(status, payload, {}, payload)
   }
@@ -120,11 +117,16 @@ function normalizeErrorPayload(
       status,
       first ?? `Request failed with status ${status}`,
       fieldErrors,
-      payload
+      payload,
     )
   }
 
-  return new ApiError(status, `Request failed with status ${status}`, {}, payload)
+  return new ApiError(
+    status,
+    `Request failed with status ${status}`,
+    {},
+    payload,
+  )
 }
 
 /**
@@ -133,7 +135,7 @@ function normalizeErrorPayload(
  */
 export async function request<T>(
   path: string,
-  { method = "GET", body, params, signal, headers = {} }: RequestOptions = {}
+  { method = "GET", body, params, signal, headers = {} }: RequestOptions = {},
 ): Promise<T> {
   const requestHeaders: Record<string, string> = {
     Accept: "application/json",
@@ -168,7 +170,8 @@ export async function request<T>(
             : JSON.stringify(body),
     })
   } catch (cause) {
-    if (cause instanceof DOMException && cause.name === "AbortError") throw cause
+    if (cause instanceof DOMException && cause.name === "AbortError")
+      throw cause
     throw new ApiError(0, "Could not reach the server.", {}, cause)
   }
 

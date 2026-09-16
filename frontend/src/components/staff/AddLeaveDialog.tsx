@@ -1,29 +1,29 @@
-import { useState } from "react";
+import { useState } from "react"
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils"
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { FieldLabel } from "@/components/common/FieldLabel";
-import { StaffAvatar } from "@/components/common/StaffAvatar";
-import { LEAVE_TYPE_STYLES } from "@/lib/categories";
-import { fieldErrorsFrom, leaveSchema } from "@/lib/validation";
-import type { LeaveType, StaffMember } from "@/lib/types";
-import type { LeaveInput } from "@/lib/api";
+} from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { FieldLabel } from "@/components/common/FieldLabel"
+import { StaffAvatar } from "@/components/common/StaffAvatar"
+import { LEAVE_TYPE_STYLES } from "@/lib/categories"
+import { fieldErrorsFrom, leaveSchema } from "@/lib/validation"
+import type { LeaveType, StaffMember } from "@/lib/types"
+import type { LeaveInput } from "@/lib/api"
 
-const LEAVE_TYPES: LeaveType[] = ["Vacation", "Sick", "Personal"];
+const LEAVE_TYPES: LeaveType[] = ["Vacation", "Sick", "Personal"]
 
 interface AddLeaveDialogProps {
-  staff: StaffMember[];
-  onOpenChange: (open: boolean) => void;
-  onSave: (input: LeaveInput) => void;
-  saving?: boolean;
+  staff: StaffMember[]
+  onOpenChange: (open: boolean) => void
+  onSave: (input: LeaveInput) => void
+  saving?: boolean
 }
 
 export function AddLeaveDialog({
@@ -32,20 +32,20 @@ export function AddLeaveDialog({
   onSave,
   saving = false,
 }: AddLeaveDialogProps) {
-  const [staffId, setStaffId] = useState(staff[0]?.id ?? "");
-  const [type, setType] = useState<LeaveType>("Vacation");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [staffId, setStaffId] = useState(staff[0]?.id ?? "")
+  const [type, setType] = useState<LeaveType>("Vacation")
+  const [startDate, setStartDate] = useState("")
+  const [endDate, setEndDate] = useState("")
+  const [errors, setErrors] = useState<Record<string, string>>({})
 
   function handleSave() {
-    const parsed = leaveSchema.safeParse({ staffId, type, startDate, endDate });
+    const parsed = leaveSchema.safeParse({ staffId, type, startDate, endDate })
     if (!parsed.success) {
-      setErrors(fieldErrorsFrom(parsed.error));
-      return;
+      setErrors(fieldErrorsFrom(parsed.error))
+      return
     }
-    setErrors({});
-    onSave(parsed.data);
+    setErrors({})
+    onSave(parsed.data)
   }
 
   return (
@@ -60,7 +60,7 @@ export function AddLeaveDialog({
             <FieldLabel>Staff member</FieldLabel>
             <div className="flex flex-wrap gap-1.5">
               {staff.map((member) => {
-                const isSelected = member.id === staffId;
+                const isSelected = member.id === staffId
                 return (
                   <button
                     key={member.id}
@@ -77,7 +77,7 @@ export function AddLeaveDialog({
                     <StaffAvatar staff={member} size={22} />
                     {member.name}
                   </button>
-                );
+                )
               })}
             </div>
             {errors.staffId && (
@@ -89,8 +89,8 @@ export function AddLeaveDialog({
             <FieldLabel>Leave type</FieldLabel>
             <div className="flex gap-2">
               {LEAVE_TYPES.map((leaveType) => {
-                const isSelected = leaveType === type;
-                const style = LEAVE_TYPE_STYLES[leaveType];
+                const isSelected = leaveType === type
+                const style = LEAVE_TYPE_STYLES[leaveType]
                 return (
                   <button
                     key={leaveType}
@@ -115,7 +115,7 @@ export function AddLeaveDialog({
                   >
                     {leaveType}
                   </button>
-                );
+                )
               })}
             </div>
           </div>
@@ -162,5 +162,5 @@ export function AddLeaveDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

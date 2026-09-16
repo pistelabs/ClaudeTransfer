@@ -1,19 +1,19 @@
-import { PalmtreeIcon } from "lucide-react";
+import { PalmtreeIcon } from "lucide-react"
 
-import { cn } from "@/lib/utils";
-import { TimeBlockCard } from "./TimeBlockCard";
-import { AddBlockButton, type CopyOption } from "./AddBlockButton";
-import { DAYS, type Day, type StaffMember, type TimeBlock } from "@/lib/types";
+import { cn } from "@/lib/utils"
+import { TimeBlockCard } from "./TimeBlockCard"
+import { AddBlockButton, type CopyOption } from "./AddBlockButton"
+import { DAYS, type Day, type StaffMember, type TimeBlock } from "@/lib/types"
 
 interface WeekGridByStaffProps {
-  staff: StaffMember;
-  blocksByDay: Record<Day, TimeBlock[]>;
-  dates: Record<Day, Date>;
-  highlightWeekend?: boolean;
-  onAdd: (day: Day) => void;
-  onEdit: (block: TimeBlock) => void;
-  onToggle: (block: TimeBlock, enabled: boolean) => void;
-  onCopyFrom: (toDay: Day, fromDay: Day) => void;
+  staff: StaffMember
+  blocksByDay: Record<Day, TimeBlock[]>
+  dates: Record<Day, Date>
+  highlightWeekend?: boolean
+  onAdd: (day: Day) => void
+  onEdit: (block: TimeBlock) => void
+  onToggle: (block: TimeBlock, enabled: boolean) => void
+  onCopyFrom: (toDay: Day, fromDay: Day) => void
 }
 
 const MONTHS = [
@@ -29,7 +29,7 @@ const MONTHS = [
   "Oct",
   "Nov",
   "Dec",
-];
+]
 
 /** One person, all seven days. */
 export function WeekGridByStaff({
@@ -47,7 +47,7 @@ export function WeekGridByStaff({
   ).map((day) => ({
     value: day,
     label: `${day} (${blocksByDay[day].length})`,
-  }));
+  }))
 
   return (
     <div className="overflow-x-auto pb-2">
@@ -56,10 +56,10 @@ export function WeekGridByStaff({
         style={{ gridTemplateColumns: "repeat(7, minmax(196px, 1fr))" }}
       >
         {DAYS.map((day) => {
-          const blocks = blocksByDay[day] ?? [];
-          const isDayOff = staff.daysOff.includes(day);
-          const isWeekend = day === "Sat" || day === "Sun";
-          const date = dates[day];
+          const blocks = blocksByDay[day] ?? []
+          const isDayOff = staff.daysOff.includes(day)
+          const isWeekend = day === "Sat" || day === "Sun"
+          const date = dates[day]
 
           return (
             <div key={day}>
@@ -109,9 +109,9 @@ export function WeekGridByStaff({
                 />
               </div>
             </div>
-          );
+          )
         })}
       </div>
     </div>
-  );
+  )
 }

@@ -1,7 +1,7 @@
-import type { ComponentProps } from "react";
+import type { ComponentProps } from "react"
 
-import { cn } from "@/lib/utils";
-import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils"
+import { Label } from "@/components/ui/label"
 
 /** The uppercase label that sits above every form field group. */
 export function FieldLabel({
@@ -16,5 +16,5 @@ export function FieldLabel({
       )}
       {...props}
     />
-  );
+  )
 }

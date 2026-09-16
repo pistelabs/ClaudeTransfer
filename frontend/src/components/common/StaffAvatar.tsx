@@ -1,11 +1,11 @@
-import { cn } from "@/lib/utils";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import type { StaffMember } from "@/lib/types";
+import { cn } from "@/lib/utils"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import type { StaffMember } from "@/lib/types"
 
 interface StaffAvatarProps {
-  staff: Pick<StaffMember, "initials" | "color" | "name">;
-  size?: number;
-  className?: string;
+  staff: Pick<StaffMember, "initials" | "color" | "name">
+  size?: number
+  className?: string
 }
 
 /** Initials avatar in the person's fixed colour. */
@@ -25,5 +25,5 @@ export function StaffAvatar({ staff, size = 28, className }: StaffAvatarProps) {
         {staff.initials}
       </AvatarFallback>
     </Avatar>
-  );
+  )
 }

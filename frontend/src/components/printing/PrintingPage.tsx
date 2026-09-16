@@ -1,21 +1,21 @@
-import { Skeleton } from "@/components/ui/skeleton";
-import { PageHeader } from "@/components/common/PageHeader";
-import { PrinterConnectionCard } from "./PrinterConnectionCard";
-import { DocketConfigCard } from "./DocketConfigCard";
+import { Skeleton } from "@/components/ui/skeleton"
+import { PageHeader } from "@/components/common/PageHeader"
+import { PrinterConnectionCard } from "./PrinterConnectionCard"
+import { DocketConfigCard } from "./DocketConfigCard"
 import {
   useDocketSettings,
   usePrinterSettings,
   useTestPrinter,
   useUpdateDocketSettings,
   useUpdatePrinterSettings,
-} from "@/lib/api/queries";
+} from "@/lib/api/queries"
 
 export function PrintingPage() {
-  const { data: printer, isLoading: printerLoading } = usePrinterSettings();
-  const { data: docket, isLoading: docketLoading } = useDocketSettings();
-  const updatePrinter = useUpdatePrinterSettings();
-  const updateDocket = useUpdateDocketSettings();
-  const testPrinter = useTestPrinter();
+  const { data: printer, isLoading: printerLoading } = usePrinterSettings()
+  const { data: docket, isLoading: docketLoading } = useDocketSettings()
+  const updatePrinter = useUpdatePrinterSettings()
+  const updateDocket = useUpdateDocketSettings()
+  const testPrinter = useTestPrinter()
 
   if (printerLoading || docketLoading || !printer || !docket) {
     return (
@@ -24,7 +24,7 @@ export function PrintingPage() {
         <Skeleton className="h-[280px] w-full rounded-xl" />
         <Skeleton className="h-[420px] w-full rounded-xl" />
       </div>
-    );
+    )
   }
 
   return (
@@ -40,7 +40,7 @@ export function PrintingPage() {
         testing={testPrinter.isPending}
         onTest={async () => {
           try {
-            return await testPrinter.mutateAsync();
+            return await testPrinter.mutateAsync()
           } catch (error) {
             return {
               ok: false,
@@ -48,7 +48,7 @@ export function PrintingPage() {
                 error instanceof Error
                   ? error.message
                   : "The printer did not respond.",
-            };
+            }
           }
         }}
       />
@@ -59,5 +59,5 @@ export function PrintingPage() {
         onChange={(patch) => updateDocket.mutate(patch)}
       />
     </div>
-  );
+  )
 }

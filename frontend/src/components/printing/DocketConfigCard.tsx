@@ -1,11 +1,11 @@
-import { cn } from "@/lib/utils";
-import { Card } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
-import { FieldLabel } from "@/components/common/FieldLabel";
-import { DocketPreview, rollLabel } from "./DocketPreview";
+import { cn } from "@/lib/utils"
+import { Card } from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Input } from "@/components/ui/input"
+import { Switch } from "@/components/ui/switch"
+import { Textarea } from "@/components/ui/textarea"
+import { FieldLabel } from "@/components/common/FieldLabel"
+import { DocketPreview, rollLabel } from "./DocketPreview"
 import {
   CUSTOMER_DOCKET_ELEMENTS,
   SHOP_DOCKET_ELEMENTS,
@@ -13,7 +13,7 @@ import {
   type DocketSettings,
   type RollSize,
   type ShopDocketElement,
-} from "@/lib/types";
+} from "@/lib/types"
 
 const CUSTOMER_LABELS: Record<CustomerDocketElement, string> = {
   logo: "Logo",
@@ -27,7 +27,7 @@ const CUSTOMER_LABELS: Record<CustomerDocketElement, string> = {
   payNotice: "Pay notice",
   barcode: "Barcode",
   footer: "Footer",
-};
+}
 
 const SHOP_LABELS: Record<ShopDocketElement, string> = {
   jobNumber: "Job number",
@@ -40,12 +40,12 @@ const SHOP_LABELS: Record<ShopDocketElement, string> = {
   notes: "Notes",
   customer: "Customer",
   barcode: "Barcode",
-};
+}
 
 interface DocketConfigCardProps {
-  docket: DocketSettings;
-  roll: RollSize;
-  onChange: (patch: Partial<DocketSettings>) => void;
+  docket: DocketSettings
+  roll: RollSize
+  onChange: (patch: Partial<DocketSettings>) => void
 }
 
 export function DocketConfigCard({
@@ -185,5 +185,5 @@ export function DocketConfigCard({
         </div>
       </div>
     </Card>
-  );
+  )
 }

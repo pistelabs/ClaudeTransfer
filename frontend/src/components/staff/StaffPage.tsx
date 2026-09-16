@@ -1,20 +1,20 @@
-import { useState } from "react";
-import { PlusIcon } from "lucide-react";
-import { toast } from "sonner";
+import { useState } from "react"
+import { PlusIcon } from "lucide-react"
+import { toast } from "sonner"
 
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { PageHeader } from "@/components/common/PageHeader";
-import { StaffCard } from "./StaffCard";
-import { StaffDetailsDialog } from "./StaffDetailsDialog";
+import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
+import { PageHeader } from "@/components/common/PageHeader"
+import { StaffCard } from "./StaffCard"
+import { StaffDetailsDialog } from "./StaffDetailsDialog"
 import {
   StaffFormDialog,
   draftFromStaff,
   newStaffDraft,
   type StaffDraft,
-} from "./StaffFormDialog";
-import { AnnualLeaveTable } from "./AnnualLeaveTable";
-import { AddLeaveDialog } from "./AddLeaveDialog";
+} from "./StaffFormDialog"
+import { AnnualLeaveTable } from "./AnnualLeaveTable"
+import { AddLeaveDialog } from "./AddLeaveDialog"
 import {
   useCreateLeave,
   useCreateStaff,
@@ -23,22 +23,22 @@ import {
   useLeave,
   useStaff,
   useUpdateStaff,
-} from "@/lib/api/queries";
-import type { StaffMember } from "@/lib/types";
+} from "@/lib/api/queries"
+import type { StaffMember } from "@/lib/types"
 
 export function StaffPage() {
-  const [details, setDetails] = useState<StaffMember | null>(null);
-  const [draft, setDraft] = useState<StaffDraft | null>(null);
-  const [leaveOpen, setLeaveOpen] = useState(false);
+  const [details, setDetails] = useState<StaffMember | null>(null)
+  const [draft, setDraft] = useState<StaffDraft | null>(null)
+  const [leaveOpen, setLeaveOpen] = useState(false)
 
-  const { data: staff = [], isLoading } = useStaff();
-  const { data: leave = [] } = useLeave();
+  const { data: staff = [], isLoading } = useStaff()
+  const { data: leave = [] } = useLeave()
 
-  const createStaff = useCreateStaff();
-  const updateStaff = useUpdateStaff();
-  const deleteStaff = useDeleteStaff();
-  const createLeave = useCreateLeave();
-  const deleteLeave = useDeleteLeave();
+  const createStaff = useCreateStaff()
+  const updateStaff = useUpdateStaff()
+  const deleteStaff = useDeleteStaff()
+  const createLeave = useCreateLeave()
+  const deleteLeave = useDeleteLeave()
 
   function handleSave(
     value: StaffDraft,
@@ -49,26 +49,26 @@ export function StaffPage() {
         { id: value.id, input },
         {
           onSuccess: () => {
-            toast.success("Staff member updated", { description: value.name });
-            setDraft(null);
+            toast.success("Staff member updated", { description: value.name })
+            setDraft(null)
           },
         },
-      );
-      return;
+      )
+      return
     }
     createStaff.mutate(input, {
       onSuccess: () => {
-        toast.success("Staff member added", { description: value.name });
-        setDraft(null);
+        toast.success("Staff member added", { description: value.name })
+        setDraft(null)
       },
-    });
+    })
   }
 
   function handleDelete(member: StaffMember) {
     deleteStaff.mutate(member.id, {
       onSuccess: () =>
         toast.success("Staff member removed", { description: member.name }),
-    });
+    })
   }
 
   return (
@@ -136,8 +136,8 @@ export function StaffPage() {
         staff={details}
         onOpenChange={(open) => !open && setDetails(null)}
         onEdit={(member) => {
-          setDetails(null);
-          setDraft(draftFromStaff(member));
+          setDetails(null)
+          setDraft(draftFromStaff(member))
         }}
       />
 
@@ -162,13 +162,13 @@ export function StaffPage() {
               onSuccess: (entry) => {
                 toast.success("Annual leave added", {
                   description: entry.dates,
-                });
-                setLeaveOpen(false);
+                })
+                setLeaveOpen(false)
               },
             })
           }
         />
       )}
     </div>
-  );
+  )
 }

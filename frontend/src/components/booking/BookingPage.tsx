@@ -1,38 +1,38 @@
-import { useState } from "react";
-import { GlobeIcon, UsersIcon } from "lucide-react";
-import { toast } from "sonner";
+import { useState } from "react"
+import { GlobeIcon, UsersIcon } from "lucide-react"
+import { toast } from "sonner"
 
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Input } from "@/components/ui/input"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { PageHeader } from "@/components/common/PageHeader";
-import { SettingCard } from "@/components/common/SettingCard";
-import { CopyField } from "@/components/common/CopyField";
-import { QrCode } from "@/components/common/QrCode";
-import { FieldLabel } from "@/components/common/FieldLabel";
-import { WalkInServicesDialog } from "./WalkInServicesDialog";
-import { LEAD_UNITS } from "@/lib/time";
+} from "@/components/ui/select"
+import { PageHeader } from "@/components/common/PageHeader"
+import { SettingCard } from "@/components/common/SettingCard"
+import { CopyField } from "@/components/common/CopyField"
+import { QrCode } from "@/components/common/QrCode"
+import { FieldLabel } from "@/components/common/FieldLabel"
+import { WalkInServicesDialog } from "./WalkInServicesDialog"
+import { LEAD_UNITS } from "@/lib/time"
 import {
   useServices,
   useStoreSettings,
   useUpdateStoreSettings,
-} from "@/lib/api/queries";
-import type { LeadUnit } from "@/lib/types";
+} from "@/lib/api/queries"
+import type { LeadUnit } from "@/lib/types"
 
 export function BookingPage() {
-  const [pickerOpen, setPickerOpen] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false)
 
-  const { data: settings, isLoading } = useStoreSettings();
-  const { data: services = [] } = useServices();
-  const updateSettings = useUpdateStoreSettings();
+  const { data: settings, isLoading } = useStoreSettings()
+  const { data: services = [] } = useServices()
+  const updateSettings = useUpdateStoreSettings()
 
   if (isLoading || !settings) {
     return (
@@ -41,10 +41,10 @@ export function BookingPage() {
         <Skeleton className="h-[220px] w-full rounded-xl" />
         <Skeleton className="h-[220px] w-full rounded-xl" />
       </div>
-    );
+    )
   }
 
-  const { booking, walkIn } = settings;
+  const { booking, walkIn } = settings
 
   return (
     <div>
@@ -61,10 +61,10 @@ export function BookingPage() {
           checked={booking.onlineEnabled}
           switchLabel="Accept online bookings"
           onCheckedChange={(onlineEnabled) => {
-            updateSettings.mutate({ booking: { ...booking, onlineEnabled } });
+            updateSettings.mutate({ booking: { ...booking, onlineEnabled } })
             toast.success(
               onlineEnabled ? "Online bookings on" : "Online bookings off",
-            );
+            )
           }}
         >
           <div
@@ -124,8 +124,8 @@ export function BookingPage() {
           checked={walkIn.enabled}
           switchLabel="Accept walk-in check-ins"
           onCheckedChange={(enabled) => {
-            updateSettings.mutate({ walkIn: { ...walkIn, enabled } });
-            toast.success(enabled ? "Walk-ins on" : "Walk-ins off");
+            updateSettings.mutate({ walkIn: { ...walkIn, enabled } })
+            toast.success(enabled ? "Walk-ins on" : "Walk-ins off")
           }}
         >
           <div className="space-y-4">
@@ -220,16 +220,16 @@ export function BookingPage() {
           selectedIds={walkIn.serviceIds}
           onOpenChange={setPickerOpen}
           onSave={(serviceIds) => {
-            updateSettings.mutate({ walkIn: { ...walkIn, serviceIds } });
+            updateSettings.mutate({ walkIn: { ...walkIn, serviceIds } })
             toast.success("Walk-in services saved", {
               description: `${serviceIds.length} service${serviceIds.length === 1 ? "" : "s"} bookable`,
-            });
-            setPickerOpen(false);
+            })
+            setPickerOpen(false)
           }}
         />
       )}
     </div>
-  );
+  )
 }
 
 function LeadTimeRow({
@@ -238,12 +238,12 @@ function LeadTimeRow({
   unit,
   onChange,
 }: {
-  label: string;
-  value: number;
-  unit: LeadUnit;
-  onChange: (value: number, unit: LeadUnit) => void;
+  label: string
+  value: number
+  unit: LeadUnit
+  onChange: (value: number, unit: LeadUnit) => void
 }) {
-  const id = `lead-${label.replace(/\s+/g, "-").toLowerCase()}`;
+  const id = `lead-${label.replace(/\s+/g, "-").toLowerCase()}`
   return (
     <div className="flex items-center justify-between gap-3">
       <label htmlFor={id} className="text-muted-foreground text-[13px]">
@@ -275,5 +275,5 @@ function LeadTimeRow({
         </Select>
       </div>
     </div>
-  );
+  )
 }

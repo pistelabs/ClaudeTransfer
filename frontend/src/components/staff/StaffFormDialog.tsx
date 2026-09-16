@@ -1,31 +1,31 @@
-import { useState } from "react";
+import { useState } from "react"
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils"
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { FieldLabel } from "@/components/common/FieldLabel";
-import { fieldErrorsFrom, staffSchema } from "@/lib/validation";
+} from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Input } from "@/components/ui/input"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { FieldLabel } from "@/components/common/FieldLabel"
+import { fieldErrorsFrom, staffSchema } from "@/lib/validation"
 import {
   DAYS,
   type Day,
   type NotifyPreference,
   type StaffMember,
-} from "@/lib/types";
-import type { StaffInput } from "@/lib/api";
+} from "@/lib/types"
+import type { StaffInput } from "@/lib/api"
 
 const NOTIFY_OPTIONS: {
-  value: NotifyPreference;
-  label: string;
-  description: string;
+  value: NotifyPreference
+  label: string
+  description: string
 }[] = [
   {
     value: "every",
@@ -42,20 +42,20 @@ const NOTIFY_OPTIONS: {
     label: "No notifications",
     description: "Nothing is sent",
   },
-];
+]
 
 export interface StaffDraft {
   /** null when creating. */
-  id: string | null;
-  name: string;
-  role: string;
-  email: string;
-  phone: string;
-  availableHours: number;
-  daysOff: Day[];
-  bookingNotify: NotifyPreference;
-  canCheckEquipment: boolean;
-  canCompleteAppointments: boolean;
+  id: string | null
+  name: string
+  role: string
+  email: string
+  phone: string
+  availableHours: number
+  daysOff: Day[]
+  bookingNotify: NotifyPreference
+  canCheckEquipment: boolean
+  canCompleteAppointments: boolean
 }
 
 export function draftFromStaff(staff: StaffMember): StaffDraft {
@@ -70,7 +70,7 @@ export function draftFromStaff(staff: StaffMember): StaffDraft {
     bookingNotify: staff.bookingNotify,
     canCheckEquipment: staff.canCheckEquipment,
     canCompleteAppointments: staff.canCompleteAppointments,
-  };
+  }
 }
 
 export function newStaffDraft(): StaffDraft {
@@ -85,15 +85,15 @@ export function newStaffDraft(): StaffDraft {
     bookingNotify: "every",
     canCheckEquipment: true,
     canCompleteAppointments: true,
-  };
+  }
 }
 
 interface StaffFormDialogProps {
   /** Non-null: the parent mounts this only while a draft is open. */
-  draft: StaffDraft;
-  onOpenChange: (open: boolean) => void;
-  onSave: (draft: StaffDraft, input: StaffInput) => void;
-  saving?: boolean;
+  draft: StaffDraft
+  onOpenChange: (open: boolean) => void
+  onSave: (draft: StaffDraft, input: StaffInput) => void
+  saving?: boolean
 }
 
 export function StaffFormDialog({
@@ -102,13 +102,13 @@ export function StaffFormDialog({
   onSave,
   saving = false,
 }: StaffFormDialogProps) {
-  const [value, setValue] = useState<StaffDraft>(draft);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [value, setValue] = useState<StaffDraft>(draft)
+  const [errors, setErrors] = useState<Record<string, string>>({})
 
-  const isEdit = value.id !== null;
+  const isEdit = value.id !== null
 
   function patch(partial: Partial<StaffDraft>) {
-    setValue((current) => ({ ...current, ...partial }));
+    setValue((current) => ({ ...current, ...partial }))
   }
 
   function handleSave() {
@@ -122,14 +122,14 @@ export function StaffFormDialog({
       bookingNotify: value.bookingNotify,
       canCheckEquipment: value.canCheckEquipment,
       canCompleteAppointments: value.canCompleteAppointments,
-    });
+    })
     if (!parsed.success) {
-      setErrors(fieldErrorsFrom(parsed.error));
-      return;
+      setErrors(fieldErrorsFrom(parsed.error))
+      return
     }
-    setErrors({});
+    setErrors({})
     // Initials, avatar colour and status stay with the server.
-    onSave(value, parsed.data);
+    onSave(value, parsed.data)
   }
 
   return (
@@ -209,7 +209,7 @@ export function StaffFormDialog({
             <FieldLabel>Standard days off</FieldLabel>
             <div className="flex gap-1.5">
               {DAYS.map((day) => {
-                const isOff = value.daysOff.includes(day);
+                const isOff = value.daysOff.includes(day)
                 return (
                   <button
                     key={day}
@@ -231,7 +231,7 @@ export function StaffFormDialog({
                   >
                     {day}
                   </button>
-                );
+                )
               })}
             </div>
           </div>
@@ -264,7 +264,7 @@ export function StaffFormDialog({
               className="gap-1.5"
             >
               {NOTIFY_OPTIONS.map((option) => {
-                const isSelected = value.bookingNotify === option.value;
+                const isSelected = value.bookingNotify === option.value
                 return (
                   <label
                     key={option.value}
@@ -294,7 +294,7 @@ export function StaffFormDialog({
                       </span>
                     </span>
                   </label>
-                );
+                )
               })}
             </RadioGroup>
           </div>
@@ -310,7 +310,7 @@ export function StaffFormDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
+  )
 }
 
 function Field({
@@ -319,10 +319,10 @@ function Field({
   error,
   children,
 }: {
-  label: string;
-  htmlFor?: string;
-  error?: string;
-  children: React.ReactNode;
+  label: string
+  htmlFor?: string
+  error?: string
+  children: React.ReactNode
 }) {
   return (
     <div className="space-y-1.5">
@@ -330,7 +330,7 @@ function Field({
       {children}
       {error && <p className="text-destructive text-[12px]">{error}</p>}
     </div>
-  );
+  )
 }
 
 function PermissionRow({
@@ -338,9 +338,9 @@ function PermissionRow({
   checked,
   onChange,
 }: {
-  label: string;
-  checked: boolean;
-  onChange: (checked: boolean) => void;
+  label: string
+  checked: boolean
+  onChange: (checked: boolean) => void
 }) {
   return (
     <label className="flex cursor-pointer items-center gap-2.5 px-3 py-2.5 text-[13px]">
@@ -351,5 +351,5 @@ function PermissionRow({
       />
       {label}
     </label>
-  );
+  )
 }

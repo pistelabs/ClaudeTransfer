@@ -1,7 +1,7 @@
-import * as React from "react";
-import * as SwitchPrimitive from "@radix-ui/react-switch";
+import * as React from "react"
+import * as SwitchPrimitive from "@radix-ui/react-switch"
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils"
 
 /** 36x20 track with a 16px thumb, per the design tokens. */
 function Switch({
@@ -26,7 +26,7 @@ function Switch({
         )}
       />
     </SwitchPrimitive.Root>
-  );
+  )
 }
 
-export { Switch };
+export { Switch }

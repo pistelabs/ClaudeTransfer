@@ -1,4 +1,4 @@
-import { Trash2Icon } from "lucide-react";
+import { Trash2Icon } from "lucide-react"
 
 import {
   Table,
@@ -7,15 +7,15 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { StaffAvatar } from "@/components/common/StaffAvatar";
-import { LEAVE_TYPE_STYLES } from "@/lib/categories";
-import type { LeaveEntry, StaffMember } from "@/lib/types";
+} from "@/components/ui/table"
+import { StaffAvatar } from "@/components/common/StaffAvatar"
+import { LEAVE_TYPE_STYLES } from "@/lib/categories"
+import type { LeaveEntry, StaffMember } from "@/lib/types"
 
 interface AnnualLeaveTableProps {
-  leave: LeaveEntry[];
-  staff: StaffMember[];
-  onDelete: (entry: LeaveEntry) => void;
+  leave: LeaveEntry[]
+  staff: StaffMember[]
+  onDelete: (entry: LeaveEntry) => void
 }
 
 export function AnnualLeaveTable({
@@ -23,7 +23,7 @@ export function AnnualLeaveTable({
   staff,
   onDelete,
 }: AnnualLeaveTableProps) {
-  const byId = new Map(staff.map((s) => [s.id, s]));
+  const byId = new Map(staff.map((s) => [s.id, s]))
 
   return (
     <div className="border-border bg-card overflow-hidden rounded-xl border shadow-card">
@@ -63,8 +63,8 @@ export function AnnualLeaveTable({
             </TableRow>
           )}
           {leave.map((entry) => {
-            const member = byId.get(entry.staffId);
-            const style = LEAVE_TYPE_STYLES[entry.type];
+            const member = byId.get(entry.staffId)
+            const style = LEAVE_TYPE_STYLES[entry.type]
             return (
               <TableRow key={entry.id} className="border-divider-light group">
                 <TableCell className="px-[18px] py-3.5">
@@ -106,10 +106,10 @@ export function AnnualLeaveTable({
                   </span>
                 </TableCell>
               </TableRow>
-            );
+            )
           })}
         </TableBody>
       </Table>
     </div>
-  );
+  )
 }

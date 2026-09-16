@@ -4,21 +4,21 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { StaffAvatar } from "@/components/common/StaffAvatar";
-import { DAYS, type StaffMember } from "@/lib/types";
+} from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { StaffAvatar } from "@/components/common/StaffAvatar"
+import { DAYS, type StaffMember } from "@/lib/types"
 
 const NOTIFY_LABELS = {
   every: "Email on every booking",
   daily: "Daily recap of bookings",
   none: "No notifications",
-} as const;
+} as const
 
 interface StaffDetailsDialogProps {
-  staff: StaffMember | null;
-  onOpenChange: (open: boolean) => void;
-  onEdit: (staff: StaffMember) => void;
+  staff: StaffMember | null
+  onOpenChange: (open: boolean) => void
+  onEdit: (staff: StaffMember) => void
 }
 
 export function StaffDetailsDialog({
@@ -26,9 +26,9 @@ export function StaffDetailsDialog({
   onOpenChange,
   onEdit,
 }: StaffDetailsDialogProps) {
-  if (!staff) return null;
+  if (!staff) return null
 
-  const daysOff = DAYS.filter((day) => staff.daysOff.includes(day));
+  const daysOff = DAYS.filter((day) => staff.daysOff.includes(day))
 
   return (
     <Dialog open onOpenChange={onOpenChange}>
@@ -96,7 +96,7 @@ export function StaffDetailsDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
+  )
 }
 
 function DetailRow({ label, value }: { label: string; value: string }) {
@@ -107,5 +107,5 @@ function DetailRow({ label, value }: { label: string; value: string }) {
       </span>
       <span className="truncate text-[13px]">{value}</span>
     </div>
-  );
+  )
 }

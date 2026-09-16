@@ -1,17 +1,17 @@
-import { CoffeeIcon, GlobeIcon, PencilIcon, RepeatIcon } from "lucide-react";
+import { CoffeeIcon, GlobeIcon, PencilIcon, RepeatIcon } from "lucide-react"
 
-import { cn } from "@/lib/utils";
-import { Switch } from "@/components/ui/switch";
-import { CategoryChip } from "@/components/common/CategoryChip";
-import { blockMinutes, formatDuration, formatInterval } from "@/lib/time";
-import type { TimeBlock } from "@/lib/types";
+import { cn } from "@/lib/utils"
+import { Switch } from "@/components/ui/switch"
+import { CategoryChip } from "@/components/common/CategoryChip"
+import { blockMinutes, formatDuration, formatInterval } from "@/lib/time"
+import type { TimeBlock } from "@/lib/types"
 
 interface TimeBlockCardProps {
-  block: TimeBlock;
-  onEdit: () => void;
-  onToggle: (enabled: boolean) => void;
+  block: TimeBlock
+  onEdit: () => void
+  onToggle: (enabled: boolean) => void
   /** Compact variant used by the by-day columns. */
-  compact?: boolean;
+  compact?: boolean
 }
 
 /**
@@ -24,8 +24,8 @@ export function TimeBlockCard({
   onToggle,
   compact = false,
 }: TimeBlockCardProps) {
-  const worked = blockMinutes(block.start, block.end, block.breaks);
-  const breakLabel = block.breaks.map((b) => `${b.start}–${b.end}`).join(", ");
+  const worked = blockMinutes(block.start, block.end, block.breaks)
+  const breakLabel = block.breaks.map((b) => `${b.start}–${b.end}`).join(", ")
 
   return (
     <div
@@ -113,5 +113,5 @@ export function TimeBlockCard({
         )}
       </button>
     </div>
-  );
+  )
 }

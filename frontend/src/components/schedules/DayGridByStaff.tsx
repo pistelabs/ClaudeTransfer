@@ -1,19 +1,19 @@
-import { cn } from "@/lib/utils";
-import { StaffAvatar } from "@/components/common/StaffAvatar";
-import { TimeBlockCard } from "./TimeBlockCard";
-import { AddBlockButton, type CopyOption } from "./AddBlockButton";
-import { DAYS } from "@/lib/types";
-import type { Day, StaffMember, TimeBlock } from "@/lib/types";
-import { blockMinutes, formatHours } from "@/lib/time";
+import { cn } from "@/lib/utils"
+import { StaffAvatar } from "@/components/common/StaffAvatar"
+import { TimeBlockCard } from "./TimeBlockCard"
+import { AddBlockButton, type CopyOption } from "./AddBlockButton"
+import { DAYS } from "@/lib/types"
+import type { Day, StaffMember, TimeBlock } from "@/lib/types"
+import { blockMinutes, formatHours } from "@/lib/time"
 
 interface DayGridByStaffProps {
-  day: Day;
-  staff: StaffMember[];
-  blocksFor: (staffId: string, day: Day) => TimeBlock[];
-  onAdd: (staffId: string) => void;
-  onEdit: (block: TimeBlock) => void;
-  onToggle: (block: TimeBlock, enabled: boolean) => void;
-  onCopyFrom: (staffId: string, fromDay: Day) => void;
+  day: Day
+  staff: StaffMember[]
+  blocksFor: (staffId: string, day: Day) => TimeBlock[]
+  onAdd: (staffId: string) => void
+  onEdit: (block: TimeBlock) => void
+  onToggle: (block: TimeBlock, enabled: boolean) => void
+  onCopyFrom: (staffId: string, fromDay: Day) => void
 }
 
 /** One day, every staff member as a column. */
@@ -35,21 +35,21 @@ export function DayGridByStaff({
         }}
       >
         {staff.map((member) => {
-          const blocks = blocksFor(member.id, day);
-          const isDayOff = member.daysOff.includes(day);
+          const blocks = blocksFor(member.id, day)
+          const isDayOff = member.daysOff.includes(day)
           const minutes = blocks
             .filter((b) => b.enabled)
             .reduce(
               (total, b) => total + blockMinutes(b.start, b.end, b.breaks),
               0,
-            );
+            )
 
           const copyOptions: CopyOption[] = DAYS.filter(
             (d) => d !== day && blocksFor(member.id, d).length > 0,
           ).map((d) => ({
             value: d,
             label: `${d} (${blocksFor(member.id, d).length})`,
-          }));
+          }))
 
           return (
             <div key={member.id}>
@@ -103,9 +103,9 @@ export function DayGridByStaff({
                 />
               </div>
             </div>
-          );
+          )
         })}
       </div>
     </div>
-  );
+  )
 }

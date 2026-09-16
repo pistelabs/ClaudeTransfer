@@ -154,12 +154,7 @@ export const ROLL_SIZES = [
 ] as const
 export type RollSize = (typeof ROLL_SIZES)[number]
 
-export const PRINTER_PROTOCOLS = [
-  "ESC/POS",
-  "Star Line",
-  "ZPL",
-  "Raw",
-] as const
+export const PRINTER_PROTOCOLS = ["ESC/POS", "Star Line", "ZPL", "Raw"] as const
 export type PrinterProtocol = (typeof PRINTER_PROTOCOLS)[number]
 
 export interface PrinterSettings {

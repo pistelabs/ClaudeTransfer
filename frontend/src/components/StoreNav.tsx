@@ -4,9 +4,9 @@ import {
   PrinterIcon,
   PuzzleIcon,
   UsersIcon,
-} from "lucide-react";
+} from "lucide-react"
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils"
 
 export const STORE_TABS = [
   { id: "schedules", label: "Schedules", icon: CalendarDaysIcon },
@@ -14,14 +14,14 @@ export const STORE_TABS = [
   { id: "booking", label: "Booking", icon: GlobeIcon },
   { id: "integrations", label: "Integrations", icon: PuzzleIcon },
   { id: "printing", label: "Printing", icon: PrinterIcon },
-] as const;
+] as const
 
-export type StoreTab = (typeof STORE_TABS)[number]["id"];
+export type StoreTab = (typeof STORE_TABS)[number]["id"]
 
 interface StoreNavProps {
-  active: StoreTab;
-  onChange: (tab: StoreTab) => void;
-  storeName: string;
+  active: StoreTab
+  onChange: (tab: StoreTab) => void
+  storeName: string
 }
 
 /**
@@ -35,8 +35,8 @@ export function StoreNav({ active, onChange, storeName }: StoreNavProps) {
       className="border-border bg-card sticky top-0 z-20 flex items-center gap-[22px] border-b px-7"
     >
       {STORE_TABS.map((tab) => {
-        const Icon = tab.icon;
-        const isActive = tab.id === active;
+        const Icon = tab.icon
+        const isActive = tab.id === active
         return (
           <button
             key={tab.id}
@@ -53,7 +53,7 @@ export function StoreNav({ active, onChange, storeName }: StoreNavProps) {
             <Icon className="size-4" strokeWidth={2} />
             {tab.label}
           </button>
-        );
+        )
       })}
       <div className="ml-auto">
         <span className="border-border bg-muted inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[13px] font-semibold">
@@ -62,5 +62,5 @@ export function StoreNav({ active, onChange, storeName }: StoreNavProps) {
         </span>
       </div>
     </nav>
-  );
+  )
 }

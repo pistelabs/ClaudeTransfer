@@ -25,7 +25,7 @@ export function timeOptions(stepMinutes = 15): string[] {
 export function breakMinutes(breaks: Break[]): number {
   return breaks.reduce(
     (total, b) => total + Math.max(0, toMinutes(b.end) - toMinutes(b.start)),
-    0
+    0,
   )
 }
 
@@ -33,7 +33,7 @@ export function breakMinutes(breaks: Break[]): number {
 export function blockMinutes(
   start: string,
   end: string,
-  breaks: Break[] = []
+  breaks: Break[] = [],
 ): number {
   return Math.max(0, toMinutes(end) - toMinutes(start) - breakMinutes(breaks))
 }
@@ -98,8 +98,18 @@ export function initialsOf(name: string): string {
 }
 
 const MONTHS = [
-  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
 ]
 
 export function formatShortDate(iso: string): string {
@@ -165,6 +175,6 @@ export function weekDates(weekStart: Date): Record<Day, Date> {
       acc[day] = addDays(weekStart, i)
       return acc
     },
-    {} as Record<Day, Date>
+    {} as Record<Day, Date>,
   )
 }

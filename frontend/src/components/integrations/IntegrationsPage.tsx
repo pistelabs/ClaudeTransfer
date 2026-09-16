@@ -1,31 +1,31 @@
-import { CreditCardIcon } from "lucide-react";
-import { toast } from "sonner";
+import { CreditCardIcon } from "lucide-react"
+import { toast } from "sonner"
 
-import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { PageHeader } from "@/components/common/PageHeader";
-import { SettingCard } from "@/components/common/SettingCard";
+import { cn } from "@/lib/utils"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
+import { PageHeader } from "@/components/common/PageHeader"
+import { SettingCard } from "@/components/common/SettingCard"
 import {
   useConnectIntegration,
   useDisconnectIntegration,
   useIntegrations,
   useStoreSettings,
   useUpdateStoreSettings,
-} from "@/lib/api/queries";
-import type { Integration } from "@/lib/types";
+} from "@/lib/api/queries"
+import type { Integration } from "@/lib/types"
 
 export function IntegrationsPage() {
-  const { data: integrations = [], isLoading } = useIntegrations();
-  const { data: settings } = useStoreSettings();
-  const updateSettings = useUpdateStoreSettings();
-  const connect = useConnectIntegration();
-  const disconnect = useDisconnectIntegration();
+  const { data: integrations = [], isLoading } = useIntegrations()
+  const { data: settings } = useStoreSettings()
+  const updateSettings = useUpdateStoreSettings()
+  const connect = useConnectIntegration()
+  const disconnect = useDisconnectIntegration()
 
-  const noPaymentSoftware = settings?.noPaymentSoftware ?? false;
-  const connectedCount = integrations.filter((i) => i.connected).length;
+  const noPaymentSoftware = settings?.noPaymentSoftware ?? false
+  const connectedCount = integrations.filter((i) => i.connected).length
 
   return (
     <div>
@@ -98,7 +98,7 @@ export function IntegrationsPage() {
         </div>
       )}
     </div>
-  );
+  )
 }
 
 function IntegrationCard({
@@ -107,10 +107,10 @@ function IntegrationCard({
   onConnect,
   onDisconnect,
 }: {
-  integration: Integration;
-  pending: boolean;
-  onConnect: () => void;
-  onDisconnect: () => void;
+  integration: Integration
+  pending: boolean
+  onConnect: () => void
+  onDisconnect: () => void
 }) {
   return (
     <Card className="gap-0 rounded-xl p-[18px] shadow-card">
@@ -167,5 +167,5 @@ function IntegrationCard({
         )}
       </div>
     </Card>
-  );
+  )
 }

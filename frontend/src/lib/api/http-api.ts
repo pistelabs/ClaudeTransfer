@@ -55,7 +55,7 @@ export const httpApi: StoreApi = {
   async updateStaff(id, input) {
     const data = await http.patch<StaffDTO>(
       endpoints.staffDetail(id),
-      fromStaff(input)
+      fromStaff(input),
     )
     return toStaff(data)
   },
@@ -65,7 +65,9 @@ export const httpApi: StoreApi = {
   },
 
   async listServices(signal): Promise<Service[]> {
-    const data = await http.get<List<ServiceDTO>>(endpoints.services, { signal })
+    const data = await http.get<List<ServiceDTO>>(endpoints.services, {
+      signal,
+    })
     return unwrapList(data).map(toService)
   },
 
@@ -80,7 +82,7 @@ export const httpApi: StoreApi = {
   async createTimeBlock(input) {
     const data = await http.post<TimeBlockDTO>(
       endpoints.timeBlocks,
-      fromTimeBlock(input)
+      fromTimeBlock(input),
     )
     return toTimeBlock(data)
   },
@@ -88,7 +90,7 @@ export const httpApi: StoreApi = {
   async updateTimeBlock(id, input) {
     const data = await http.patch<TimeBlockDTO>(
       endpoints.timeBlockDetail(id),
-      fromTimeBlock(input)
+      fromTimeBlock(input),
     )
     return toTimeBlock(data)
   },
@@ -105,7 +107,7 @@ export const httpApi: StoreApi = {
         from_day: fromDay,
         to_day: toDay,
         week_start: weekStart,
-      }
+      },
     )
     return unwrapList(data).map(toTimeBlock)
   },
@@ -134,7 +136,7 @@ export const httpApi: StoreApi = {
   async updateStoreSettings(patch) {
     const data = await http.patch<StoreSettingsDTO>(
       endpoints.storeSettings,
-      fromStoreSettings(patch)
+      fromStoreSettings(patch),
     )
     return toStoreSettings(data)
   },
@@ -148,14 +150,14 @@ export const httpApi: StoreApi = {
 
   async connectIntegration(id) {
     const data = await http.post<IntegrationDTO>(
-      endpoints.integrationConnect(id)
+      endpoints.integrationConnect(id),
     )
     return toIntegration(data)
   },
 
   async disconnectIntegration(id) {
     const data = await http.post<IntegrationDTO>(
-      endpoints.integrationDisconnect(id)
+      endpoints.integrationDisconnect(id),
     )
     return toIntegration(data)
   },
@@ -170,7 +172,7 @@ export const httpApi: StoreApi = {
   async updatePrinterSettings(patch) {
     const data = await http.patch<PrinterSettingsDTO>(
       endpoints.printerSettings,
-      fromPrinterSettings(patch)
+      fromPrinterSettings(patch),
     )
     return toPrinterSettings(data)
   },
@@ -189,7 +191,7 @@ export const httpApi: StoreApi = {
   async updateDocketSettings(patch) {
     const data = await http.patch<DocketSettingsDTO>(
       endpoints.docketSettings,
-      fromDocketSettings(patch)
+      fromDocketSettings(patch),
     )
     return toDocketSettings(data)
   },

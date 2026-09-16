@@ -1,4 +1,4 @@
-import { ChevronDownIcon, PlusIcon } from "lucide-react";
+import { ChevronDownIcon, PlusIcon } from "lucide-react"
 
 import {
   DropdownMenu,
@@ -6,17 +6,17 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu"
 
 export interface CopyOption {
-  value: string;
-  label: string;
+  value: string
+  label: string
 }
 
 interface AddBlockButtonProps {
-  onAdd: () => void;
-  copyOptions: CopyOption[];
-  onCopyFrom: (day: string) => void;
+  onAdd: () => void
+  copyOptions: CopyOption[]
+  onCopyFrom: (day: string) => void
 }
 
 /**
@@ -60,5 +60,5 @@ export function AddBlockButton({
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
-  );
+  )
 }

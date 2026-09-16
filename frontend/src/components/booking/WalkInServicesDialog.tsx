@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState } from "react"
 
 import {
   Dialog,
@@ -6,19 +6,19 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { CategoryDot } from "@/components/common/CategoryChip";
-import { CATEGORY_LIST } from "@/lib/categories";
-import { formatDuration } from "@/lib/time";
-import type { Service, ServiceCategory } from "@/lib/types";
+} from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
+import { CategoryDot } from "@/components/common/CategoryChip"
+import { CATEGORY_LIST } from "@/lib/categories"
+import { formatDuration } from "@/lib/time"
+import type { Service, ServiceCategory } from "@/lib/types"
 
 interface WalkInServicesDialogProps {
-  services: Service[];
-  selectedIds: string[];
-  onOpenChange: (open: boolean) => void;
-  onSave: (serviceIds: string[]) => void;
+  services: Service[]
+  selectedIds: string[]
+  onOpenChange: (open: boolean) => void
+  onSave: (serviceIds: string[]) => void
 }
 
 /** Which services a walk-in customer can join the queue for. */
@@ -28,23 +28,23 @@ export function WalkInServicesDialog({
   onOpenChange,
   onSave,
 }: WalkInServicesDialogProps) {
-  const [selected, setSelected] = useState<string[]>(selectedIds);
+  const [selected, setSelected] = useState<string[]>(selectedIds)
 
   const byCategory = useMemo(() => {
-    const grouped = {} as Record<ServiceCategory, Service[]>;
+    const grouped = {} as Record<ServiceCategory, Service[]>
     for (const category of CATEGORY_LIST) {
-      grouped[category.id] = services.filter((s) => s.category === category.id);
+      grouped[category.id] = services.filter((s) => s.category === category.id)
     }
-    return grouped;
-  }, [services]);
+    return grouped
+  }, [services])
 
   function toggleCategory(category: ServiceCategory, checked: boolean) {
-    const ids = (byCategory[category] ?? []).map((s) => s.id);
+    const ids = (byCategory[category] ?? []).map((s) => s.id)
     setSelected((current) =>
       checked
         ? [...new Set([...current, ...ids])]
         : current.filter((id) => !ids.includes(id)),
-    );
+    )
   }
 
   return (
@@ -56,13 +56,13 @@ export function WalkInServicesDialog({
 
         <div className="grid grid-cols-2 gap-2.5">
           {CATEGORY_LIST.map((category) => {
-            const categoryServices = byCategory[category.id] ?? [];
+            const categoryServices = byCategory[category.id] ?? []
             const chosen = categoryServices.filter((s) =>
               selected.includes(s.id),
-            );
+            )
             const allChosen =
               categoryServices.length > 0 &&
-              chosen.length === categoryServices.length;
+              chosen.length === categoryServices.length
 
             return (
               <div
@@ -125,7 +125,7 @@ export function WalkInServicesDialog({
                   ))}
                 </div>
               </div>
-            );
+            )
           })}
         </div>
 
@@ -137,5 +137,5 @@ export function WalkInServicesDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

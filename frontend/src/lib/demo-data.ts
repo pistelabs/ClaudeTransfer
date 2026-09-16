@@ -100,14 +100,70 @@ export const demoStaff: StaffMember[] = [
 ]
 
 export const demoServices: Service[] = [
-  { id: "sv1", name: "Ski Rental", category: "rental", duration: 20, price: "$45/day", enabled: true },
-  { id: "sv2", name: "Snowboard Rental", category: "rental", duration: 20, price: "$45/day", enabled: true },
-  { id: "sv3", name: "Ski Tune & Wax", category: "tuning", duration: 45, price: "$60", enabled: true },
-  { id: "sv4", name: "Edge Sharpen", category: "tuning", duration: 30, price: "$35", enabled: true },
-  { id: "sv5", name: "Binding Adjustment", category: "tuning", duration: 20, price: "$25", enabled: true },
-  { id: "sv6", name: "Private Lesson", category: "lessons", duration: 120, price: "$180", enabled: true },
-  { id: "sv7", name: "Group Lesson", category: "lessons", duration: 120, price: "$75", enabled: false },
-  { id: "sv8", name: "Boot Fitting", category: "fitting", duration: 60, price: "$90", enabled: true },
+  {
+    id: "sv1",
+    name: "Ski Rental",
+    category: "rental",
+    duration: 20,
+    price: "$45/day",
+    enabled: true,
+  },
+  {
+    id: "sv2",
+    name: "Snowboard Rental",
+    category: "rental",
+    duration: 20,
+    price: "$45/day",
+    enabled: true,
+  },
+  {
+    id: "sv3",
+    name: "Ski Tune & Wax",
+    category: "tuning",
+    duration: 45,
+    price: "$60",
+    enabled: true,
+  },
+  {
+    id: "sv4",
+    name: "Edge Sharpen",
+    category: "tuning",
+    duration: 30,
+    price: "$35",
+    enabled: true,
+  },
+  {
+    id: "sv5",
+    name: "Binding Adjustment",
+    category: "tuning",
+    duration: 20,
+    price: "$25",
+    enabled: true,
+  },
+  {
+    id: "sv6",
+    name: "Private Lesson",
+    category: "lessons",
+    duration: 120,
+    price: "$180",
+    enabled: true,
+  },
+  {
+    id: "sv7",
+    name: "Group Lesson",
+    category: "lessons",
+    duration: 120,
+    price: "$75",
+    enabled: false,
+  },
+  {
+    id: "sv8",
+    name: "Boot Fitting",
+    category: "fitting",
+    duration: 60,
+    price: "$90",
+    enabled: true,
+  },
 ]
 
 let blockSeq = 0
@@ -118,7 +174,7 @@ function block(
   start: string,
   end: string,
   services: ServiceCategory[],
-  overrides: Partial<TimeBlock> = {}
+  overrides: Partial<TimeBlock> = {},
 ): TimeBlock {
   blockSeq += 1
   return {
@@ -146,8 +202,12 @@ export const demoTimeBlocks: TimeBlock[] = [
   // Mara Lindqvist — rentals and fitting
   block("s1", "Mon", "09:00", "12:00", ["rental", "fitting"]),
   block("s1", "Mon", "13:00", "17:00", ["rental", "tuning"]),
-  block("s1", "Tue", "09:00", "17:00", ["rental"], { breaks: [{ start: "12:00", end: "12:30" }] }),
-  block("s1", "Thu", "10:00", "14:00", ["rental", "lessons"], { online: false }),
+  block("s1", "Tue", "09:00", "17:00", ["rental"], {
+    breaks: [{ start: "12:00", end: "12:30" }],
+  }),
+  block("s1", "Thu", "10:00", "14:00", ["rental", "lessons"], {
+    online: false,
+  }),
   block("s1", "Fri", "09:00", "17:00", ["rental", "tuning", "fitting"]),
   block("s1", "Sat", "08:00", "18:00", ["rental", "lessons", "fitting"]),
   block("s1", "Sun", "08:00", "16:00", ["rental", "lessons"]),
@@ -183,9 +243,33 @@ export const demoTimeBlocks: TimeBlock[] = [
 ]
 
 export const demoLeave: LeaveEntry[] = [
-  { id: "l1", staffId: "s2", type: "Vacation", startDate: "2025-12-22", endDate: "2025-12-29", dates: "Dec 22 – Dec 29", days: 6 },
-  { id: "l2", staffId: "s3", type: "Sick", startDate: "2025-12-11", endDate: "2025-12-11", dates: "Dec 11", days: 1 },
-  { id: "l3", staffId: "s4", type: "Personal", startDate: "2026-01-05", endDate: "2026-01-06", dates: "Jan 5 – Jan 6", days: 2 },
+  {
+    id: "l1",
+    staffId: "s2",
+    type: "Vacation",
+    startDate: "2025-12-22",
+    endDate: "2025-12-29",
+    dates: "Dec 22 – Dec 29",
+    days: 6,
+  },
+  {
+    id: "l2",
+    staffId: "s3",
+    type: "Sick",
+    startDate: "2025-12-11",
+    endDate: "2025-12-11",
+    dates: "Dec 11",
+    days: 1,
+  },
+  {
+    id: "l3",
+    staffId: "s4",
+    type: "Personal",
+    startDate: "2026-01-05",
+    endDate: "2026-01-06",
+    dates: "Jan 5 – Jan 6",
+    days: 2,
+  },
 ]
 
 export const demoStoreSettings: StoreSettings = {
@@ -309,7 +393,8 @@ export const demoNotificationEvents: NotificationEvent[] = [
     header: "Booking confirmed",
     body: "Hi {Name},\n\nYour appointment for {Equipmentservice} is confirmed. We have your {Equipment} on the list and will see you then.",
     footer: "Alpine Werks · Dorfstrasse 12 · +41 79 000 00 00",
-    smsBody: "Hi {Name}, your Alpine Werks booking for {Equipmentservice} is confirmed.",
+    smsBody:
+      "Hi {Name}, your Alpine Werks booking for {Equipmentservice} is confirmed.",
   },
   {
     id: "n2",
@@ -327,7 +412,8 @@ export const demoNotificationEvents: NotificationEvent[] = [
     header: "See you tomorrow",
     body: "Hi {Name},\n\nA quick reminder about your {Equipmentservice} appointment. Please bring your {Equipment} with you.",
     footer: "Alpine Werks · Dorfstrasse 12 · +41 79 000 00 00",
-    smsBody: "Hi {Name}, reminder: your {Equipmentservice} appointment is tomorrow.",
+    smsBody:
+      "Hi {Name}, reminder: your {Equipmentservice} appointment is tomorrow.",
   },
   {
     id: "n3",
@@ -397,7 +483,8 @@ export const demoNotificationEvents: NotificationEvent[] = [
     header: "You are up next",
     body: "Hi {Name},\n\nYou are next in the queue at Alpine Werks. Please come to the counter with your {Equipment} and we will start {Equipmentservice}.",
     footer: "Alpine Werks · Dorfstrasse 12 · +41 79 000 00 00",
-    smsBody: "Hi {Name}, you are next in the queue at Alpine Werks. Please come to the counter.",
+    smsBody:
+      "Hi {Name}, you are next in the queue at Alpine Werks. Please come to the counter.",
   },
   {
     id: "n7",

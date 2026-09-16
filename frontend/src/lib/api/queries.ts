@@ -23,7 +23,12 @@ import type {
   TimeBlock,
 } from "../types"
 import { api } from "./index"
-import type { LeaveInput, PrinterTestResult, StaffInput, TimeBlockInput } from "./types"
+import type {
+  LeaveInput,
+  PrinterTestResult,
+  StaffInput,
+  TimeBlockInput,
+} from "./types"
 
 export const queryKeys = {
   staff: ["staff"] as const,
@@ -102,7 +107,9 @@ type MutationExtras<TData, TVars> = Omit<
   "mutationFn"
 >
 
-export function useCreateStaff(options?: MutationExtras<StaffMember, StaffInput>) {
+export function useCreateStaff(
+  options?: MutationExtras<StaffMember, StaffInput>,
+) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (input: StaffInput) => api.createStaff(input),
@@ -115,7 +122,10 @@ export function useCreateStaff(options?: MutationExtras<StaffMember, StaffInput>
 }
 
 export function useUpdateStaff(
-  options?: MutationExtras<StaffMember, { id: string; input: Partial<StaffInput> }>
+  options?: MutationExtras<
+    StaffMember,
+    { id: string; input: Partial<StaffInput> }
+  >,
 ) {
   const qc = useQueryClient()
   return useMutation({
@@ -145,12 +155,13 @@ export function useDeleteStaff(options?: MutationExtras<void, string>) {
 
 function useTimeBlockInvalidation(weekStart: string) {
   const qc = useQueryClient()
-  return () => qc.invalidateQueries({ queryKey: queryKeys.timeBlocks(weekStart) })
+  return () =>
+    qc.invalidateQueries({ queryKey: queryKeys.timeBlocks(weekStart) })
 }
 
 export function useCreateTimeBlock(
   weekStart: string,
-  options?: MutationExtras<TimeBlock, TimeBlockInput>
+  options?: MutationExtras<TimeBlock, TimeBlockInput>,
 ) {
   const invalidate = useTimeBlockInvalidation(weekStart)
   return useMutation({
@@ -168,12 +179,17 @@ export function useUpdateTimeBlock(
   options?: MutationExtras<
     TimeBlock,
     { id: string; input: Partial<TimeBlockInput> }
-  >
+  >,
 ) {
   const invalidate = useTimeBlockInvalidation(weekStart)
   return useMutation({
-    mutationFn: ({ id, input }: { id: string; input: Partial<TimeBlockInput> }) =>
-      api.updateTimeBlock(id, input),
+    mutationFn: ({
+      id,
+      input,
+    }: {
+      id: string
+      input: Partial<TimeBlockInput>
+    }) => api.updateTimeBlock(id, input),
     ...options,
     onSuccess: (...args) => {
       void invalidate()
@@ -184,7 +200,7 @@ export function useUpdateTimeBlock(
 
 export function useDeleteTimeBlock(
   weekStart: string,
-  options?: MutationExtras<void, string>
+  options?: MutationExtras<void, string>,
 ) {
   const invalidate = useTimeBlockInvalidation(weekStart)
   return useMutation({
@@ -202,7 +218,7 @@ export function useCopyDay(
   options?: MutationExtras<
     TimeBlock[],
     { staffId: string; fromDay: string; toDay: string }
-  >
+  >,
 ) {
   const invalidate = useTimeBlockInvalidation(weekStart)
   return useMutation({
@@ -216,7 +232,9 @@ export function useCopyDay(
   })
 }
 
-export function useCreateLeave(options?: MutationExtras<LeaveEntry, LeaveInput>) {
+export function useCreateLeave(
+  options?: MutationExtras<LeaveEntry, LeaveInput>,
+) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (input: LeaveInput) => api.createLeave(input),
@@ -242,11 +260,12 @@ export function useDeleteLeave(options?: MutationExtras<void, string>) {
 
 /** Settings writes are optimistic: the switches must feel instant. */
 export function useUpdateStoreSettings(
-  options?: MutationExtras<StoreSettings, Partial<StoreSettings>>
+  options?: MutationExtras<StoreSettings, Partial<StoreSettings>>,
 ) {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (patch: Partial<StoreSettings>) => api.updateStoreSettings(patch),
+    mutationFn: (patch: Partial<StoreSettings>) =>
+      api.updateStoreSettings(patch),
     onMutate: async (patch) => {
       await qc.cancelQueries({ queryKey: queryKeys.storeSettings })
       const previous = qc.getQueryData<StoreSettings>(queryKeys.storeSettings)
@@ -273,7 +292,7 @@ export function useUpdateStoreSettings(
 }
 
 export function useConnectIntegration(
-  options?: MutationExtras<Integration, string>
+  options?: MutationExtras<Integration, string>,
 ) {
   const qc = useQueryClient()
   return useMutation({
@@ -287,7 +306,7 @@ export function useConnectIntegration(
 }
 
 export function useDisconnectIntegration(
-  options?: MutationExtras<Integration, string>
+  options?: MutationExtras<Integration, string>,
 ) {
   const qc = useQueryClient()
   return useMutation({
@@ -301,7 +320,7 @@ export function useDisconnectIntegration(
 }
 
 export function useUpdatePrinterSettings(
-  options?: MutationExtras<PrinterSettings, Partial<PrinterSettings>>
+  options?: MutationExtras<PrinterSettings, Partial<PrinterSettings>>,
 ) {
   const qc = useQueryClient()
   return useMutation({
@@ -310,7 +329,7 @@ export function useUpdatePrinterSettings(
     onMutate: async (patch) => {
       await qc.cancelQueries({ queryKey: queryKeys.printerSettings })
       const previous = qc.getQueryData<PrinterSettings>(
-        queryKeys.printerSettings
+        queryKeys.printerSettings,
       )
       if (previous) {
         qc.setQueryData<PrinterSettings>(queryKeys.printerSettings, {
@@ -333,7 +352,7 @@ export function useUpdatePrinterSettings(
 }
 
 export function useTestPrinter(
-  options?: MutationExtras<PrinterTestResult, void>
+  options?: MutationExtras<PrinterTestResult, void>,
 ) {
   return useMutation({
     mutationFn: () => api.testPrinter(),
@@ -342,7 +361,7 @@ export function useTestPrinter(
 }
 
 export function useUpdateDocketSettings(
-  options?: MutationExtras<DocketSettings, Partial<DocketSettings>>
+  options?: MutationExtras<DocketSettings, Partial<DocketSettings>>,
 ) {
   const qc = useQueryClient()
   return useMutation({

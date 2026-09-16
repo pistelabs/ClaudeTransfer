@@ -1,21 +1,21 @@
-import { useState } from "react";
-import { NetworkIcon, PrinterIcon, UsbIcon } from "lucide-react";
-import { toast } from "sonner";
+import { useState } from "react"
+import { NetworkIcon, PrinterIcon, UsbIcon } from "lucide-react"
+import { toast } from "sonner"
 
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Switch } from "@/components/ui/switch"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { FieldLabel } from "@/components/common/FieldLabel";
-import { networkPrinterSchema, fieldErrorsFrom } from "@/lib/validation";
+} from "@/components/ui/select"
+import { FieldLabel } from "@/components/common/FieldLabel"
+import { networkPrinterSchema, fieldErrorsFrom } from "@/lib/validation"
 import {
   PRINTER_PROTOCOLS,
   ROLL_SIZES,
@@ -23,20 +23,20 @@ import {
   type PrinterProtocol,
   type PrinterSettings,
   type RollSize,
-} from "@/lib/types";
+} from "@/lib/types"
 
 interface PrinterConnectionCardProps {
-  printer: PrinterSettings;
-  onChange: (patch: Partial<PrinterSettings>) => void;
-  onTest: () => Promise<{ ok: boolean; detail: string }>;
-  testing?: boolean;
+  printer: PrinterSettings
+  onChange: (patch: Partial<PrinterSettings>) => void
+  onTest: () => Promise<{ ok: boolean; detail: string }>
+  testing?: boolean
 }
 
 const CONNECTIONS: {
-  id: PrinterConnection;
-  label: string;
-  description: string;
-  icon: typeof NetworkIcon;
+  id: PrinterConnection
+  label: string
+  description: string
+  icon: typeof NetworkIcon
 }[] = [
   {
     id: "network",
@@ -50,7 +50,7 @@ const CONNECTIONS: {
     description: "Connected by USB / serial",
     icon: UsbIcon,
   },
-];
+]
 
 export function PrinterConnectionCard({
   printer,
@@ -58,27 +58,27 @@ export function PrinterConnectionCard({
   onTest,
   testing = false,
 }: PrinterConnectionCardProps) {
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<Record<string, string>>({})
 
   async function handleTest() {
     if (printer.connection === "network") {
       const parsed = networkPrinterSchema.safeParse({
         ip: printer.ip,
         port: printer.port,
-      });
+      })
       if (!parsed.success) {
-        setErrors(fieldErrorsFrom(parsed.error));
-        return;
+        setErrors(fieldErrorsFrom(parsed.error))
+        return
       }
     }
-    setErrors({});
-    const result = await onTest();
+    setErrors({})
+    const result = await onTest()
     if (result.ok) {
-      toast.success("Test docket sent", { description: result.detail });
+      toast.success("Test docket sent", { description: result.detail })
     } else {
       toast.error("Could not reach the printer", {
         description: result.detail,
-      });
+      })
     }
   }
 
@@ -91,8 +91,8 @@ export function PrinterConnectionCard({
 
         <div className="mt-3 grid grid-cols-2 gap-2.5">
           {CONNECTIONS.map((option) => {
-            const Icon = option.icon;
-            const isSelected = printer.connection === option.id;
+            const Icon = option.icon
+            const isSelected = printer.connection === option.id
             return (
               <button
                 key={option.id}
@@ -124,7 +124,7 @@ export function PrinterConnectionCard({
                   {option.description}
                 </div>
               </button>
-            );
+            )
           })}
         </div>
 
@@ -216,7 +216,7 @@ export function PrinterConnectionCard({
         </h3>
         <div className="mt-3 space-y-2">
           {ROLL_SIZES.map((roll) => {
-            const isSelected = printer.roll === roll;
+            const isSelected = printer.roll === roll
             return (
               <button
                 key={roll}
@@ -237,7 +237,7 @@ export function PrinterConnectionCard({
                   </span>
                 )}
               </button>
-            );
+            )
           })}
         </div>
       </Card>
@@ -258,5 +258,5 @@ export function PrinterConnectionCard({
         />
       </Card>
     </div>
-  );
+  )
 }

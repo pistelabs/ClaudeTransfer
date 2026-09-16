@@ -5,16 +5,16 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+} from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
 
 interface RecurringOffDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+  open: boolean
+  onOpenChange: (open: boolean) => void
   /** Skip this week only, keeping the series. */
-  onSkipWeek: () => void;
+  onSkipWeek: () => void
   /** Turn the recurrence off for every week. */
-  onTurnOffRecurring: () => void;
+  onTurnOffRecurring: () => void
 }
 
 /**
@@ -44,5 +44,5 @@ export function RecurringOffDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

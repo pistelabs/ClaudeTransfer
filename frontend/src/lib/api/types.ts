@@ -34,7 +34,7 @@ export interface StoreApi {
   createTimeBlock(input: TimeBlockInput): Promise<TimeBlock>
   updateTimeBlock(
     id: string,
-    input: Partial<TimeBlockInput>
+    input: Partial<TimeBlockInput>,
   ): Promise<TimeBlock>
   deleteTimeBlock(id: string): Promise<void>
   /** Copy every block from one day onto another for the same staff member. */
@@ -58,7 +58,7 @@ export interface StoreApi {
 
   getPrinterSettings(signal?: AbortSignal): Promise<PrinterSettings>
   updatePrinterSettings(
-    patch: Partial<PrinterSettings>
+    patch: Partial<PrinterSettings>,
   ): Promise<PrinterSettings>
   testPrinter(): Promise<PrinterTestResult>
 

@@ -1,4 +1,4 @@
-import { Toaster as Sonner, type ToasterProps } from "sonner";
+import { Toaster as Sonner, type ToasterProps } from "sonner"
 
 /**
  * Bottom-right, stacked, auto-dismiss 3.6s — per the handoff spec.
@@ -24,7 +24,7 @@ function Toaster({ ...props }: ToasterProps) {
       }}
       {...props}
     />
-  );
+  )
 }
 
-export { Toaster };
+export { Toaster }

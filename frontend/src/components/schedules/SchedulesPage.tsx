@@ -1,29 +1,29 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState } from "react"
 import {
   CalendarIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   UsersIcon,
-} from "lucide-react";
-import { toast } from "sonner";
+} from "lucide-react"
+import { toast } from "sonner"
 
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PageHeader } from "@/components/common/PageHeader";
-import { StaffAvatar } from "@/components/common/StaffAvatar";
-import { CategoryLegend } from "@/components/common/CategoryChip";
-import { WeekGridByStaff } from "./WeekGridByStaff";
-import { DayGridByStaff } from "./DayGridByStaff";
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { PageHeader } from "@/components/common/PageHeader"
+import { StaffAvatar } from "@/components/common/StaffAvatar"
+import { CategoryLegend } from "@/components/common/CategoryChip"
+import { WeekGridByStaff } from "./WeekGridByStaff"
+import { DayGridByStaff } from "./DayGridByStaff"
 import {
   TimeBlockDialog,
   draftFromBlock,
   newDraft,
   type TimeBlockDraft,
-} from "./TimeBlockDialog";
-import { RecurringOffDialog } from "./RecurringOffDialog";
+} from "./TimeBlockDialog"
+import { RecurringOffDialog } from "./RecurringOffDialog"
 import {
   useCopyDay,
   useCreateTimeBlock,
@@ -32,7 +32,7 @@ import {
   useStaff,
   useTimeBlocks,
   useUpdateTimeBlock,
-} from "@/lib/api/queries";
+} from "@/lib/api/queries"
 import {
   addDays,
   blockMinutes,
@@ -41,10 +41,10 @@ import {
   startOfWeek,
   toIsoDate,
   weekDates,
-} from "@/lib/time";
-import { DAYS, type Day, type TimeBlock } from "@/lib/types";
+} from "@/lib/time"
+import { DAYS, type Day, type TimeBlock } from "@/lib/types"
 
-type ViewMode = "staff" | "day";
+type ViewMode = "staff" | "day"
 
 const MONTHS = [
   "Jan",
@@ -59,31 +59,31 @@ const MONTHS = [
   "Oct",
   "Nov",
   "Dec",
-];
+]
 
 export function SchedulesPage() {
-  const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date()));
-  const [viewMode, setViewMode] = useState<ViewMode>("staff");
-  const [selectedStaffId, setSelectedStaffId] = useState<string | null>(null);
-  const [dayViewDay, setDayViewDay] = useState<Day>("Mon");
-  const [draft, setDraft] = useState<TimeBlockDraft | null>(null);
-  const [offConfirm, setOffConfirm] = useState<TimeBlock | null>(null);
+  const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date()))
+  const [viewMode, setViewMode] = useState<ViewMode>("staff")
+  const [selectedStaffId, setSelectedStaffId] = useState<string | null>(null)
+  const [dayViewDay, setDayViewDay] = useState<Day>("Mon")
+  const [draft, setDraft] = useState<TimeBlockDraft | null>(null)
+  const [offConfirm, setOffConfirm] = useState<TimeBlock | null>(null)
 
-  const weekStartIso = toIsoDate(weekStart);
-  const dates = useMemo(() => weekDates(weekStart), [weekStart]);
+  const weekStartIso = toIsoDate(weekStart)
+  const dates = useMemo(() => weekDates(weekStart), [weekStart])
 
-  const { data: staff = [], isLoading: staffLoading } = useStaff();
-  const { data: services = [] } = useServices();
+  const { data: staff = [], isLoading: staffLoading } = useStaff()
+  const { data: services = [] } = useServices()
   const { data: blocks = [], isLoading: blocksLoading } =
-    useTimeBlocks(weekStartIso);
+    useTimeBlocks(weekStartIso)
 
-  const createBlock = useCreateTimeBlock(weekStartIso);
-  const updateBlock = useUpdateTimeBlock(weekStartIso);
-  const deleteBlock = useDeleteTimeBlock(weekStartIso);
-  const copyDay = useCopyDay(weekStartIso);
+  const createBlock = useCreateTimeBlock(weekStartIso)
+  const updateBlock = useUpdateTimeBlock(weekStartIso)
+  const deleteBlock = useDeleteTimeBlock(weekStartIso)
+  const copyDay = useCopyDay(weekStartIso)
 
-  const activeStaffId = selectedStaffId ?? staff[0]?.id ?? null;
-  const activeStaff = staff.find((s) => s.id === activeStaffId) ?? null;
+  const activeStaffId = selectedStaffId ?? staff[0]?.id ?? null
+  const activeStaff = staff.find((s) => s.id === activeStaffId) ?? null
 
   const blocksFor = useMemo(
     () => (staffId: string, day: Day) =>
@@ -91,33 +91,33 @@ export function SchedulesPage() {
         .filter((b) => b.staffId === staffId && b.day === day)
         .sort((a, b) => a.start.localeCompare(b.start)),
     [blocks],
-  );
+  )
 
   const blocksByDay = useMemo(() => {
-    const grouped = {} as Record<Day, TimeBlock[]>;
+    const grouped = {} as Record<Day, TimeBlock[]>
     for (const day of DAYS) {
-      grouped[day] = activeStaffId ? blocksFor(activeStaffId, day) : [];
+      grouped[day] = activeStaffId ? blocksFor(activeStaffId, day) : []
     }
-    return grouped;
-  }, [activeStaffId, blocksFor]);
+    return grouped
+  }, [activeStaffId, blocksFor])
 
   const summary = useMemo(() => {
     const active = Object.values(blocksByDay)
       .flat()
-      .filter((b) => b.enabled);
+      .filter((b) => b.enabled)
     const minutes = active.reduce(
       (total, b) => total + blockMinutes(b.start, b.end, b.breaks),
       0,
-    );
+    )
     const scheduledDays = DAYS.filter((day) =>
       (blocksByDay[day] ?? []).some((b) => b.enabled),
-    ).length;
+    ).length
     return {
       hours: formatHours(minutes),
       blocks: active.length,
       scheduledDays,
-    };
-  }, [blocksByDay]);
+    }
+  }, [blocksByDay])
 
   function handleSave(
     value: TimeBlockDraft,
@@ -130,39 +130,39 @@ export function SchedulesPage() {
           onSuccess: () => {
             toast.success("Time block updated", {
               description: `${value.start} – ${value.end}`,
-            });
-            setDraft(null);
+            })
+            setDraft(null)
           },
         },
-      );
-      return;
+      )
+      return
     }
     createBlock.mutate(input, {
       onSuccess: () => {
         toast.success("Time block added", {
           description: `${value.start} – ${value.end}`,
-        });
-        setDraft(null);
+        })
+        setDraft(null)
       },
-    });
+    })
   }
 
   function handleRemove(id: string) {
     deleteBlock.mutate(id, {
       onSuccess: () => {
-        toast.success("Time block deleted");
-        setDraft(null);
+        toast.success("Time block deleted")
+        setDraft(null)
       },
-    });
+    })
   }
 
   /** Recurring blocks ask before switching off; one-off blocks just toggle. */
   function handleToggle(block: TimeBlock, enabled: boolean) {
     if (!enabled && block.recurring) {
-      setOffConfirm(block);
-      return;
+      setOffConfirm(block)
+      return
     }
-    updateBlock.mutate({ id: block.id, input: { enabled } });
+    updateBlock.mutate({ id: block.id, input: { enabled } })
   }
 
   function handleCopy(staffId: string, fromDay: Day, toDay: Day) {
@@ -177,10 +177,10 @@ export function SchedulesPage() {
             },
           ),
       },
-    );
+    )
   }
 
-  const isLoading = staffLoading || blocksLoading;
+  const isLoading = staffLoading || blocksLoading
 
   return (
     <div>
@@ -243,7 +243,7 @@ export function SchedulesPage() {
               Staff
             </span>
             {staff.map((member) => {
-              const isActive = member.id === activeStaffId;
+              const isActive = member.id === activeStaffId
               return (
                 <button
                   key={member.id}
@@ -260,7 +260,7 @@ export function SchedulesPage() {
                   <StaffAvatar staff={member} size={26} />
                   {member.name}
                 </button>
-              );
+              )
             })}
           </div>
 
@@ -309,8 +309,8 @@ export function SchedulesPage() {
               Day
             </span>
             {DAYS.map((day) => {
-              const isActive = day === dayViewDay;
-              const date = dates[day];
+              const isActive = day === dayViewDay
+              const date = dates[day]
               return (
                 <button
                   key={day}
@@ -329,7 +329,7 @@ export function SchedulesPage() {
                     {MONTHS[date.getMonth()]} {date.getDate()}
                   </span>
                 </button>
-              );
+              )
             })}
           </div>
 
@@ -368,38 +368,38 @@ export function SchedulesPage() {
         open={offConfirm !== null}
         onOpenChange={(open) => !open && setOffConfirm(null)}
         onSkipWeek={() => {
-          if (!offConfirm) return;
+          if (!offConfirm) return
           updateBlock.mutate({
             id: offConfirm.id,
             input: { enabled: false, recurring: false },
-          });
+          })
           toast.success("Skipped this week", {
             description: "The series stays in place.",
-          });
-          setOffConfirm(null);
+          })
+          setOffConfirm(null)
         }}
         onTurnOffRecurring={() => {
-          if (!offConfirm) return;
+          if (!offConfirm) return
           updateBlock.mutate({
             id: offConfirm.id,
             input: { enabled: false },
-          });
+          })
           toast.success("Recurring block turned off", {
             description: "It is off every week until you switch it back on.",
-          });
-          setOffConfirm(null);
+          })
+          setOffConfirm(null)
         }}
       />
     </div>
-  );
+  )
 }
 
 function SummaryCard({
   label,
   children,
 }: {
-  label: string;
-  children: React.ReactNode;
+  label: string
+  children: React.ReactNode
 }) {
   return (
     <Card className="gap-1 rounded-xl px-4 py-3.5 shadow-card">
@@ -410,5 +410,5 @@ function SummaryCard({
         {children}
       </div>
     </Card>
-  );
+  )
 }
