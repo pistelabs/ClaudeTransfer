@@ -14,7 +14,7 @@ import { SEED_CUSTOMERS, SEED_RECORDS, seedAppointments, seedWalkIns } from '../
 import { clearWeekCache, dateKeyOf, isoAt, monthOffsetOf, todayIndex, weekAt } from '../lib/dates';
 import { collisionsFor, movedTo, partyOf, placed, slotOpen } from '../lib/schedule';
 import { parseTime, rangeLabel, stampNow, toTimeValue } from '../lib/time';
-import type { Cents } from '../lib/money';
+import { PAY_PROMPT_MIN, type Cents } from '../lib/money';
 import type {
   Answers,
   Appointment,
@@ -95,6 +95,15 @@ export interface HydrateData {
   records?: Record<string, ApptRecord>;
 }
 
+/** The bill put in front of staff the moment a chargeable booking is confirmed. */
+export interface PayPrompt {
+  /** the booking it belongs to, so the answer is recorded against it */
+  id: string;
+  amount: Cents;
+  customer: string;
+  service: string;
+}
+
 interface State {
   // ---- schedule ----
   view: View;
@@ -151,6 +160,12 @@ interface State {
   details: Answers;
   seatIdx: number;
   seatData: Record<number, Seat>;
+  /**
+   * What a just-confirmed booking left owing. The appointment is already saved
+   * by the time this is set, so the prompt only asks where the money goes —
+   * dismissing it cancels nothing.
+   */
+  payPrompt: PayPrompt | null;
 
   // ---- customers ----
   customers: Customer[];
@@ -249,6 +264,10 @@ interface Actions {
   switchSeat: (i: number) => void;
   saveAppt: () => void;
   saveWalkIn: () => void;
+  /** Hands the new booking's total to the till, where it is paid. */
+  sendBookingToPos: () => void;
+  /** Leaves the balance owing on the booking, to be taken on the day. */
+  closePayPrompt: () => void;
 
   setCustQuery: (v: string) => void;
   setCustFocus: (v: boolean) => void;
@@ -355,6 +374,7 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
   details: {},
   seatIdx: 0,
   seatData: {},
+  payPrompt: null,
 
   customers: SEED_CUSTOMERS,
   custQuery: '',
@@ -797,8 +817,16 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
       bookedVia: s.bookedBy ?? 'online',
     };
 
+    // What it costs decides whether staff are asked about payment on the spot.
+    // Nothing is owed on a free booking, so nothing is worth interrupting for.
+    const price = sv?.price ?? 0;
+
     set((st) => ({
       appts: [...st.appts, appt],
+      payPrompt:
+        price > PAY_PROMPT_MIN
+          ? { id: appt.id, amount: price, customer: appt.c, service: sv?.name ?? '' }
+          : null,
       records: {
         ...st.records,
         [appt.id]: {
@@ -872,6 +900,26 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
       form: freshForm(f.day, f.week),
     }));
   },
+
+  /**
+   * The till takes it from here. Nothing has been paid yet — the charge is
+   * waiting at the point of sale — so it is recorded as pending and the booking
+   * keeps showing the balance until the money actually lands.
+   */
+  sendBookingToPos: () =>
+    set((s) => {
+      const p = s.payPrompt;
+      if (!p) return { payPrompt: null };
+      return {
+        payPrompt: null,
+        payments: {
+          ...s.payments,
+          [p.id]: { method: 'shopify', amount: p.amount, at: stampNow(), by: s.bookedBy, pending: true },
+        },
+      };
+    }),
+
+  closePayPrompt: () => set({ payPrompt: null }),
 
   // ---- customers --------------------------------------------------------
 

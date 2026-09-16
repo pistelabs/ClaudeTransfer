@@ -39,6 +39,14 @@ export function decimalFromCents(cents: Cents): string {
   return ((cents ?? 0) / 100).toFixed(2);
 }
 
+/**
+ * The smallest balance worth stopping a member of staff for. Below it a booking
+ * is treated as costing nothing and is confirmed without asking about payment —
+ * every real service price clears it, so in practice this reads as "charges
+ * anything at all", while still giving rounding somewhere to land.
+ */
+export const PAY_PROMPT_MIN: Cents = 3;
+
 /** Euros as authored in the catalogue → cents. Keeps the seed readable. */
 export function eur(amount: number): Cents {
   return Math.round(amount * 100);

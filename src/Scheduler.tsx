@@ -3,6 +3,7 @@ import { ScheduleGrid } from './components/schedule/ScheduleGrid';
 import { OverlapNotice } from './components/schedule/OverlapNotice';
 import { WalkInColumn } from './components/schedule/WalkInColumn';
 import { NewAppointmentSheet } from './components/booking/NewAppointmentSheet';
+import { BookingPaymentDialog } from './components/booking/BookingPaymentDialog';
 import { TeamMeetingDialog } from './components/booking/TeamMeetingDialog';
 import { AppointmentDetailSheet } from './components/detail/AppointmentDetailSheet';
 import { Toaster } from '@/components/ui/sonner';
@@ -29,6 +30,7 @@ export function Scheduler() {
   const showAdd = useScheduler((s) => s.showAdd);
   const showDetail = useScheduler((s) => s.showDetail);
   const showMeeting = useScheduler((s) => s.showMeeting);
+  const payPrompt = useScheduler((s) => s.payPrompt);
 
   // the grid is drawn relative to today, so it has to notice today changing
   useDayRollover();
@@ -50,6 +52,8 @@ export function Scheduler() {
       {showAdd && <NewAppointmentSheet />}
       {showDetail && <AppointmentDetailSheet />}
       {showMeeting && <TeamMeetingDialog />}
+      {/* the booking sheet has closed by now: this stands on its own over the schedule */}
+      {payPrompt && <BookingPaymentDialog />}
     </div>
   );
 }

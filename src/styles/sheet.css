@@ -289,3 +289,31 @@
   justify-content: flex-end;
   margin-top: 22px;
 }
+
+/* ---- payment prompt, straight after a booking is confirmed ---- */
+
+.pay-prompt__total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-top: 18px;
+  padding: 14px 16px;
+  background: var(--canvas);
+  border: 1px solid var(--n-125);
+  border-radius: 10px;
+}
+
+.pay-prompt__label {
+  color: var(--n-500);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.pay-prompt__amount {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.1;
+}
