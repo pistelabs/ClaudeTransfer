@@ -3,6 +3,7 @@ import type {
   Customer,
   CustomerEquipmentRef,
   DinRecord,
+  Equipment,
   EquipmentCategory,
   FormItem,
   Job,
@@ -119,6 +120,16 @@ function editorDin(f: NewJobForm): DinRecord | undefined {
   const result = f.din.mode === "custom" ? f.din.custom.trim() : computeDin(f.din) || "";
   if (!result) return undefined;
   return { ...f.din, result };
+}
+
+/**
+ * Which prompt to show after an item is marked Ready. The customer is only worth calling
+ * once the whole job can be collected, so a job with work still outstanding gets the
+ * informational prompt instead of the notify one. Already-collected items don't hold it up.
+ */
+function readyPromptFor(equipment: Equipment[]): ReadyPromptKind {
+  const allReady = equipment.every((e) => e.stage === "awaiting" || e.stage === "archive");
+  return allReady ? "single" : "multi";
 }
 
 function nextJobIdStr(jobs: Job[]): string {
@@ -533,6 +544,10 @@ export const useAppStore = create<AppState>((set, get) => ({
       }
     }
     get().moveJob(id, eqIdx, stage);
+    if (stage === "awaiting") {
+      const moved = get().jobs.find((x) => x.id === id);
+      if (moved) set({ readyPrompt: readyPromptFor(moved.equipment) });
+    }
   },
 
   // ---- services on an open job's equipment ----
@@ -666,14 +681,12 @@ export const useAppStore = create<AppState>((set, get) => ({
         set({ readyPrompt: "incomplete" });
         return;
       }
-      const multi = sel.equipment.length > 1;
+      const updated: Equipment[] = sel.equipment.map((e, i) =>
+        i === eqIdx ? { ...e, workStatus: "Ready", stage: "awaiting" as Stage, collectedAt: null } : e,
+      );
       set((st) => ({
-        jobs: st.jobs.map((j) =>
-          j.id === sel.id
-            ? { ...j, equipment: j.equipment.map((e, i) => (i === eqIdx ? { ...e, workStatus: "Ready", stage: "awaiting", collectedAt: null } : e)) }
-            : j,
-        ),
-        readyPrompt: multi ? "multi" : "single",
+        jobs: st.jobs.map((j) => (j.id === sel.id ? { ...j, equipment: updated } : j)),
+        readyPrompt: readyPromptFor(updated),
       }));
       return;
     }

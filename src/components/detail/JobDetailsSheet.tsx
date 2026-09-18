@@ -4,7 +4,7 @@ import { EquipmentTabs } from "./EquipmentTabs";
 import { LineItemsCard } from "./LineItemsCard";
 import { UpdatesPanel } from "./UpdatesPanel";
 import { WaiversPanel } from "./WaiversPanel";
-import { PaymentBar } from "./PaymentBar";
+import { JobSummaryColumn } from "./JobSummaryColumn";
 import { HoldPromptModal, PayModals, ReadyPromptModal, ResolvePendingModal } from "./DetailModals";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
@@ -28,7 +28,7 @@ export function JobDetailsSheet() {
       <SheetContent
         side="right"
         onOpenAutoFocus={(e) => e.preventDefault()}
-        className="w-[680px] gap-0 p-0 sm:max-w-[94vw]"
+        className="w-[1020px] gap-0 p-0 sm:max-w-[96vw]"
       >
         {/* Header */}
         <div className="border-app-bg flex shrink-0 flex-wrap items-center gap-2.5 border-b px-[18px] py-4 pr-12">
@@ -65,17 +65,18 @@ export function JobDetailsSheet() {
           </div>
         </div>
 
-        {/* Body */}
-        <div className="bg-surface-50 flex flex-1 flex-col gap-4 overflow-y-auto p-[18px]">
-          <div className="flex flex-col">
-            <EquipmentTabs job={job} activeTab={activeTabIdx} onSelect={setActiveTab} />
-            <LineItemsCard job={job} activeTab={activeTabIdx} />
+        {/* Body — work on the left, the bill on the right, same column as check-in */}
+        <div className="flex min-h-0 flex-1">
+          <div className="bg-surface-50 flex min-w-0 flex-1 flex-col gap-4 overflow-y-auto p-[18px]">
+            <div className="flex flex-col">
+              <EquipmentTabs job={job} activeTab={activeTabIdx} onSelect={setActiveTab} />
+              <LineItemsCard job={job} activeTab={activeTabIdx} />
+            </div>
+            <UpdatesPanel job={job} />
+            <WaiversPanel job={job} />
           </div>
-          <UpdatesPanel job={job} />
-          <WaiversPanel job={job} />
+          <JobSummaryColumn job={job} />
         </div>
-
-        <PaymentBar job={job} />
 
         <HoldPromptModal job={job} />
         <ResolvePendingModal job={job} />
