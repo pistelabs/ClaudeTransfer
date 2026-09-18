@@ -47,32 +47,14 @@ export function CheckoutColumn() {
   const canSubmit = nf.customer.trim().length > 0 && (nf.items.length > 0 || nf.brand.trim().length > 0);
 
   return (
-    <div className="flex w-[300px] flex-shrink-0 flex-col border-l border-border bg-white">
+    <div className="flex w-[338px] flex-shrink-0 flex-col border-l border-border bg-white">
       <div className="flex flex-shrink-0 items-center gap-2.5 border-b border-app-bg px-4 py-3.5">
         <span className="text-[13px] font-bold tracking-tight">Job {jobIdLabel}</span>
       </div>
 
+      {/* No customer block here — the form's own customer card already shows who this is for
+          once one is selected, and repeating it just costs column width. */}
       <div className="flex flex-1 flex-col gap-[18px] overflow-y-auto px-[18px] py-4">
-        <div className="flex flex-col gap-2">
-          <span className="text-[10.5px] font-bold uppercase tracking-wide text-zinc-400">Customer</span>
-          {nf.customer.trim() ? (
-            <div className="flex items-center gap-2.5 rounded-lg border border-border bg-surface-50 p-[9px_11px]">
-              <div className="flex min-w-0 flex-col leading-[1.3]">
-                <span className="whitespace-nowrap text-[13px] font-semibold text-zinc-900">{nf.customer}</span>
-                <span className="overflow-hidden text-ellipsis whitespace-nowrap text-[11px] text-zinc-500">
-                  {nf.email}
-                  {nf.email && nf.phone ? " · " : ""}
-                  {nf.phone}
-                </span>
-              </div>
-            </div>
-          ) : (
-            <div className="flex h-11 items-center justify-center rounded-lg border border-dashed border-border text-xs text-zinc-400">
-              No customer selected
-            </div>
-          )}
-        </div>
-
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2">
             <span className="text-[10.5px] font-bold uppercase tracking-wide text-zinc-400">Equipment</span>
