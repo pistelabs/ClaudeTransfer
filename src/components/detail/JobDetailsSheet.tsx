@@ -4,7 +4,7 @@ import { EquipmentTabs } from "./EquipmentTabs";
 import { LineItemsCard } from "./LineItemsCard";
 import { UpdatesPanel } from "./UpdatesPanel";
 import { WaiversPanel } from "./WaiversPanel";
-import { JobSummaryColumn } from "./JobSummaryColumn";
+import { PaymentBar } from "./PaymentBar";
 import { HoldPromptModal, PayModals, ReadyPromptModal, ResolvePendingModal } from "./DetailModals";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
@@ -28,13 +28,13 @@ export function JobDetailsSheet() {
       <SheetContent
         side="right"
         onOpenAutoFocus={(e) => e.preventDefault()}
-        className="w-[1020px] gap-0 p-0 sm:max-w-[96vw]"
+        className="w-[680px] gap-0 p-0 sm:max-w-[94vw]"
       >
         {/* Header */}
-        <div className="border-app-bg flex shrink-0 flex-wrap items-center gap-2.5 border-b px-[18px] py-2.5 pr-12">
+        <div className="border-app-bg flex shrink-0 flex-nowrap items-center gap-2.5 border-b px-[18px] py-2.5 pr-12">
           {/* Label and id share a line — stacking them made the banner taller than it needed
               to be, and the id is legible either way. */}
-          <div className="flex min-w-0 items-baseline gap-1.5">
+          <div className="flex shrink-0 items-baseline gap-1.5">
             <span className="text-muted-foreground text-[10.5px] font-semibold tracking-wide uppercase">Job ID</span>
             <SheetTitle className="text-base tracking-tight whitespace-nowrap">{job.id}</SheetTitle>
             <SheetDescription className="sr-only">
@@ -49,35 +49,34 @@ export function JobDetailsSheet() {
           <button
             onClick={() => editCustomerByName(job.customer, job.email, job.phone)}
             title="Edit customer details"
-            className="bg-surface-100 hover:bg-accent focus-visible:border-ring focus-visible:ring-ring/50 flex min-w-0 items-center gap-[9px] rounded-full border py-[5px] pr-[13px] pl-[5px] text-left outline-none focus-visible:ring-[3px]"
+            className="bg-surface-100 hover:bg-accent focus-visible:border-ring focus-visible:ring-ring/50 flex min-w-0 shrink items-center gap-[9px] rounded-full border py-[5px] pr-[13px] pl-[5px] text-left outline-none focus-visible:ring-[3px]"
           >
             <Avatar name={job.customer} size={34} />
             <div className="flex min-w-0 flex-col leading-[1.3]">
               <span className="text-[12.5px] font-semibold whitespace-nowrap">{job.customer}</span>
-              <span className="text-muted-foreground max-w-[210px] overflow-hidden text-[11px] text-ellipsis whitespace-nowrap">
+              <span className="text-muted-foreground max-w-[170px] overflow-hidden text-[11px] text-ellipsis whitespace-nowrap">
                 {job.email} · {job.phone}
               </span>
             </div>
           </button>
           <div className="flex-1" />
-          <div className="bg-surface-100 flex flex-col rounded-lg border px-3 py-1 leading-[1.25]">
+          <div className="bg-surface-100 flex shrink-0 flex-col rounded-lg border px-3 py-1 leading-[1.25]">
             <span className="text-[11px] font-semibold whitespace-nowrap">{job.tech}</span>
             <span className="text-muted-foreground text-[10px] whitespace-nowrap">Checked in · {job.updatedAt}</span>
           </div>
         </div>
 
-        {/* Body — work on the left, the bill on the right, same column as check-in */}
-        <div className="flex min-h-0 flex-1">
-          <div className="bg-surface-50 flex min-w-0 flex-1 flex-col gap-4 overflow-y-auto p-[18px]">
-            <div className="flex flex-col">
-              <EquipmentTabs job={job} activeTab={activeTabIdx} onSelect={setActiveTab} />
-              <LineItemsCard job={job} activeTab={activeTabIdx} />
-            </div>
-            <UpdatesPanel job={job} />
-            <WaiversPanel job={job} />
+        {/* Body */}
+        <div className="bg-surface-50 flex flex-1 flex-col gap-4 overflow-y-auto p-[18px]">
+          <div className="flex flex-col">
+            <EquipmentTabs job={job} activeTab={activeTabIdx} onSelect={setActiveTab} />
+            <LineItemsCard job={job} activeTab={activeTabIdx} />
           </div>
-          <JobSummaryColumn job={job} />
+          <UpdatesPanel job={job} />
+          <WaiversPanel job={job} />
         </div>
+
+        <PaymentBar job={job} />
 
         <HoldPromptModal job={job} />
         <ResolvePendingModal job={job} />
