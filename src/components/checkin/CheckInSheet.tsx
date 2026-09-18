@@ -55,19 +55,13 @@ export function CheckInSheet() {
 
         {/* Header */}
         <div className="border-app-bg flex shrink-0 items-center gap-3 border-b px-5 py-4">
-          <SheetTitle className="text-base tracking-tight">{title}</SheetTitle>
-          {/* The summary column used to head itself with this; it belongs with the title. */}
+          {/* The job id is the heading — "Check in New Equipment" restated what the sheet
+              plainly is, and the id is the part staff actually need. */}
           <div className="flex min-w-0 items-baseline gap-1.5">
             <span className="text-muted-foreground text-[10.5px] font-semibold tracking-wide uppercase">Job ID</span>
-            <span className="text-base font-semibold tracking-tight whitespace-nowrap">{jobIdLabel}</span>
+            <SheetTitle className="text-base tracking-tight whitespace-nowrap">{jobIdLabel}</SheetTitle>
           </div>
-          <SheetDescription className="sr-only">
-            Build a job by adding a customer, equipment and services.
-          </SheetDescription>
-          <Badge variant="outline" className="gap-1.5 rounded-full border-sky-200 bg-sky-50 text-sky-700">
-            <Landmark className="size-3" />
-            City Skis
-          </Badge>
+          <SheetDescription className="sr-only">{title}</SheetDescription>
           <div className="flex-1" />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -94,6 +88,10 @@ export function CheckInSheet() {
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
+          <Badge variant="outline" className="shrink-0 gap-1.5 rounded-full border-sky-200 bg-sky-50 text-sky-700">
+            <Landmark className="size-3" />
+            City Skis
+          </Badge>
           {/* SheetContent supplies its own close button, positioned top-right. */}
           <div className="w-6 shrink-0" />
         </div>
