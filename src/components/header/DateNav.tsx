@@ -38,8 +38,6 @@ export function DateNav() {
   const selectedKey = dateKeyOf(week[selDay].iso);
   // tomorrow rolls into next week when today is a Sunday
   const todayIdx = useScheduler((s) => s.todayIdx);
-  // In week view the whole week is on screen, so this week counts as today.
-  const onToday = weekOffset === 0 && (isWeek || selDay === todayIdx);
   const tomorrow = todayIdx === 6 ? { d: 0, w: 1 } : { d: todayIdx + 1, w: 0 };
 
   return (
@@ -77,19 +75,6 @@ export function DateNav() {
           onClick={() => shiftDate(1)}
         >
           <ChevronRight size={16} strokeWidth={2} />
-        </button>
-
-        {/* The way back from wherever the schedule has wandered to. It keeps its
-            place when today is already showing rather than appearing and
-            vanishing under the pointer, which would shift the whole header. */}
-        <button
-          className="segmented__btn segmented__btn--text segmented__btn--today"
-          type="button"
-          disabled={onToday}
-          title={onToday ? `Already showing ${isWeek ? 'this week' : 'today'}` : 'Back to today'}
-          onClick={goToday}
-        >
-          Today
         </button>
       </div>
 

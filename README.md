@@ -260,11 +260,9 @@ the "now" line and the Today/Upcoming/Past pills meaningful whenever you open it
   can be read down the page. Unfiltered it stays one column per day — twenty-eight columns
   of an empty shop helps nobody. A fitter keeps one width across every day, so the days stay
   aligned.
-- **The date is the middle of the three nav buttons**, with an arrow either side, and a Today
-  button after them. Today greys out rather than disappearing once today is on screen, so the
-  header keeps its shape whatever day is showing; in week view this week counts as today.
-  Clicking the date — it carries a caret that turns over when it is open — brings down a month
-  calendar with Today and Tomorrow beneath it. The calendar's head is shadcn's dropdown
+- **The date is the middle of the three nav buttons**, with an arrow either side. It carries a
+  caret that turns over while it is open, and brings down a month calendar with Today and
+  Tomorrow beneath it. The calendar's head is shadcn's dropdown
   caption: an arrow either side, and the month and year as Select lists between them, so a
   date months or a year out is two clicks rather than a month of paging. The two lists are
   independent, as they are in shadcn's own caption — picking a month keeps the year showing.
