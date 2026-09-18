@@ -112,6 +112,35 @@ const MONTHS = [
   "Dec",
 ]
 
+const WEEKDAYS = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+]
+
+/** "Friday, Sep 18, 2026" — the label on the schedule date stepper. */
+export function formatFullDate(date: Date): string {
+  return `${WEEKDAYS[date.getDay()]}, ${MONTHS[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`
+}
+
+/** Which weekday a date falls on, in the app's Mon-first naming. */
+export function dayNameOf(date: Date): Day {
+  const days: Day[] = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+  return days[(date.getDay() + 6) % 7]
+}
+
+export function isSameDate(a: Date, b: Date): boolean {
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  )
+}
+
 export function formatShortDate(iso: string): string {
   const d = new Date(`${iso}T00:00:00`)
   if (Number.isNaN(d.getTime())) return iso

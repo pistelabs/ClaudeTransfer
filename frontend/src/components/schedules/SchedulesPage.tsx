@@ -8,7 +8,6 @@ import {
 import { toast } from "sonner"
 
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -37,7 +36,10 @@ import {
   addDays,
   blockMinutes,
   formatHours,
+  dayNameOf,
+  formatFullDate,
   formatWeekLabel,
+  isSameDate,
   startOfWeek,
   toIsoDate,
   weekDates,
@@ -62,13 +64,14 @@ const MONTHS = [
 ]
 
 export function SchedulesPage() {
-  const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date()))
+  const [selectedDate, setSelectedDate] = useState(() => new Date())
   const [viewMode, setViewMode] = useState<ViewMode>("day")
   const [selectedStaffId, setSelectedStaffId] = useState<string | null>(null)
-  const [dayViewDay, setDayViewDay] = useState<Day>("Mon")
   const [draft, setDraft] = useState<TimeBlockDraft | null>(null)
   const [offConfirm, setOffConfirm] = useState<TimeBlock | null>(null)
 
+  const weekStart = useMemo(() => startOfWeek(selectedDate), [selectedDate])
+  const dayViewDay = dayNameOf(selectedDate)
   const weekStartIso = toIsoDate(weekStart)
   const dates = useMemo(() => weekDates(weekStart), [weekStart])
 
@@ -182,6 +185,20 @@ export function SchedulesPage() {
 
   const isLoading = staffLoading || blocksLoading
 
+  const today = new Date()
+  const stepper =
+    viewMode === "day"
+      ? {
+          label: formatFullDate(selectedDate),
+          step: 1,
+          atToday: isSameDate(selectedDate, today),
+        }
+      : {
+          label: formatWeekLabel(weekStart),
+          step: 7,
+          atToday: isSameDate(weekStart, startOfWeek(today)),
+        }
+
   return (
     <div>
       <PageHeader title="Schedules & Availability" />
@@ -259,11 +276,15 @@ export function SchedulesPage() {
 
           <div className="mb-3 grid grid-cols-[1fr_auto_1fr] items-center gap-3">
             <CategoryLegend />
-            <WeekStepper
-              weekStart={weekStart}
-              onStep={(days) =>
-                setWeekStart((current) => addDays(current, days))
+            <DateStepper
+              label={stepper.label}
+              atToday={stepper.atToday}
+              onStep={(direction) =>
+                setSelectedDate((current) =>
+                  addDays(current, direction * stepper.step),
+                )
               }
+              onToday={() => setSelectedDate(new Date())}
             />
             <span />
           </div>
@@ -295,7 +316,7 @@ export function SchedulesPage() {
                 <button
                   key={day}
                   type="button"
-                  onClick={() => setDayViewDay(day)}
+                  onClick={() => setSelectedDate(dates[day])}
                   aria-pressed={isActive}
                   className={cn(
                     "focus-ring flex flex-col items-center rounded-lg border px-3 py-1.5 transition-colors duration-[120ms]",
@@ -315,11 +336,15 @@ export function SchedulesPage() {
 
           <div className="mb-3 grid grid-cols-[1fr_auto_1fr] items-center gap-3">
             <CategoryLegend />
-            <WeekStepper
-              weekStart={weekStart}
-              onStep={(days) =>
-                setWeekStart((current) => addDays(current, days))
+            <DateStepper
+              label={stepper.label}
+              atToday={stepper.atToday}
+              onStep={(direction) =>
+                setSelectedDate((current) =>
+                  addDays(current, direction * stepper.step),
+                )
               }
+              onToday={() => setSelectedDate(new Date())}
             />
             <span />
           </div>
@@ -381,37 +406,57 @@ export function SchedulesPage() {
   )
 }
 
-/** Week navigator, centred above the grid it drives. */
-function WeekStepper({
-  weekStart,
+/**
+ * Date navigator, centred above the grid it drives: step back, the date in
+ * view, step forward, and a Today button that returns to the current date.
+ */
+function DateStepper({
+  label,
+  atToday,
   onStep,
+  onToday,
 }: {
-  weekStart: Date
-  onStep: (days: number) => void
+  label: string
+  /** True when the view is already showing today; Today then has nothing to do. */
+  atToday: boolean
+  onStep: (direction: -1 | 1) => void
+  onToday: () => void
 }) {
   return (
-    <div className="flex items-center justify-center gap-1.5">
-      <Button
-        variant="outline"
-        size="icon"
-        className="size-[34px]"
-        onClick={() => onStep(-7)}
-        aria-label="Previous week"
+    <div className="border-border bg-card shadow-card inline-flex h-9 items-stretch overflow-hidden rounded-md border">
+      <button
+        type="button"
+        onClick={() => onStep(-1)}
+        aria-label="Previous"
+        className="text-muted-foreground hover:bg-background hover:text-foreground focus-ring flex w-9 items-center justify-center transition-colors"
       >
-        <ChevronLeftIcon />
-      </Button>
-      <div className="w-[132px] text-center text-[13px] font-semibold">
-        {formatWeekLabel(weekStart)}
+        <ChevronLeftIcon className="size-4" />
+      </button>
+      <div className="border-border flex min-w-[188px] items-center justify-center gap-2 border-x px-3 text-[13px] font-semibold">
+        <CalendarIcon className="text-muted-foreground size-3.5" />
+        {label}
       </div>
-      <Button
-        variant="outline"
-        size="icon"
-        className="size-[34px]"
-        onClick={() => onStep(7)}
-        aria-label="Next week"
+      <button
+        type="button"
+        onClick={() => onStep(1)}
+        aria-label="Next"
+        className="text-muted-foreground hover:bg-background hover:text-foreground focus-ring flex w-9 items-center justify-center transition-colors"
       >
-        <ChevronRightIcon />
-      </Button>
+        <ChevronRightIcon className="size-4" />
+      </button>
+      <button
+        type="button"
+        onClick={onToday}
+        disabled={atToday}
+        className={cn(
+          "border-border focus-ring border-l px-3 text-[13px] font-medium transition-colors",
+          atToday
+            ? "bg-muted text-placeholder-foreground cursor-default"
+            : "text-muted-foreground hover:bg-background hover:text-foreground",
+        )}
+      >
+        Today
+      </button>
     </div>
   )
 }
