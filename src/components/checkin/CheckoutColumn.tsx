@@ -47,7 +47,7 @@ export function CheckoutColumn() {
   const canSubmit = nf.customer.trim().length > 0 && (nf.items.length > 0 || nf.brand.trim().length > 0);
 
   return (
-    <div className="flex w-[338px] flex-shrink-0 flex-col border-l border-border bg-white">
+    <div className="flex w-[300px] flex-shrink-0 flex-col border-l border-border bg-white">
       {/* No customer block here — the form's own customer card already shows who this is for
           once one is selected, and repeating it just costs column width. */}
       <div className="flex flex-1 flex-col gap-[18px] overflow-y-auto px-[18px] py-4">

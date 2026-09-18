@@ -28,7 +28,7 @@ export function JobSummaryColumn({ job }: { job: Job }) {
   const balance = jobBalance(job);
 
   return (
-    <div className="border-border flex w-[338px] flex-shrink-0 flex-col border-l bg-white">
+    <div className="border-border flex w-[300px] flex-shrink-0 flex-col border-l bg-white">
       <div className="flex flex-1 flex-col gap-[18px] overflow-y-auto px-[18px] py-4">
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2">
