@@ -1,12 +1,13 @@
 import { useEffect, useRef } from 'react';
-import { ChevronLeft, ChevronRight, Info, Minus, Plus, RotateCcw, UserCheck } from 'lucide-react';
+import { Info, Minus, Plus, RotateCcw, UserCheck } from 'lucide-react';
 import { STAFF, serviceById, staffById } from '../../data/catalogue';
-import { monthCells, monthLabel, weekAt } from '../../lib/dates';
+import { monthCells, weekAt } from '../../lib/dates';
 import { bufferClashesFor, slotsFor } from '../../lib/schedule';
 import { durationLabel, fmtTime, parseTime } from '../../lib/time';
 import { MAX_DURATION, MIN_DURATION, useScheduler } from '../../store/useScheduler';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { MonthCaption } from '@/components/ui/MonthCaption';
 import { FitterPicker } from './FitterPicker';
 
 const WEEKDAYS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
@@ -54,27 +55,7 @@ export function DateTimeStep() {
       <div className="calendar">
         <div className="section-label">Select a date</div>
         <div className="calendar__card">
-          <div className="calendar__nav">
-            <button
-              className="calendar__nav-btn"
-              type="button"
-              title="Previous month"
-              aria-label="Previous month"
-              onClick={() => setMonthOffset((n) => n - 1)}
-            >
-              <ChevronLeft size={14} strokeWidth={2} />
-            </button>
-            <div className="calendar__month">{monthLabel(monthOffset)}</div>
-            <button
-              className="calendar__nav-btn"
-              type="button"
-              title="Next month"
-              aria-label="Next month"
-              onClick={() => setMonthOffset((n) => n + 1)}
-            >
-              <ChevronRight size={14} strokeWidth={2} />
-            </button>
-          </div>
+          <MonthCaption offset={monthOffset} onOffset={(next) => setMonthOffset(() => next)} />
 
           <div className="calendar__grid">
             {WEEKDAYS.map((w) => (

@@ -99,11 +99,28 @@
   background: var(--n-25);
 }
 
+/* Month and year as two dropdowns, sharing the space between the arrows. The
+   year needs about half what the month does, so they are weighted rather than
+   split evenly. */
 .calendar__month {
+  display: flex;
   flex: 1;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
   font-size: 13px;
   font-weight: 600;
-  text-align: center;
+}
+
+/* Wide enough for the longest month and no wider: the calendar below is seven
+   fixed columns, so the caption has to fit the width rather than set it. Both
+   trim the Select's own padding to buy the letters that last few pixels. */
+.calendar__month-select,
+.calendar__year-select {
+  flex: 0 1 auto;
+  gap: 2px;
+  padding: 0 6px;
 }
 
 .calendar__grid {

@@ -111,7 +111,7 @@ export interface MonthCell {
  * onward is bookable and maps onto that weekday's column.
  */
 export function monthCells(monthOffset: number, now = new Date()): MonthCell[] {
-  const first = new Date(now.getFullYear(), now.getMonth() + monthOffset, 1);
+  const first = monthAt(monthOffset, now);
   const y = first.getFullYear();
   const m = first.getMonth();
   const lead = mondayIndex(first);
@@ -149,8 +149,13 @@ export function monthOffsetOf(d: Date, now = new Date()): number {
   return (d.getFullYear() - now.getFullYear()) * 12 + (d.getMonth() - now.getMonth());
 }
 
+/** The first of the month `monthOffset` months from the current one. */
+export function monthAt(monthOffset: number, now = new Date()): Date {
+  return new Date(now.getFullYear(), now.getMonth() + monthOffset, 1);
+}
+
 export function monthLabel(monthOffset: number, now = new Date()): string {
-  const d = new Date(now.getFullYear(), now.getMonth() + monthOffset, 1);
+  const d = monthAt(monthOffset, now);
   return `${d.toLocaleString('en-GB', { month: 'long' })} ${d.getFullYear()}`;
 }
 

@@ -1,7 +1,8 @@
-import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
-import { dateKeyOf, monthCells, monthLabel, weekAt } from '../../lib/dates';
+import { CalendarDays, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { dateKeyOf, monthCells, weekAt } from '../../lib/dates';
 import { useScheduler } from '../../store/useScheduler';
 import { Button } from '@/components/ui/button';
+import { MonthCaption } from '@/components/ui/MonthCaption';
 import { useEscape, useOutsideClick } from '../ui/hooks';
 
 const WEEKDAYS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
@@ -64,6 +65,8 @@ export function DateNav() {
         >
           <CalendarDays size={15} strokeWidth={2} />
           {label}
+          {/* says the date opens something, and which way it opens */}
+          <ChevronDown className="segmented__caret" size={14} strokeWidth={2.2} />
         </button>
 
         <button
@@ -93,27 +96,7 @@ export function DateNav() {
       {open && (
         <div className="date-pop" role="dialog" aria-label="Choose a date">
           <div className="calendar__card date-pop__card">
-            <div className="calendar__nav">
-              <button
-                className="calendar__nav-btn"
-                type="button"
-                title="Previous month"
-                aria-label="Previous month"
-                onClick={() => setNavMonth((n) => n - 1)}
-              >
-                <ChevronLeft size={14} strokeWidth={2} />
-              </button>
-              <div className="calendar__month">{monthLabel(navMonth)}</div>
-              <button
-                className="calendar__nav-btn"
-                type="button"
-                title="Next month"
-                aria-label="Next month"
-                onClick={() => setNavMonth((n) => n + 1)}
-              >
-                <ChevronRight size={14} strokeWidth={2} />
-              </button>
-            </div>
+            <MonthCaption offset={navMonth} onOffset={(next) => setNavMonth(() => next)} />
 
             <div className="calendar__grid">
               {WEEKDAYS.map((w) => (

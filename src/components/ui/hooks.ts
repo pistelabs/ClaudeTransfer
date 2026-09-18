@@ -3,6 +3,10 @@ import { useEffect, useRef } from 'react';
 /**
  * Calls `onOutside` when a mousedown lands outside the returned ref.
  * Runs on the capture phase so it fires before the click that opened a sibling menu.
+ *
+ * A Radix layer opened from inside the ref — a select in a hand-rolled popover,
+ * say — is portalled to the end of the document, so by the DOM it is outside
+ * something it plainly belongs to. Clicks in one are treated as inside.
  */
 export function useOutsideClick<T extends HTMLElement>(active: boolean, onOutside: () => void) {
   const ref = useRef<T>(null);
@@ -13,6 +17,8 @@ export function useOutsideClick<T extends HTMLElement>(active: boolean, onOutsid
     if (!active) return;
     const onDown = (e: MouseEvent) => {
       const el = ref.current;
+      const t = e.target as Element | null;
+      if (t?.closest?.('[data-radix-popper-content-wrapper]')) return;
       if (el && !el.contains(e.target as Node)) handler.current();
     };
     window.addEventListener('mousedown', onDown, true);

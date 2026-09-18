@@ -230,14 +230,23 @@
   color: var(--n-400);
 }
 
+.segmented__caret {
+  transition: transform 0.16s ease-out;
+}
+
+.segmented__btn--date[aria-expanded='true'] .segmented__caret {
+  transform: rotate(180deg);
+}
+
 .date-pop {
   position: absolute;
   top: calc(100% + 8px);
   left: 50%;
   z-index: 60;
   /* The month grid is seven equal columns with nothing intrinsic to hold them
-     open, so the popover states its own width rather than shrink-wrapping. */
-  width: 287px;
+     open, so the popover states its own width rather than shrink-wrapping. Wide
+     enough for the caption's month and year dropdowns to spell themselves out. */
+  width: 300px;
   padding: 10px;
   background: #fff;
   border: 1px solid var(--n-125);
@@ -261,6 +270,8 @@
 
 .date-pop__card {
   margin-top: 0;
+  /* the popover supplies the frame, so the card spends its width on the grid */
+  padding: 12px 10px 11px;
   border: none;
   box-shadow: none;
 }

@@ -34,7 +34,7 @@ network access. Offline the app still runs, just in a system sans-serif.
   scale carries, so the schedule, sheets and header stay hand-written. The components are
   Tailwind; both read the same tokens.
 - **shadcn/ui on Radix**, one component per file in `components/ui`. Button, Badge, Card,
-  Separator, Label, DropdownMenu, Popover, Tabs, ToggleGroup, ButtonGroup and the Sonner
+  Separator, Label, DropdownMenu, Popover, Select, Tabs, ToggleGroup, ButtonGroup and the Sonner
   Toaster, written with `cva`, `cn()` and `data-slot` as shadcn writes them. The variant maps
   are tuned to this design rather than shadcn's defaults — 34px controls at 13px, and the
   studio's own `success`, `pay` and `action` beside shadcn's set — which is what owning the files
@@ -263,7 +263,12 @@ the "now" line and the Today/Upcoming/Past pills meaningful whenever you open it
 - **The date is the middle of the three nav buttons**, with an arrow either side, and a Today
   button after them. Today greys out rather than disappearing once today is on screen, so the
   header keeps its shape whatever day is showing; in week view this week counts as today.
-  Clicking the date opens a month calendar with Today and Tomorrow beneath it. Any date can be opened, forwards
+  Clicking the date — it carries a caret that turns over when it is open — brings down a month
+  calendar with Today and Tomorrow beneath it. The calendar's head is shadcn's dropdown
+  caption: an arrow either side, and the month and year as Select lists between them, so a
+  date months or a year out is two clicks rather than a month of paging. The two lists are
+  independent, as they are in shadcn's own caption — picking a month keeps the year showing.
+  The booking sheet's date step uses the same caption. Any date can be opened, forwards
   or back; the arrows step a day, or a week in week view, rolling over the week boundary. A
   booking carries the week it belongs to, so other weeks open empty until something is booked
   into them — the seed only fills the current one. A booking sheet opened from a date in
