@@ -47,7 +47,6 @@ import {
   dayNameOf,
   formatFullDate,
   formatWeekLabel,
-  isSameDate,
   startOfWeek,
   toIsoDate,
   weekDates,
@@ -193,19 +192,10 @@ export function SchedulesPage() {
 
   const isLoading = staffLoading || blocksLoading
 
-  const today = new Date()
   const stepper =
     viewMode === "day"
-      ? {
-          label: formatFullDate(selectedDate),
-          step: 1,
-          atToday: isSameDate(selectedDate, today),
-        }
-      : {
-          label: formatWeekLabel(weekStart),
-          step: 7,
-          atToday: isSameDate(weekStart, startOfWeek(today)),
-        }
+      ? { label: formatFullDate(selectedDate), step: 1 }
+      : { label: formatWeekLabel(weekStart), step: 7 }
 
   return (
     <div>
@@ -287,14 +277,12 @@ export function SchedulesPage() {
             <DateStepper
               date={selectedDate}
               label={stepper.label}
-              atToday={stepper.atToday}
               onPickDate={setSelectedDate}
               onStep={(direction) =>
                 setSelectedDate((current) =>
                   addDays(current, direction * stepper.step),
                 )
               }
-              onToday={() => setSelectedDate(new Date())}
             />
             <span />
           </div>
@@ -349,14 +337,12 @@ export function SchedulesPage() {
             <DateStepper
               date={selectedDate}
               label={stepper.label}
-              atToday={stepper.atToday}
               onPickDate={setSelectedDate}
               onStep={(direction) =>
                 setSelectedDate((current) =>
                   addDays(current, direction * stepper.step),
                 )
               }
-              onToday={() => setSelectedDate(new Date())}
             />
             <span />
           </div>
@@ -425,17 +411,12 @@ export function SchedulesPage() {
 function DateStepper({
   date,
   label,
-  atToday,
   onStep,
-  onToday,
   onPickDate,
 }: {
   date: Date
   label: string
-  /** True when the view is already showing today; Today then has nothing to do. */
-  atToday: boolean
   onStep: (direction: -1 | 1) => void
-  onToday: () => void
   onPickDate: (date: Date) => void
 }) {
   const [pickerOpen, setPickerOpen] = useState(false)
@@ -507,19 +488,6 @@ function DateStepper({
         className="text-muted-foreground hover:bg-background hover:text-foreground focus-ring flex w-9 items-center justify-center transition-colors"
       >
         <ChevronRightIcon className="size-4" />
-      </button>
-      <button
-        type="button"
-        onClick={onToday}
-        disabled={atToday}
-        className={cn(
-          "border-border focus-ring border-l px-3 text-[13px] font-medium transition-colors",
-          atToday
-            ? "bg-muted text-placeholder-foreground cursor-default"
-            : "text-muted-foreground hover:bg-background hover:text-foreground",
-        )}
-      >
-        Today
       </button>
     </div>
   )

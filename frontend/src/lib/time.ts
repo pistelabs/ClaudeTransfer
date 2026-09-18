@@ -133,14 +133,6 @@ export function dayNameOf(date: Date): Day {
   return days[(date.getDay() + 6) % 7]
 }
 
-export function isSameDate(a: Date, b: Date): boolean {
-  return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
-  )
-}
-
 export function formatShortDate(iso: string): string {
   const d = new Date(`${iso}T00:00:00`)
   if (Number.isNaN(d.getTime())) return iso
