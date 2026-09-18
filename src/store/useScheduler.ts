@@ -69,6 +69,18 @@ function freshForm(day: number, week = 0): BookingForm {
 }
 
 /**
+ * A checked patch of the booking form.
+ *
+ * `set({ form: patchForm(s.form, { … }) })` is checked against a partial of the whole
+ * store, which quietly accepts a key the form has never had — that is how
+ * `staff` survived the rename to `staffId` long enough to stop the fitter
+ * picker working. Naming the patch's own type puts the compiler back in the way.
+ */
+function patchForm(form: BookingForm, patch: Partial<BookingForm>): BookingForm {
+  return { ...form, ...patch };
+}
+
+/**
  * Everything the booking sheet has to forget once it is finished with: the
  * sheet itself, the step it had reached, and every answer captured into it.
  *
@@ -699,18 +711,18 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
         custPicked: null,
         seatIdx: 0,
         seatData: {},
-        form: {
-          ...s.form,
+        form: patchForm(s.form, {
           customer: '',
           service: null,
           note: '',
           dur: dur || s.form.dur,
           day,
           week: s.weekOffset,
-          staff: staffIdx,
+          // a column is an index; the booking wants whose it is
+          staffId: staffIdx === null ? null : staffIdAt(staffIdx),
           dateKey: dateKeyOf(weekAt(s.weekOffset)[day].iso),
           time: toTimeValue(mins),
-        },
+        }),
       };
     }),
 
@@ -723,9 +735,9 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
   pickService: (sv) =>
     set((s) =>
       s.form.service === sv.id
-        ? { form: { ...s.form, service: null }, svcStep: 'service', seatIdx: 0, seatData: {}, timePicked: false }
+        ? { form: patchForm(s.form, { service: null }), svcStep: 'service', seatIdx: 0, seatData: {}, timePicked: false }
         : {
-            form: { ...s.form, service: sv.id, type: sv.t, dur: s.prefilledDur || sv.du },
+            form: patchForm(s.form, { service: sv.id, type: sv.t, dur: s.prefilledDur || sv.du }),
             svcStep: s.prefilled ? 'time' : 'date',
             seatIdx: 0,
             seatData: {},
@@ -734,7 +746,7 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
     ),
 
   pickDate: (dayIdx, key, week) =>
-    set((s) => ({ form: { ...s.form, day: dayIdx, week, dateKey: key }, svcStep: 'time', timePicked: false })),
+    set((s) => ({ form: patchForm(s.form, { day: dayIdx, week, dateKey: key }), svcStep: 'time', timePicked: false })),
   /**
    * Picks a start time and, when exactly one fitter is free for it, assigns them
    * — with no choice to make, leaving it on Unassigned is just an extra click.
@@ -753,12 +765,12 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
    */
   setDuration: (mins) =>
     set((s) => ({
-      form: { ...s.form, dur: Math.max(MIN_DURATION, Math.min(MAX_DURATION, Math.round(mins / 15) * 15)) },
+      form: patchForm(s.form, { dur: Math.max(MIN_DURATION, Math.min(MAX_DURATION, Math.round(mins / 15) * 15)) }),
     })),
-  setFormStaff: (idx) => set((s) => ({ form: { ...s.form, staff: idx }, staffOpen: false })),
+  setFormStaff: (id) => set((s) => ({ form: patchForm(s.form, { staffId: id }), staffOpen: false })),
   setStaffOpen: (staffOpen, staffUp = false) => set({ staffOpen, staffUp }),
   setMonthOffset: (fn) => set((s) => ({ monthOffset: fn(s.monthOffset) })),
-  setNote: (v) => set((s) => ({ form: { ...s.form, note: v } })),
+  setNote: (v) => set((s) => ({ form: patchForm(s.form, { note: v }) })),
   setDetailField: (id, v) => set((s) => ({ details: { ...s.details, [id]: v } })),
   setFittingField: (id, v) => set((s) => ({ fitting: { ...s.fitting, [id]: v } })),
   setQuestionnaire: (questionnaire) => set({ questionnaire }),
@@ -777,7 +789,7 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
         custQuery: next.custQuery,
         custPicked: next.custPicked,
         details: { ...next.details },
-        form: { ...s.form, customer: next.customer },
+        form: patchForm(s.form, { customer: next.customer }),
       };
     }),
 
@@ -942,16 +954,16 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
 
   // ---- customers --------------------------------------------------------
 
-  setCustQuery: (v) => set((s) => ({ custQuery: v, custFocus: true, custPicked: null, form: { ...s.form, customer: v } })),
+  setCustQuery: (v) => set((s) => ({ custQuery: v, custFocus: true, custPicked: null, form: patchForm(s.form, { customer: v }) })),
   setCustFocus: (custFocus) => set({ custFocus }),
   pickCustomer: (c) =>
     set((s) => ({
       custPicked: c.id,
       custQuery: `${c.first} ${c.last}`,
       custFocus: false,
-      form: { ...s.form, customer: `${c.first} ${c.last}` },
+      form: patchForm(s.form, { customer: `${c.first} ${c.last}` }),
     })),
-  clearCustomer: () => set((s) => ({ custPicked: null, custQuery: '', custFocus: true, form: { ...s.form, customer: '' } })),
+  clearCustomer: () => set((s) => ({ custPicked: null, custQuery: '', custFocus: true, form: patchForm(s.form, { customer: '' }) })),
   openNewCust: () => {
     const q = get().custQuery.trim().split(/\s+/);
     set({
@@ -980,7 +992,7 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
       showNewCust: false,
       custPicked: c.id,
       custQuery: name,
-      form: { ...s.form, customer: name },
+      form: patchForm(s.form, { customer: name }),
     }));
   },
 
