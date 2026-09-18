@@ -16,11 +16,11 @@ import { cn } from "@/lib/utils";
 
 function Line({ label, value, tone }: { label: string; value: string; tone?: "credit" | "muted" }) {
   return (
-    <div className="flex min-w-[140px] items-baseline justify-between gap-4">
-      <span className="text-muted-foreground text-[11.5px]">{label}</span>
+    <div className="flex min-w-[126px] items-baseline justify-between gap-3 leading-[1.45]">
+      <span className="text-muted-foreground text-[10px]">{label}</span>
       <span
         className={cn(
-          "text-[11.5px] font-semibold tabular-nums",
+          "text-[10px] font-semibold tabular-nums",
           tone === "credit" && "text-green-600",
           tone === "muted" && "text-muted-foreground",
         )}
@@ -48,38 +48,35 @@ export function PaymentBar({ job }: { job: Job }) {
   const collected = job.equipment.every((eq) => eq.stage === "archive");
 
   return (
-    <div className="flex shrink-0 items-stretch border-t bg-white">
-      <div className="flex min-w-0 flex-1 items-center gap-[18px] px-5 py-3">
-        <div className="flex flex-col gap-px">
-          <span className="text-muted-foreground text-[9.5px] font-bold tracking-[0.09em] uppercase">Total Due</span>
-          <span className="text-[26px] leading-[1.05] font-extrabold tracking-tight tabular-nums">
-            {money(balance)}
-          </span>
-        </div>
-        <Separator orientation="vertical" className="self-stretch" />
-        <div className="flex flex-col gap-0.5">
-          <Line label="Subtotal" value={money(subtotal)} />
-          <Line
-            label={discount < 0 ? "Adjustment" : "Discount"}
-            value={discount > 0 ? `−${money(discount)}` : discount < 0 ? `+${money(-discount)}` : money(0)}
-            tone={discount > 0 ? "credit" : "muted"}
-          />
-          <Line label="Paid" value={paid > 0 ? `−${money(paid)}` : money(0)} tone={paid > 0 ? "credit" : "muted"} />
-        </div>
+    <div className="flex shrink-0 items-center gap-3.5 border-t bg-white px-5 py-2.5">
+      <div className="flex flex-col gap-px">
+        <span className="text-muted-foreground text-[9px] font-bold tracking-[0.09em] uppercase">Total Due</span>
+        <span className="text-[22px] leading-[1.05] font-extrabold tracking-tight tabular-nums">{money(balance)}</span>
       </div>
+      <Separator orientation="vertical" className="h-9" />
+      <div className="flex flex-col">
+        <Line label="Subtotal" value={money(subtotal)} />
+        <Line
+          label={discount < 0 ? "Adjustment" : "Discount"}
+          value={discount > 0 ? `−${money(discount)}` : discount < 0 ? `+${money(-discount)}` : money(0)}
+          tone={discount > 0 ? "credit" : "muted"}
+        />
+        <Line label="Paid" value={paid > 0 ? `−${money(paid)}` : money(0)} tone={paid > 0 ? "credit" : "muted"} />
+      </div>
+
+      <div className="flex-1" />
 
       {/* Green is the one deliberate exception to the neutral palette: this is the bar's whole
        * purpose, and it needs to read as the primary action from across a bench. */}
       {collected ? (
-        <div className="flex min-w-[172px] flex-col items-center justify-center gap-0.5 border-l bg-zinc-50 px-6">
-          <span className="text-muted-foreground text-[13px] font-semibold">Collected</span>
-        </div>
+        <span className="text-muted-foreground px-2 text-[13px] font-semibold">Collected</span>
       ) : settled ? (
         <Button
           onClick={markCollected}
           disabled={!allComplete}
           title={allComplete ? undefined : "Every service has to be ticked off before the job can be completed"}
-          className="h-auto min-w-[172px] rounded-none bg-green-600 px-6 text-base font-bold tracking-tight text-white hover:bg-green-700"
+          size="lg"
+          className="min-w-[152px] bg-green-600 text-[15px] font-bold tracking-tight text-white hover:bg-green-700"
         >
           <CheckCircle2 className="size-[18px]" />
           Complete
@@ -87,7 +84,8 @@ export function PaymentBar({ job }: { job: Job }) {
       ) : (
         <Button
           onClick={openPay}
-          className="h-auto min-w-[172px] rounded-none bg-green-600 px-6 text-base font-bold tracking-tight text-white hover:bg-green-700"
+          size="lg"
+          className="min-w-[152px] bg-green-600 text-[15px] font-bold tracking-tight text-white hover:bg-green-700"
         >
           <CreditCard className="size-[18px]" />
           Pay Now
@@ -96,7 +94,7 @@ export function PaymentBar({ job }: { job: Job }) {
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button className="h-auto w-[52px] rounded-none">
+          <Button variant="outline" size="lg" className="w-11 bg-white px-0">
             <MoreVertical className="size-[17px]" />
           </Button>
         </DropdownMenuTrigger>
