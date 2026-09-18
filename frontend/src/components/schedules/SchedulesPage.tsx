@@ -9,6 +9,7 @@ import {
 import { toast } from "sonner"
 
 import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { Card } from "@/components/ui/card"
 import {
@@ -438,6 +439,7 @@ function DateStepper({
   onPickDate: (date: Date) => void
 }) {
   const [pickerOpen, setPickerOpen] = useState(false)
+  const today = new Date()
 
   return (
     <div className="border-border bg-card shadow-card inline-flex h-9 items-stretch overflow-hidden rounded-md border">
@@ -458,18 +460,44 @@ function DateStepper({
           {label}
           <ChevronDownIcon className="text-placeholder-foreground size-3.5" />
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-3" align="center">
+        <PopoverContent className="w-auto p-0" align="center">
           <Calendar
             mode="single"
             selected={date}
             defaultMonth={date}
+            captionLayout="dropdown"
+            startMonth={new Date(today.getFullYear() - 2, 0)}
+            endMonth={new Date(today.getFullYear() + 3, 11)}
             autoFocus
+            className="p-3"
             onSelect={(picked) => {
               if (!picked) return
               onPickDate(picked)
               setPickerOpen(false)
             }}
           />
+          <div className="border-divider grid grid-cols-2 gap-2 border-t p-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                onPickDate(new Date())
+                setPickerOpen(false)
+              }}
+            >
+              Today
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                onPickDate(addDays(new Date(), 1))
+                setPickerOpen(false)
+              }}
+            >
+              Tomorrow
+            </Button>
+          </div>
         </PopoverContent>
       </Popover>
       <button
