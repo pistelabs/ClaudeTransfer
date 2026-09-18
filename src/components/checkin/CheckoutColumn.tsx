@@ -4,7 +4,7 @@ import { useAppStore, nextJobIdStr } from "../../store/useAppStore";
 import { ServicePill, TypeBadge } from "../Pills";
 import { svcPrice } from "../../lib/serviceCatalog";
 import { money } from "../../lib/format";
-import { hasAdjustment, priceItems } from "../../lib/pricing";
+import { priceItems } from "../../lib/pricing";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
 function itemPrice(services: string[], serviceData: Record<string, { quote?: string }>, priceOverride?: number | string | null): number {
   const base = services.reduce((a, n) => a + svcPrice(n, serviceData), 0);
@@ -42,7 +43,6 @@ export function CheckoutColumn() {
     ...nf.items,
     ...(hasCurrentEditing ? [{ services: nf.services, serviceData: nf.serviceData, priceOverride: nf.priceOverride }] : []),
   ]);
-  const showBreakdown = hasAdjustment(priced);
 
   const canSubmit = nf.customer.trim().length > 0 && (nf.items.length > 0 || nf.brand.trim().length > 0);
 
@@ -219,31 +219,33 @@ export function CheckoutColumn() {
       </div>
 
       <div className="flex flex-shrink-0 flex-col gap-2 border-t border-app-bg px-[18px] py-3.5">
-        {showBreakdown && (
-          <>
-            <div className="flex items-baseline justify-between">
-              <span className="text-muted-foreground text-[12.5px]">Subtotal</span>
-              <span className="text-[12.5px] font-semibold tabular-nums">{money(priced.subtotal)}</span>
-            </div>
-            <div className="flex items-baseline justify-between">
-              <span className="text-muted-foreground text-[12.5px]">
-                {priced.discount > 0 ? "Discounts" : "Adjustments"}
-              </span>
-              <span
-                className={
-                  priced.discount > 0
-                    ? "text-[12.5px] font-semibold tabular-nums text-green-600"
-                    : "text-[12.5px] font-semibold tabular-nums"
-                }
-              >
-                {priced.discount > 0 ? `−${money(priced.discount)}` : `+${money(-priced.discount)}`}
-              </span>
-            </div>
-          </>
-        )}
-        <div className="flex items-baseline justify-between pb-0.5">
-          <span className="text-[13px] font-semibold text-zinc-700">Total Due</span>
-          <span className="text-ink text-[19px] font-extrabold tracking-tight tabular-nums">{money(priced.total)}</span>
+        {/* All three lines are always shown, so the shape of the bill never changes as items
+            are added or a price is adjusted — only the figures do. */}
+        <div className="flex items-baseline justify-between">
+          <span className="text-muted-foreground text-[12.5px]">Subtotal</span>
+          <span className="text-[12.5px] font-semibold tabular-nums">{money(priced.subtotal)}</span>
+        </div>
+        <div className="flex items-baseline justify-between">
+          <span className="text-muted-foreground text-[12.5px]">
+            {priced.discount < 0 ? "Adjustment" : "Discount"}
+          </span>
+          <span
+            className={cn(
+              "text-[12.5px] font-semibold tabular-nums",
+              priced.discount > 0 && "text-green-600",
+              priced.discount === 0 && "text-muted-foreground",
+            )}
+          >
+            {priced.discount > 0
+              ? `−${money(priced.discount)}`
+              : priced.discount < 0
+                ? `+${money(-priced.discount)}`
+                : money(0)}
+          </span>
+        </div>
+        <div className="border-app-bg mt-0.5 flex items-baseline justify-between border-t pt-2 pb-0.5">
+          <span className="text-[14px] font-semibold text-zinc-700">Total Due</span>
+          <span className="text-ink text-[22px] font-extrabold tracking-tight tabular-nums">{money(priced.total)}</span>
         </div>
         {editId ? (
           <Button onClick={() => createJob("later")} disabled={!canSubmit} size="lg">
