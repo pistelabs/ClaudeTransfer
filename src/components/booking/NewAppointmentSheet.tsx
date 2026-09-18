@@ -38,8 +38,9 @@ export function NewAppointmentSheet() {
     showWhoGate,
   } = store;
 
-  // a nested popover claims Escape first
-  useEscape(!showWho && !showNewCust && !store.staffOpen, closeAdd);
+  // a nested popover claims Escape first, and so does the payment prompt — which
+  // closes this sheet itself once it has been answered
+  useEscape(!showWho && !showNewCust && !store.staffOpen && !store.payPrompt, closeAdd);
 
   // Each page is a fresh form, so start it at the top rather than inheriting the
   // other page's scroll. Focus has to move too: React reuses the footer button
@@ -59,10 +60,16 @@ export function NewAppointmentSheet() {
   const slots = slotsFor(appts, form.staffId, form.day, form.dur, rescheduleId, form.week);
   const slotValid = svcStep === 'time' && slots.some((s) => s.min === startMin && s.ok);
 
+  // Once the booking is made the sheet is a record of it, held open behind the
+  // payment prompt. Nothing here is still being decided, and the new booking is
+  // in `appts` by now, so leaving the check running would have the sheet warn
+  // that the appointment clashes with itself.
+  const booked = !!store.payPrompt;
+
   // A clash warns rather than blocks — in-store staff may double-book deliberately.
   // A queue entry has no time, so it can't clash with anything.
   const clashes =
-    !queueAdd && svcStep === 'time' && form.staffId !== null
+    !booked && !queueAdd && svcStep === 'time' && form.staffId !== null
       ? collisionsFor(appts, {
           id: rescheduleId,
           d: form.day,

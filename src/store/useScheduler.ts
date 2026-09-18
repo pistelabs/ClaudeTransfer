@@ -68,6 +68,28 @@ function freshForm(day: number, week = 0): BookingForm {
   };
 }
 
+/**
+ * Everything the booking sheet has to forget once it is finished with: the
+ * sheet itself, the step it had reached, and every answer captured into it.
+ *
+ * Applied the moment a booking is saved — unless the payment prompt is standing
+ * over the sheet, in which case the sheet stays exactly as it was until that is
+ * answered, and this runs then instead.
+ */
+function sheetClosed(form: BookingForm) {
+  return {
+    seatIdx: 0,
+    seatData: {},
+    showAdd: false,
+    svcStep: 'service' as ServiceStep,
+    sheetPage: 'book' as SheetPage,
+    details: {},
+    custQuery: '',
+    custPicked: null,
+    form: freshForm(form.day, form.week),
+  };
+}
+
 function newEquipItem(): EquipItem {
   return {
     uid: 'e' + Math.random().toString(36).slice(2),
@@ -820,13 +842,14 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
     // What it costs decides whether staff are asked about payment on the spot.
     // Nothing is owed on a free booking, so nothing is worth interrupting for.
     const price = sv?.price ?? 0;
+    const payPrompt =
+      price > PAY_PROMPT_MIN
+        ? { id: appt.id, amount: price, customer: appt.c, service: sv?.name ?? '' }
+        : null;
 
     set((st) => ({
       appts: [...st.appts, appt],
-      payPrompt:
-        price > PAY_PROMPT_MIN
-          ? { id: appt.id, amount: price, customer: appt.c, service: sv?.name ?? '' }
-          : null,
+      payPrompt,
       records: {
         ...st.records,
         [appt.id]: {
@@ -836,16 +859,11 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
           questionnaire: st.questionnaire,
         },
       },
-      seatIdx: 0,
-      seatData: {},
-      showAdd: false,
       selDay: f.day,
-      svcStep: 'service',
-      sheetPage: 'book',
-      details: {},
-      custQuery: '',
-      custPicked: null,
-      form: freshForm(f.day, f.week),
+      // The sheet stays open underneath the payment prompt, so that answering it
+      // is plainly the last step of this booking rather than a question arriving
+      // out of nowhere over the schedule. It closes when the prompt is answered.
+      ...(payPrompt ? {} : sheetClosed(f)),
     }));
   },
 
@@ -911,6 +929,7 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
       const p = s.payPrompt;
       if (!p) return { payPrompt: null };
       return {
+        ...sheetClosed(s.form),
         payPrompt: null,
         payments: {
           ...s.payments,
@@ -919,7 +938,7 @@ export const useScheduler = create<SchedulerStore>((set, get) => ({
       };
     }),
 
-  closePayPrompt: () => set({ payPrompt: null }),
+  closePayPrompt: () => set((s) => ({ ...sheetClosed(s.form), payPrompt: null })),
 
   // ---- customers --------------------------------------------------------
 

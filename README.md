@@ -221,7 +221,10 @@ the "now" line and the Today/Upcoming/Past pills meaningful whenever you open it
   opens a prompt with the total due and the two endings the desk has: send it to the POS, or
   pay later. The customer is standing there at that moment, which is the difference between
   taking the money and chasing it. The booking is saved before the prompt appears, so nothing
-  can lose it — Escape and the backdrop mean pay later. Sending it to the till records a
+  can lose it — Escape and the backdrop mean pay later. The booking sheet stays open behind
+  the prompt until it is answered, so the question plainly belongs to the booking that was
+  just made rather than arriving out of nowhere over the schedule; the sheet stops checking
+  for clashes at that point, or it would warn that the new booking overlaps itself. Sending it to the till records a
   pending charge, not a payment: the balance keeps showing until the money lands. Walk-ins are
   not asked (no time, no price yet) and neither is a reschedule.
 - **Closing out has three endings.** Send to POS keeps the button in the complete dialog; the
