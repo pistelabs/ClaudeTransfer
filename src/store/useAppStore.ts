@@ -600,7 +600,15 @@ export const useAppStore = create<AppState>((set, get) => ({
     })),
 
   // ---- payments / ready-collect flow ----
-  openPay: () => set({ payPrompt: "pay" }),
+  openPay: () => {
+    // Same dialog the check-in sheet falls back to, so taking payment looks the same
+    // wherever it is started from. Real payment software takes over once connected.
+    const s = get();
+    const job = s.jobs.find((j) => j.id === s.selectedId);
+    if (!job) return;
+    if (openPaymentSoftware(job, jobBalance(job))) return;
+    set({ payDialogJobId: job.id });
+  },
   closePay: () => set({ payPrompt: null }),
   paymentDone: () => {
     // Returning from the payment software means the outstanding balance was taken.
@@ -1044,6 +1052,9 @@ export const useAppStore = create<AppState>((set, get) => ({
   recordPayment: (jobId, amount, method) =>
     set((st) => ({
       payDialogJobId: null,
+      // Settling the balance leads into the receipt prompt, which is where a job can be
+      // moved to complete once every service is ticked off.
+      payPrompt: jobBalance(st.jobs.find((j) => j.id === jobId) ?? ({ equipment: [], paid: 0 } as unknown as Job)) - amount <= 0 ? "collect" : null,
       jobs: st.jobs.map((j) =>
         j.id === jobId
           ? {

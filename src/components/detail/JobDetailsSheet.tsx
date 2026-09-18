@@ -31,20 +31,21 @@ export function JobDetailsSheet() {
         className="w-[1020px] gap-0 p-0 sm:max-w-[96vw]"
       >
         {/* Header */}
-        <div className="border-app-bg flex shrink-0 flex-wrap items-center gap-2.5 border-b px-[18px] py-4 pr-12">
-          <div className="flex min-w-0 flex-col gap-1">
-            {/* Stacked so the label doesn't crowd the id, which is long now. */}
+        <div className="border-app-bg flex shrink-0 flex-wrap items-center gap-2.5 border-b px-[18px] py-2.5 pr-12">
+          {/* Label and id share a line — stacking them made the banner taller than it needed
+              to be, and the id is legible either way. */}
+          <div className="flex min-w-0 items-baseline gap-1.5">
             <span className="text-muted-foreground text-[10.5px] font-semibold tracking-wide uppercase">Job ID</span>
-            <SheetTitle className="-mt-0.5 text-base tracking-tight whitespace-nowrap">{job.id}</SheetTitle>
+            <SheetTitle className="text-base tracking-tight whitespace-nowrap">{job.id}</SheetTitle>
             <SheetDescription className="sr-only">
               Job details for {job.customer}: equipment, services, updates and payment.
             </SheetDescription>
-            {isOverdue && (
-              <Badge variant="outline" className="w-fit rounded-full border-red-200 bg-red-50 text-red-600">
-                OVERDUE
-              </Badge>
-            )}
           </div>
+          {isOverdue && (
+            <Badge variant="outline" className="rounded-full border-red-200 bg-red-50 text-red-600">
+              OVERDUE
+            </Badge>
+          )}
           <button
             onClick={() => editCustomerByName(job.customer, job.email, job.phone)}
             title="Edit customer details"

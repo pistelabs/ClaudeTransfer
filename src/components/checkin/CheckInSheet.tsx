@@ -1,5 +1,5 @@
 import { Check, ChevronDown, Landmark, Plus } from "lucide-react";
-import { useAppStore } from "../../store/useAppStore";
+import { nextJobIdStr, useAppStore } from "../../store/useAppStore";
 import { Avatar } from "../Pills";
 import { CustomerSearch } from "./CustomerSearch";
 import { EquipmentReAddPanel } from "./EquipmentReAddPanel";
@@ -33,11 +33,13 @@ export function CheckInSheet() {
   const activeStaff = useAppStore((s) => s.activeStaff);
   const staffList = useAppStore((s) => s.staffList);
   const setStaff = useAppStore((s) => s.setStaff);
+  const jobs = useAppStore((s) => s.jobs);
   const nf = useAppStore((s) => s.nf);
   const patchNf = useAppStore((s) => s.patchNf);
   const addAnotherItem = useAppStore((s) => s.addAnotherItem);
 
   const title = editId ? `Edit ${editId}` : "Check in New Equipment";
+  const jobIdLabel = editId || nextJobIdStr(jobs);
   const slots = pickupSlots();
 
   return (
@@ -54,6 +56,11 @@ export function CheckInSheet() {
         {/* Header */}
         <div className="border-app-bg flex shrink-0 items-center gap-3 border-b px-5 py-4">
           <SheetTitle className="text-base tracking-tight">{title}</SheetTitle>
+          {/* The summary column used to head itself with this; it belongs with the title. */}
+          <div className="flex min-w-0 items-baseline gap-1.5">
+            <span className="text-muted-foreground text-[10.5px] font-semibold tracking-wide uppercase">Job ID</span>
+            <span className="text-base font-semibold tracking-tight whitespace-nowrap">{jobIdLabel}</span>
+          </div>
           <SheetDescription className="sr-only">
             Build a job by adding a customer, equipment and services.
           </SheetDescription>

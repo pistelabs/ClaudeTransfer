@@ -48,10 +48,6 @@ export function CheckoutColumn() {
 
   return (
     <div className="flex w-[338px] flex-shrink-0 flex-col border-l border-border bg-white">
-      <div className="flex flex-shrink-0 items-center gap-2.5 border-b border-app-bg px-4 py-3.5">
-        <span className="text-[13px] font-bold tracking-tight">Job {jobIdLabel}</span>
-      </div>
-
       {/* No customer block here — the form's own customer card already shows who this is for
           once one is selected, and repeating it just costs column width. */}
       <div className="flex flex-1 flex-col gap-[18px] overflow-y-auto px-[18px] py-4">

@@ -1,6 +1,6 @@
 import { CreditCard, MoreVertical, Printer, Trash2 } from "lucide-react";
 import type { Job } from "../../types";
-import { equipmentPrice, equipmentServiceTotal, jobBalance, jobDiscount, jobSubtotal, jobTotal } from "../../data/build";
+import { equipmentPrice, equipmentServiceTotal, jobBalance, jobDiscount, jobSubtotal } from "../../data/build";
 import { useAppStore } from "../../store/useAppStore";
 import { money } from "../../lib/format";
 import { ServicePill, TypeBadge } from "../Pills";
@@ -24,16 +24,11 @@ export function JobSummaryColumn({ job }: { job: Job }) {
 
   const subtotal = jobSubtotal(job);
   const discount = jobDiscount(job);
-  const total = jobTotal(job);
   const paid = job.paid || 0;
   const balance = jobBalance(job);
 
   return (
     <div className="border-border flex w-[338px] flex-shrink-0 flex-col border-l bg-white">
-      <div className="border-app-bg flex flex-shrink-0 items-center gap-2.5 border-b px-4 py-3.5">
-        <span className="text-[13px] font-bold tracking-tight">Job {job.id}</span>
-      </div>
-
       <div className="flex flex-1 flex-col gap-[18px] overflow-y-auto px-[18px] py-4">
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2">
@@ -46,8 +41,17 @@ export function JobSummaryColumn({ job }: { job: Job }) {
             {job.equipment.map((eq, i) => {
               const price = equipmentPrice(eq);
               const adjusted = Math.abs(price - equipmentServiceTotal(eq)) >= 0.005;
+              // Work that is finished and waiting to be collected tints green, so a part-done
+              // job shows at a glance which items are still on the bench.
+              const ready = eq.stage === "awaiting" || eq.stage === "archive";
               return (
-                <div key={i} className="flex flex-col overflow-hidden rounded-[11px] border bg-white shadow-sm">
+                <div
+                  key={i}
+                  className={cn(
+                    "flex flex-col overflow-hidden rounded-[11px] border shadow-sm",
+                    ready ? "border-emerald-200 bg-emerald-50/50" : "bg-white",
+                  )}
+                >
                   <div className="flex items-start gap-2.5 px-[11px] pt-[11px] pb-[9px]">
                     <TypeBadge type={eq.type} />
                     <div className="flex min-w-0 flex-1 flex-col gap-0.5 leading-[1.3]">
@@ -70,7 +74,12 @@ export function JobSummaryColumn({ job }: { job: Job }) {
                       <span className="text-muted-foreground text-[10.5px] italic">No services added</span>
                     </div>
                   )}
-                  <div className="border-app-bg bg-surface-50 flex items-center justify-between gap-2 border-t px-[11px] py-2">
+                  <div
+                    className={cn(
+                      "border-app-bg flex items-center justify-between gap-2 border-t px-[11px] py-2",
+                      ready ? "bg-emerald-50" : "bg-surface-50",
+                    )}
+                  >
                     <span
                       className="bg-app-bg rounded-[6px] px-[7px] py-0.5 text-[10.5px] font-semibold whitespace-nowrap text-zinc-600"
                       style={{ fontFamily: "ui-monospace, SF Mono, Menlo, monospace" }}
@@ -109,17 +118,13 @@ export function JobSummaryColumn({ job }: { job: Job }) {
           </span>
         </div>
         <div className="flex items-baseline justify-between">
-          <span className="text-muted-foreground text-[12.5px]">Total Due</span>
-          <span className="text-[12.5px] font-semibold tabular-nums">{money(total)}</span>
-        </div>
-        <div className="flex items-baseline justify-between">
           <span className="text-muted-foreground text-[12.5px]">Paid</span>
           <span className={cn("text-[12.5px] font-semibold tabular-nums", paid > 0 && "text-green-600")}>
             {paid > 0 ? `−${money(paid)}` : money(0)}
           </span>
         </div>
         <div className="border-app-bg mt-0.5 flex items-baseline justify-between border-t pt-2 pb-0.5">
-          <span className="text-[14px] font-semibold text-zinc-700">Balance Due</span>
+          <span className="text-[14px] font-semibold text-zinc-700">Total Due</span>
           <span className="text-ink text-[22px] font-extrabold tracking-tight tabular-nums">{money(balance)}</span>
         </div>
 
