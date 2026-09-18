@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react"
 import {
   CalendarIcon,
+  ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   UsersIcon,
@@ -8,7 +9,13 @@ import {
 import { toast } from "sonner"
 
 import { cn } from "@/lib/utils"
+import { Calendar } from "@/components/ui/calendar"
 import { Card } from "@/components/ui/card"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { PageHeader } from "@/components/common/PageHeader"
@@ -277,8 +284,10 @@ export function SchedulesPage() {
           <div className="mb-3 grid grid-cols-[1fr_auto_1fr] items-center gap-3">
             <CategoryLegend />
             <DateStepper
+              date={selectedDate}
               label={stepper.label}
               atToday={stepper.atToday}
+              onPickDate={setSelectedDate}
               onStep={(direction) =>
                 setSelectedDate((current) =>
                   addDays(current, direction * stepper.step),
@@ -337,8 +346,10 @@ export function SchedulesPage() {
           <div className="mb-3 grid grid-cols-[1fr_auto_1fr] items-center gap-3">
             <CategoryLegend />
             <DateStepper
+              date={selectedDate}
               label={stepper.label}
               atToday={stepper.atToday}
+              onPickDate={setSelectedDate}
               onStep={(direction) =>
                 setSelectedDate((current) =>
                   addDays(current, direction * stepper.step),
@@ -411,17 +422,23 @@ export function SchedulesPage() {
  * view, step forward, and a Today button that returns to the current date.
  */
 function DateStepper({
+  date,
   label,
   atToday,
   onStep,
   onToday,
+  onPickDate,
 }: {
+  date: Date
   label: string
   /** True when the view is already showing today; Today then has nothing to do. */
   atToday: boolean
   onStep: (direction: -1 | 1) => void
   onToday: () => void
+  onPickDate: (date: Date) => void
 }) {
+  const [pickerOpen, setPickerOpen] = useState(false)
+
   return (
     <div className="border-border bg-card shadow-card inline-flex h-9 items-stretch overflow-hidden rounded-md border">
       <button
@@ -432,10 +449,29 @@ function DateStepper({
       >
         <ChevronLeftIcon className="size-4" />
       </button>
-      <div className="border-border flex min-w-[188px] items-center justify-center gap-2 border-x px-3 text-[13px] font-semibold">
-        <CalendarIcon className="text-muted-foreground size-3.5" />
-        {label}
-      </div>
+      <Popover open={pickerOpen} onOpenChange={setPickerOpen}>
+        <PopoverTrigger
+          className="border-border hover:bg-background focus-ring flex min-w-[188px] items-center justify-center gap-2 border-x px-3 text-[13px] font-semibold transition-colors"
+          aria-label="Pick a date"
+        >
+          <CalendarIcon className="text-muted-foreground size-3.5" />
+          {label}
+          <ChevronDownIcon className="text-placeholder-foreground size-3.5" />
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-3" align="center">
+          <Calendar
+            mode="single"
+            selected={date}
+            defaultMonth={date}
+            autoFocus
+            onSelect={(picked) => {
+              if (!picked) return
+              onPickDate(picked)
+              setPickerOpen(false)
+            }}
+          />
+        </PopoverContent>
+      </Popover>
       <button
         type="button"
         onClick={() => onStep(1)}
