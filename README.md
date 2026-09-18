@@ -239,9 +239,11 @@ the "now" line and the Today/Upcoming/Past pills meaningful whenever you open it
   sizes are per type, so changing the type clears the specs entered against the old one. The
   services applied to the item, and their location, side, note and Included/+price pill, are
   unchanged.
-- **The customer's PDF report is one button on the Appointment tab**, disabled until both
-  question sets are complete for everybody on the booking — a report missing half a person's
-  fitting is worse than none, so the button says what is missing instead of producing one.
+- **The customer's PDF report is one line at the foot of the Appointment tab**, below the
+  notes: the heading, a word on whether it can be made yet, and the button, all on one row.
+  The button is disabled until both question sets are complete for everybody on the booking —
+  a report missing half a person's fitting is worse than none, so it says so instead of
+  producing one.
   Creating it is explicit rather than a side effect of closing the appointment out, so a
   fitter can make it, look at it, and still take the money afterwards. What it records is a
   snapshot: who made it, when, and per person what was captured. A snapshot rather than a

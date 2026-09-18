@@ -178,9 +178,6 @@ export function AppointmentTab({ detail }: { detail: DetailInfo }) {
         </CardContent>
       </Card>
 
-          {/* what the customer goes home with, filled in when the booking is closed out */}
-          {!isWalkIn && <ReportCard detail={detail} />}
-
           {!!appt.n && (
             <Card>
               <CardHeader>
@@ -191,6 +188,10 @@ export function AppointmentTab({ detail }: { detail: DetailInfo }) {
               </CardContent>
             </Card>
           )}
+
+          {/* what the customer goes home with, filled in when the booking is
+              closed out — last, because it is the end of the appointment */}
+          {!isWalkIn && <ReportCard detail={detail} />}
         </>
       )}
     </div>

@@ -1426,16 +1426,24 @@
 
 /* ---- customer report ---- */
 
-.report__row {
+/* One line: what it is, whether it can be made yet, and the button that makes
+   it. The row is a flex line rather than the Card's own header grid, so the
+   heading and the note beside it read as one sentence across the card. */
+.report-card__row {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px 16px;
+  gap: 6px 14px;
   align-items: center;
-  justify-content: space-between;
+}
+
+.report-card__actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-left: auto;
 }
 
 .report__lede {
-  flex: 1 1 220px;
   min-width: 0;
   color: var(--n-600);
   font-size: 12.5px;
