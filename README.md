@@ -191,15 +191,18 @@ the "now" line and the Today/Upcoming/Past pills meaningful whenever you open it
   clickable and is flagged amber — online bookings must respect it, in-store staff may not.
 - **Double-booking warns, it does not block.** The sheet shows the clashing appointment and
   the confirm button turns rose, but the booking can still be forced through.
-- **A booking can have more than one fitter.** Some work needs two pairs of hands, so the
-  Appointment tab's Bootfitter field is a team: the lead — whose column the booking sits in,
-  and who can still be swapped — plus anyone assisting, added and removed as chips. Everyone
+- **A booking with several customers can have more than one fitter.** Two people in the bay
+  need two pairs of hands, so the Appointment tab's Bootfitter field is a team: the lead —
+  whose column the booking sits in, and who can still be swapped — plus anyone assisting,
+  added and removed as chips. One customer is one fitter's work, so a single-customer booking
+  is not offered Add fitter at all; anyone already assisting still shows and can still be
+  taken off, because a booking can arrive that way however it was made. Everyone
   attached is genuinely busy, so the block is drawn in each of their columns and counts
   against their availability and conflicts. Only the lead's copy drags; the others move with
   it. With more than one fitter on the booking, the staff assessment asks which of them
   recorded it, per person, and the saved badge carries the name.
-- **The customer leads the Appointment tab**, then the scheduling facts, then the report and
-  any note. Who the booking is for is the thing being looked up; when it is happens to be
+- **The customer leads the Appointment tab**, then the scheduling facts, then any note and
+  the report. Who the booking is for is the thing being looked up; when it is happens to be
   visible on the grid already. Every customer reads the same — avatar, name, email, phone —
   whether the booking is for one person or three. How it was taken and when share one line in
   the sheet's header: the route first, then the timestamp.

@@ -71,7 +71,7 @@ export function AppointmentTab({ detail }: { detail: DetailInfo }) {
                 control
                 full
               >
-                <FitterTeam lead={appt.staffId} assist={appt.assistIds ?? []} />
+                <FitterTeam lead={appt.staffId} assist={appt.assistIds ?? []} canAdd={party.length > 1} />
               </DataRow>
             )}
           </dl>
@@ -171,7 +171,7 @@ export function AppointmentTab({ detail }: { detail: DetailInfo }) {
                 control
                 full
               >
-                <FitterTeam lead={appt.staffId} assist={appt.assistIds ?? []} />
+                <FitterTeam lead={appt.staffId} assist={appt.assistIds ?? []} canAdd={party.length > 1} />
               </DataRow>
             )}
           </dl>

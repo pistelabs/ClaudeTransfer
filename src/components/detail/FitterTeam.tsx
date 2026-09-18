@@ -4,13 +4,25 @@ import { useScheduler } from '../../store/useScheduler';
 import { Avatar } from '../ui/Avatar';
 import { useOutsideClick } from '../ui/hooks';
 
+interface FitterTeamProps {
+  lead: string;
+  assist: string[];
+  /**
+   * Whether a second pair of hands can be attached. One customer is one
+   * fitter's work, so only a booking with several is offered the choice.
+   * Anyone already assisting still shows, and can still be taken off — a
+   * booking can arrive that way however it was made.
+   */
+  canAdd: boolean;
+}
+
 /**
  * The fitters on an open appointment: the lead — whose column it sits in, and
  * who can be swapped — followed by anyone assisting. A booking can need two
  * pairs of hands, and everyone attached is busy for it, so the schedule draws
  * the block in each of their columns.
  */
-export function FitterTeam({ lead, assist }: { lead: string; assist: string[] }) {
+export function FitterTeam({ lead, assist, canAdd }: FitterTeamProps) {
   const open = useScheduler((s) => s.detailStaffOpen);
   const setOpen = useScheduler((s) => s.setDetailStaffOpen);
   const addOpen = useScheduler((s) => s.detailAddFitterOpen);
@@ -89,7 +101,7 @@ export function FitterTeam({ lead, assist }: { lead: string; assist: string[] })
         );
       })}
 
-      {spare.length > 0 && (
+      {canAdd && spare.length > 0 && (
         <div className="popover-anchor" ref={addRef}>
           <button
             className="fitter-add"
