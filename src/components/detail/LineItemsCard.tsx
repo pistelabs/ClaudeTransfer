@@ -45,7 +45,13 @@ export function LineItemsCard({ job, activeTab }: Props) {
   const pct = total ? Math.round((done / total) * 100) : 0;
 
   return (
-    <div className="relative z-[1] flex flex-col gap-3.5 rounded-xl border bg-white p-4">
+    <div
+      className={cn(
+        "relative z-[2] flex flex-col gap-3.5 rounded-xl border bg-white p-4",
+        // The first tab sits directly above this corner, so square it off and the two join up.
+        activeTab === 0 && "rounded-tl-none",
+      )}
+    >
       {(archived || countdown != null) && (
         <div
           className={cn(
