@@ -19,7 +19,10 @@ export function EquipmentTabs({ job, activeTab, onSelect }: Props) {
   const many = job.equipment.length > 3;
 
   return (
-    <div role="tablist" className="flex flex-nowrap items-end gap-1 overflow-hidden">
+    /* No overflow clipping here: the selected tab hangs a pixel below this row to cover the
+       card's top border, and hidden overflow would cut exactly that pixel off. Tabs shrink
+       and ellipsise instead of spilling. */
+    <div role="tablist" className="flex flex-nowrap items-end gap-1">
       {job.equipment.map((eq, i) => {
         const on = i === activeTab;
         const showId = !many || on;
@@ -31,7 +34,10 @@ export function EquipmentTabs({ job, activeTab, onSelect }: Props) {
             onClick={() => onSelect(i)}
             className={cn(
               "relative flex min-w-0 cursor-pointer items-center rounded-t-[10px] border transition-colors",
-              many ? "flex-1 gap-1.5 px-2.5 py-[9px]" : "flex-initial gap-2 px-[15px] py-[9px]",
+              // Tabs share the row evenly whenever there is more than one, so the last one
+              // finishes flush with the card's right edge instead of stopping short of it.
+              multi ? "flex-1" : "flex-initial",
+              many ? "gap-1.5 px-2.5 py-[9px]" : "gap-2 px-[15px] py-[9px]",
               on
                 ? "z-[3] -mb-px border-b-transparent bg-white"
                 : "bg-surface-100 hover:bg-app-bg z-[1]",

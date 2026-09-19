@@ -48,8 +48,10 @@ export function LineItemsCard({ job, activeTab }: Props) {
     <div
       className={cn(
         "relative z-[2] flex flex-col gap-3.5 rounded-xl border bg-white p-4",
-        // The first tab sits directly above this corner, so square it off and the two join up.
+        // Square whichever top corner the selected tab sits against, so tab and card join
+        // cleanly instead of a curve running into the tab's square edge.
         activeTab === 0 && "rounded-tl-none",
+        job.equipment.length > 1 && activeTab === job.equipment.length - 1 && "rounded-tr-none",
       )}
     >
       {(archived || countdown != null) && (
